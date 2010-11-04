@@ -23,66 +23,44 @@
 
 
 import logging
-import os
-import traceback
 
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template
-from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
+from google.appengine.api import xmpp
 
-from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+import base
 
 
 _log = logging.getLogger(__name__)
 
 
-class _CommonRequestHandler(webapp.RequestHandler):
-    """ """
-
-    def handle_exception(self, exception, debug_mode):
-        """Houston, we have a problem...  Handle an uncaught exception.
-
-        This method overrides the webapp.RequestHandler class's
-        handle_exception method.  This method gets called whenever there's an
-        uncaught exception anywhere in the social-butterfly code.
-        """
-        # Get and log the traceback.
-        error_message = traceback.format_exc()
-        _log.critical(error_message)
-
-        # Determine the error code.
-        if isinstance(exception, CapabilityDisabledError):
-            # The only time this exception is thrown is when the datastore is
-            # in read-only mode for maintenance.  Gracefully degrade - throw a
-            # 503 error.  For more info, see:
-            #   http://code.google.com/appengine/docs/python/howto/maintenance.html
-            error_code = 503
-        else:
-            error_code = 500
-
-        # Serve the error page.
-        self._serve_error(error_code)
-
-    def _serve_error(self, error_code):
-        """Houston, we have a problem...  Serve an error page."""
-        if not error_code in HTTP_CODE_TO_TITLE:
-            error_code = 500
-        path, debug = os.path.join(TEMPLATES, 'error.html'), DEBUG
-        title = HTTP_CODE_TO_TITLE[error_code]
-        error_url = self.request.url.split('//', 1)[-1]
-        self.error(error_code)
-        self.response.out.write(template.render(path, locals(), debug=DEBUG))
-
-
-class NotFound(_CommonRequestHandler):
+class NotFound(base.WebRequestHandler):
     """Request handler to serve a 404: Not Found error page."""
 
     def get(self, *args, **kwds):
-        """ """
+        """Someone has issued a GET request on a nonexistent URL."""
         return self._serve_error(404)
 
     def post(self, *args, **kwds):
-        """ """
+        """Someone has issued a POST request on a nonexistent URL."""
         self.error(404)
 
     trace = delete = options = head = put = post
+
+
+class Chat(base.ChatRequestHandler):
+    """Request handler to respond to XMPP messages."""
+
+    def start_command(self, message=None):
+        """ """
+        pass
+
+    def next_command(self, message=None):
+        """ """
+        pass
+
+    def stop_command(self, message=None):
+        """ """
+        pass
+
+    def text_message(self, message=None):
+        """ """
+        pass

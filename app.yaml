@@ -41,6 +41,9 @@ handlers:
   script: main.py
 
 
+inbound_services:
+- xmpp_message
+
 skip_files:
 # Default stuff:
 - ^(.*/)?app\.yaml
