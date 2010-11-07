@@ -27,5 +27,4 @@
 
 $(function() {
     // Hooray, a page has been loaded!
-    alert("Hello, World!");
 });
