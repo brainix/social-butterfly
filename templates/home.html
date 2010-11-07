@@ -1,5 +1,5 @@
 {% comment %} ----------------------------------------------------------------*\
- |  base.html                                                                 |
+ |  home.html                                                                 |
  |                                                                            |
  |  Copyright (c) 2010, Code A La Mode, original authors.                     |
  |                                                                            |
@@ -21,20 +21,15 @@
 \*------------------------------------------------------------- {% endcomment %}
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends "base.html" %}
 
+{% block content %}
+    <div id="content">
+        <h1>social-butterfly - Talk to Strangers</h1>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-    <head>
-        <title>social-butterfly{% if title %} - {{ title }}{% endif %}</title>
-        <link type="text/css" rel="stylesheet" href="/assets/style.css" />
-    </head>
-    <body>
-        {% block content %}{% endblock %}
-
-        <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-        <script type="text/javascript" src="/assets/init.js"></script>
-    </body>
-</html>
+        <form name="signup" action="/" method="post">
+            Google Talk ID: <input type="text" name="screenname" />
+            <input type="submit" value="Start Chatting" />
+        </form>
+    </div>
+{% endblock %}

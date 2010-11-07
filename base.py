@@ -19,7 +19,7 @@
 #       along with social-butterfly.  If not, see:                             #
 #           <http://www.gnu.org/licenses/>.                                    #
 #------------------------------------------------------------------------------#
-"""Request handlers."""
+"""Google App Engine request handlers (abstract base classes)."""
 
 
 import logging

@@ -1,5 +1,5 @@
-{% comment %} ----------------------------------------------------------------*\
- |  base.html                                                                 |
+/*----------------------------------------------------------------------------*\
+ |  script.js                                                                 |
  |                                                                            |
  |  Copyright (c) 2010, Code A La Mode, original authors.                     |
  |                                                                            |
@@ -18,23 +18,14 @@
  |      You should have received a copy of the GNU General Public License     |
  |      along with social-butterfly.  If not, see:                            |
  |          <http://www.gnu.org/licenses/>.                                   |
-\*------------------------------------------------------------- {% endcomment %}
+\*----------------------------------------------------------------------------*/
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+/*----------------------------------------------------------------------------*\
+ |                                    $()                                     |
+\*----------------------------------------------------------------------------*/
 
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-    <head>
-        <title>social-butterfly{% if title %} - {{ title }}{% endif %}</title>
-        <link type="text/css" rel="stylesheet" href="/assets/style.css" />
-    </head>
-    <body>
-        {% block content %}{% endblock %}
-
-        <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-        <script type="text/javascript" src="/assets/init.js"></script>
-    </body>
-</html>
+$(function() {
+    // Hooray, a page has been loaded!
+    alert("Hello, World!");
+});

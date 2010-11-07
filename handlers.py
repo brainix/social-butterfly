@@ -19,13 +19,16 @@
 #       along with social-butterfly.  If not, see:                             #
 #           <http://www.gnu.org/licenses/>.                                    #
 #------------------------------------------------------------------------------#
-"""Request handlers."""
+"""Google App Engine request handlers (concrete implementation classes)."""
 
 
 import logging
+import os
 
 from google.appengine.api import xmpp
+from google.appengine.ext.webapp import template
 
+from config import DEBUG, TEMPLATES
 import base
 
 
@@ -44,6 +47,21 @@ class NotFound(base.WebRequestHandler):
         self.error(404)
 
     trace = delete = options = head = put = post
+
+
+class Home(base.WebRequestHandler):
+    """Request handler to serve the homepage."""
+
+    def get(self):
+        """Serve the homepage."""
+        path, debug = os.path.join(TEMPLATES, 'home.html'), DEBUG
+        title = 'Talk to Strangers'
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
+
+    def post(self):
+        """ """
+        screenname = self.request.get('screenname')
+        xmpp.send_invite(screenname)
 
 
 class Chat(base.ChatRequestHandler):

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------#
-#   main.py                                                                    #
+#   models.py                                                                  #
 #                                                                              #
 #   Copyright (c) 2010, Code A La Mode, original authors.                      #
 #                                                                              #
@@ -19,27 +19,4 @@
 #       along with social-butterfly.  If not, see:                             #
 #           <http://www.gnu.org/licenses/>.                                    #
 #------------------------------------------------------------------------------#
-
-
-import logging
-
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import util
-
-from config import DEBUG
-import handlers
-
-
-_log = logging.getLogger(__name__)
-
-
-def main():
-    """It's time for the dog and pony show..."""
-    logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
-    url_mapping = (
-        ('/_ah/xmpp/message/chat/', handlers.Chat),     # XMPP / Jabber / Google Talk inbound message handler.
-        ('/',                       handlers.Home),     # /
-        ('(.*)',                    handlers.NotFound), # 404: Not Found.
-    )
-    app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
-    util.run_wsgi_app(app)
+"""Google App Engine datastore models."""
