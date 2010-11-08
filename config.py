@@ -40,6 +40,10 @@ _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 
 
+AGES = ['teen', '20s', '30s', '40s+']
+SEXES = ['male', 'female']
+
+
 HTTP_CODE_TO_TITLE = {
     100: 'Continue',
     101: 'Switching Protocols',

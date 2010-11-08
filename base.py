@@ -69,7 +69,7 @@ class _CommonRequestHandler(object):
         if not error_code in HTTP_CODE_TO_TITLE:
             error_code = 500
         path, debug = os.path.join(TEMPLATES, 'error.html'), DEBUG
-        title = HTTP_CODE_TO_TITLE[error_code]
+        title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
         self.error(error_code)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))

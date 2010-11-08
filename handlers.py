@@ -26,10 +26,12 @@ import logging
 import os
 
 from google.appengine.api import xmpp
+from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES
+from config import DEBUG, TEMPLATES, AGES, SEXES
 import base
+import models
 
 
 _log = logging.getLogger(__name__)
@@ -55,13 +57,25 @@ class Home(base.WebRequestHandler):
     def get(self):
         """Serve the homepage."""
         path, debug = os.path.join(TEMPLATES, 'home.html'), DEBUG
-        title = 'Talk to Strangers'
+        title, ages, sexes = 'chat with strangers', AGES, SEXES
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def post(self):
         """ """
-        screenname = self.request.get('screenname')
-        xmpp.send_invite(screenname)
+        values, kwds = ['handle', 'name', 'age', 'sex', 'location'], {}
+        for value in values:
+            kwds[value] = self.request.get(value)
+        kwds['handle'], kwds['online'] = db.IM('xmpp', kwds['handle']), False
+
+        key_name = models.Account.key_name(kwds['handle'].address)
+        account = models.Account.get_by_key_name(key_name)
+        if account is None:
+            account = models.Account(**kwds)
+        else:
+            account.__dict__.update(**kwds)
+        account.put()
+
+        xmpp.send_invite(account.handle.address)
 
 
 class Chat(base.ChatRequestHandler):
