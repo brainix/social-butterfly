@@ -29,7 +29,7 @@ from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES, AGES, SEXES
+from config import DEBUG, TEMPLATES, AGES, SEXES, HELP_TEXT
 import base
 import models
 
@@ -62,6 +62,11 @@ class Home(base.WebRequestHandler):
 
     def post(self):
         """ """
+
+        # XXX:  There's a security problem here.  Nothing prevents Chuck from
+        # filling out Alice's profile information incorrectly.  :-(  Please fix
+        # this.  Maybe do away with user profile information altogether.
+
         values, kwds = ['handle', 'name', 'age', 'sex', 'location'], {}
         for value in values:
             kwds[value] = self.request.get(value)
@@ -70,9 +75,11 @@ class Home(base.WebRequestHandler):
         key_name = models.Account.key_name(kwds['handle'].address)
         account = models.Account.get_by_key_name(key_name)
         if account is None:
+            kwds['key_name'] = key_name
             account = models.Account(**kwds)
         else:
-            account.__dict__.update(**kwds)
+            for key, value in kwds.items():
+                setattr(account, key, value)
         account.put()
 
         xmpp.send_invite(account.handle.address)
@@ -81,18 +88,55 @@ class Home(base.WebRequestHandler):
 class Chat(base.ChatRequestHandler):
     """Request handler to respond to XMPP messages."""
 
+    def help_command(self, message=None):
+        """Alice has typed /help."""
+        message.reply(HELP_TEXT)
+
     def start_command(self, message=None):
-        """ """
-        pass
+        """Alice has typed /start."""
+        alice = self._message_to_account(message)
+        if alice.online:
+            pass
+        else:
+            alice.online = True
+            if alice.partner is None:
+                alice, bob = self._start_chat(alice)
+            else:
+                bob = None
+            db.put((alice, bob))
 
     def next_command(self, message=None):
-        """ """
-        pass
+        """Alice has typed /next."""
+        alice = self._message_to_account(message)
+        if not alice.online:
+            pass
+        else:
+            alice, bob = self._stop_chat(alice)
+            alice, carol = self._start_chat(alice)
+            if bob is not None:
+                bob, dave = self._start_chat(bob)
+            else:
+                dave = None
+            db.put((alice, bob, carol, dave))
 
     def stop_command(self, message=None):
-        """ """
-        pass
+        """Alice has typed /stop."""
+        alice = self._message_to_account(message)
+        if not alice.online:
+            pass
+        else:
+            alice.online = False
+            alice, bob = self._stop_chat(alice)
+            if bob is not None:
+                bob, carol = self._start_chat(bob)
+            else:
+                carol = None
+            db.put((alice, bob, carol))
 
     def text_message(self, message=None):
-        """ """
-        pass
+        """Alice has typed a message.  Relay it to Bob."""
+        alice = self._message_to_account(message)
+        if not alice.online:
+            pass
+        else:
+            pass

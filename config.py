@@ -40,8 +40,16 @@ _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 
 
-AGES = ['teen', '20s', '30s', '40s+']
+AGES = ['teen', '20 something', '30 something', '40 something +']
 SEXES = ['male', 'female']
+
+
+HELP_TEXT = 'Type /start to chat with a random stranger.  Type /next to chat with a different random stranger.  Type /stop to stop chatting with random strangers.'
+SEARCHING_TEXT = 'Searching for a random stranger...'
+STARTING_TEXT = 'Chatting with %s, %s / %s / %s.'
+REJECTING_TEXT = '%s has stopped chatting with you.'
+REJECTED_TEXT = "You've stopped chatting with %s."
+STOPPING_TEXT = "You've stopped chatting with random strangers.  Type /start at any time to resume."
 
 
 HTTP_CODE_TO_TITLE = {

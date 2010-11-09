@@ -26,12 +26,14 @@ import logging
 import os
 import traceback
 
+from google.appengine.api import xmpp
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+import models
 
 
 _log = logging.getLogger(__name__)
@@ -92,4 +94,39 @@ class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
 
 class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
-    pass
+
+    def _message_to_account(self, message):
+        """ """
+        key_name = models.Account.key_name(message.sender)
+        account = models.Account.get_by_key_name(key_name)
+        return account
+
+    def _find_partner(self, account):
+        """ """
+        partners = models.Account.all()
+        partners = partners.filter('online =', True)
+        partners = partners.filter('partner =', None)
+        partners = partners.order('datetime')
+        for partner in partners:
+            if partner != account and xmpp.get_presence(partner.address):
+                return partner
+        return None
+
+    def _start_chat(self, account):
+        """ """
+        partner = self._find_partner(account)
+        account.partner = partner
+        if partner is not None:
+            partner.partner = account
+        return account, partner
+
+    def _stop_chat(self, account):
+        """ """
+        partner = account.partner
+        account.partner = None
+        if partner is not None:
+            if partner.partner == account:
+                partner.partner = None
+            else:
+                partner = None
+        return account, partner

@@ -37,6 +37,7 @@ class Account(db.Model):
 
     online = db.BooleanProperty(required=True)
     partner = db.SelfReferenceProperty(indexed=False)
+    datetime = db.DateTimeProperty(auto_now=True, required=True)
 
     @staticmethod
     def key_name(handle):
