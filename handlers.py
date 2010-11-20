@@ -87,63 +87,35 @@ class Chat(base.ChatRequestHandler):
     @decorators.require_account(online=False)
     def start_command(self, message=None):
         """Alice has typed /start."""
-        alice = self._message_to_account(message)
+        alice = self.message_to_account(message)
         alice.online = True
-        alice, bob = self._start(alice)
-
-        # Notify Alice and Bob.
-        if bob is not None:
-            xmpp.send_message([alice.handle.address, bob.handle.address],
-                              'Now chatting.')
+        alice.put()
+        alice, bob = self.start(alice)
+        self.notify((alice, bob))
 
     @decorators.require_account(online=True)
     def next_command(self, message=None):
         """Alice has typed /next."""
-        alice = self._message_to_account(message)
-        alice, bob = self._stop(alice)
-        alice, carol = self._start(alice)
-        bob, dave = self._start(bob) if bob is not None else (None, None)
-
-        # Notify Alice and Carol.
-        if carol is None:
-            message.reply('No longer chatting.')
-        else:
-            message.reply('Now chatting.')
-            xmpp.send_message([alice.handle.address, carol.handle.address],
-                              'Now chatting.')
-
-        # Notify Bob and Dave.
-        if bob is not None:
-            if dave is None:
-                xmpp.send_message(bob.handle.address, 'No longer chatting.')
-            else:
-                xmpp.send_message([bob.handle.address, dave.handle.address],
-                                  'Now chatting.')
+        alice = self.message_to_account(message)
+        alice, bob = self.stop(alice)
+        alice, carol = self.start(alice)
+        bob, dave = self.start(bob) if bob is not None else (None, None)
+        self.notify((alice, carol, bob, dave))
 
     @decorators.require_account(online=True)
     def stop_command(self, message=None):
         """Alice has typed /stop."""
-        alice = self._message_to_account(message)
+        alice = self.message_to_account(message)
         alice.online = False
-        alice, bob = self._stop(alice)
-        bob, carol = self._start(bob) if bob is not None else (None, None)
-
-        # Notify Alice.
-        if bob is not None:
-            message.reply('No longer chatting.')
-
-        # Notify Bob and Carol.
-        if bob is not None:
-            if carol is None:
-                xmpp.send_message(bob.handle.address, 'No longer chatting.')
-            else:
-                xmpp.send_message([bob.handle.address, carol.handle.address],
-                                  'Now chatting.')
+        alice.put()
+        alice, bob = self.stop(alice)
+        bob, carol = self.start(bob) if bob is not None else (None, None)
+        self.notify((alice, bob, carol))
 
     @decorators.require_account(online=True)
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
-        alice = self._message_to_account(message)
+        alice = self.message_to_account(message)
         bob = alice.partner
         if bob is None:
             return

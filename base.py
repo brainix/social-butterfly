@@ -96,7 +96,7 @@ class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
 class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
-    def _message_to_account(self, message):
+    def message_to_account(self, message):
         """ """
         key_name = models.Account.key_name(message.sender)
         alice = models.Account.get_by_key_name(key_name)
@@ -113,7 +113,7 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
                 return bob
         return None
 
-    def _start(self, alice):
+    def _link(self, alice):
         """ """
         bob = self._find_partner(alice)
         alice.partner = bob
@@ -121,7 +121,7 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
             bob.partner = alice
         return alice, bob
 
-    def _stop(self, alice):
+    def _unlink(self, alice):
         """ """
         bob = alice.partner
         alice.partner = None
@@ -134,7 +134,22 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
 
     def _start_or_stop(self, alice, start=True):
         """ """
-        alice, bob = self._start(alice) if start else self._stop(alice)
+        alice, bob = self._link(alice) if start else self._unlink(alice)
         accounts = [account for account in (alice, bob) if account is not None]
         db.put(accounts)
         return alice, bob
+
+    def start(self, alice):
+        """ """
+        return self._start_or_stop(alice, start=True)
+
+    def stop(self, alice):
+        """ """
+        return self._start_or_stop(alice, start=False)
+
+    def notify(self, accounts):
+        """ """
+        accounts = [account for account in accounts if account is not None]
+        for account in accounts:
+            body = 'Now chatting.' if account.partner else 'No longer chatting.'
+            xmpp.send_message(account.handle.address, body)

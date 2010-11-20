@@ -34,7 +34,7 @@ def require_account(online=None):
     def wrap1(method):
         @functools.wraps(method)
         def wrap2(self, message=None):
-            alice = self._message_to_account(message)
+            alice = self.message_to_account(message)
             if alice is None:
                 return
             if online is not None and alice.online != online:
