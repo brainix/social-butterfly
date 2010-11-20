@@ -30,32 +30,6 @@
         <form name="signup" action="/" method="post">
             Google Talk:
             <input type="text" name="handle" />
-            <br />
-
-            Name:
-            <input type="text" name="name" />
-            <br />
-
-            Age:
-            <select name="age">
-                {% for age in ages %}
-                    <option value="{{ age }}">{{ age }}</option>
-                {% endfor %}
-            </select>
-            <br />
-
-            Sex:
-            <select name="sex">
-                {% for sex in sexes %}
-                    <option value="{{ sex }}">{{ sex }}</option>
-                {% endfor %}
-            </select>
-            <br />
-
-            Location:
-            <input type="text" name="location" />
-            <br />
-
             <input type="submit" value="Start Chatting" />
         </form>
     </div>
