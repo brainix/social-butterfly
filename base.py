@@ -113,18 +113,15 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
                 return bob
         return None
 
-    def _start_chat(self, alice):
+    def _start(self, alice):
         """ """
         bob = self._find_partner(alice)
         alice.partner = bob
         if bob is not None:
             bob.partner = alice
-
-        accounts = [account for account in (alice, bob) if account is not None]
-        db.put(accounts)
         return alice, bob
 
-    def _stop_chat(self, alice):
+    def _stop(self, alice):
         """ """
         bob = alice.partner
         alice.partner = None
@@ -133,7 +130,11 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
                 bob.partner = None
             else:
                 bob = None
+        return alice, bob
 
+    def _start_or_stop(self, alice, start=True):
+        """ """
+        alice, bob = self._start(alice) if start else self._stop(alice)
         accounts = [account for account in (alice, bob) if account is not None]
         db.put(accounts)
         return alice, bob
