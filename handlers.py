@@ -29,7 +29,7 @@ from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES, AGES, SEXES, HELP_TEXT
+from config import DEBUG, TEMPLATES
 import base
 import models
 
@@ -57,32 +57,19 @@ class Home(base.WebRequestHandler):
     def get(self):
         """Serve the homepage."""
         path, debug = os.path.join(TEMPLATES, 'home.html'), DEBUG
-        title, ages, sexes = 'chat with strangers', AGES, SEXES
+        title = 'chat with strangers'
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def post(self):
         """ """
-
-        # XXX:  There's a security problem here.  Nothing prevents Chuck from
-        # filling out Alice's profile information incorrectly.  :-(  Please fix
-        # this.  Maybe do away with user profile information altogether.
-
-        values, kwds = ['handle', 'name', 'age', 'sex', 'location'], {}
-        for value in values:
-            kwds[value] = self.request.get(value)
-        kwds['handle'], kwds['online'] = db.IM('xmpp', kwds['handle']), False
-
-        key_name = models.Account.key_name(kwds['handle'].address)
+        handle = self.request.get('handle')
+        handle = db.IM('xmpp', handle)
+        key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
         if account is None:
-            kwds['key_name'] = key_name
-            account = models.Account(**kwds)
-        else:
-            for key, value in kwds.items():
-                setattr(account, key, value)
-        account.put()
-
-        xmpp.send_invite(account.handle.address)
+            account = models.Account(handle=handle)
+            account.put()
+        xmpp.send_invite(handle.address)
 
 
 class Chat(base.ChatRequestHandler):
@@ -90,20 +77,28 @@ class Chat(base.ChatRequestHandler):
 
     def help_command(self, message=None):
         """Alice has typed /help."""
-        message.reply(HELP_TEXT)
+        body = 'Type /start to start chatting.\n'
+        body += 'Type /next to chat with someone else.\n'
+        body += 'Type /stop to stop chatting.'
+        message.reply(body)
 
     def start_command(self, message=None):
         """Alice has typed /start."""
         alice = self._message_to_account(message)
         if alice.online:
-            pass
+            if alice.partner is None:
+                message.reply('Looking for a partner...')
+            else:
+                message.reply("You're already chatting with a partner.")
         else:
             alice.online = True
-            if alice.partner is None:
-                alice, bob = self._start_chat(alice)
+            alice, bob = self._start_chat(alice)
+            if bob is None:
+                xmpp.send_message(alice.handle.address,
+                                  'Looking for a partner...')
             else:
-                bob = None
-            db.put((alice, bob))
+                xmpp.send_message([alice.handle.address, bob.handle.address],
+                                  "You're now chatting with a partner.")
 
     def next_command(self, message=None):
         """Alice has typed /next."""
@@ -117,7 +112,29 @@ class Chat(base.ChatRequestHandler):
                 bob, dave = self._start_chat(bob)
             else:
                 dave = None
-            db.put((alice, bob, carol, dave))
+
+            # Notify Alice.
+            body = "You've disconnected from your partner.\n"
+            if carol is None:
+                body += 'Looking for a new partner...'
+            else:
+                body += "You're now chatting with a new partner."
+            message.reply(body)
+
+            # Notify Bob.
+            if bob is not None:
+                body = 'Your partner has disconnected.\n'
+                if dave is None:
+                    body += 'Looking for a new partner...'
+                else:
+                    body += "You're now chatting with a new partner."
+                xmpp.send_message(bob.handle.address, body)
+
+            # Notify Carol and Dave.
+            accounts = (carol, dave)
+            accounts = [account for account in accounts if account is not None]
+            jids = [account.handle.address for account in accounts]
+            xmpp.send_message(jids, "You're now chatting with a partner.")
 
     def stop_command(self, message=None):
         """Alice has typed /stop."""
@@ -131,7 +148,6 @@ class Chat(base.ChatRequestHandler):
                 bob, carol = self._start_chat(bob)
             else:
                 carol = None
-            db.put((alice, bob, carol))
 
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""

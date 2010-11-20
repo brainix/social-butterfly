@@ -24,16 +24,10 @@
 
 from google.appengine.ext import db
 
-from config import AGES, SEXES
-
 
 class Account(db.Model):
     """ """
     handle = db.IMProperty(indexed=False, required=True)
-    name = db.StringProperty(indexed=False, required=True)
-    age = db.StringProperty(choices=set(AGES), indexed=False, required=True)
-    sex = db.StringProperty(choices=set(SEXES), indexed=False, required=True)
-    location = db.StringProperty(indexed=False, required=True)
 
     online = db.BooleanProperty(required=True)
     partner = db.SelfReferenceProperty(indexed=False)

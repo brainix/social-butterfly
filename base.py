@@ -27,6 +27,7 @@ import os
 import traceback
 
 from google.appengine.api import xmpp
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import xmpp_handlers
@@ -98,35 +99,41 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
     def _message_to_account(self, message):
         """ """
         key_name = models.Account.key_name(message.sender)
-        account = models.Account.get_by_key_name(key_name)
-        return account
+        alice = models.Account.get_by_key_name(key_name)
+        return alice
 
-    def _find_partner(self, account):
+    def _find_partner(self, alice):
         """ """
-        partners = models.Account.all()
-        partners = partners.filter('online =', True)
-        partners = partners.filter('partner =', None)
-        partners = partners.order('datetime')
-        for partner in partners:
-            if partner != account and xmpp.get_presence(partner.address):
-                return partner
+        bobs = models.Account.all()
+        bobs = bobs.filter('online =', True)
+        bobs = bobs.filter('partner =', None)
+        bobs = bobs.order('datetime')
+        for bob in bobs:
+            if bob != alice and xmpp.get_presence(bob.address):
+                return bob
         return None
 
-    def _start_chat(self, account):
+    def _start_chat(self, alice):
         """ """
-        partner = self._find_partner(account)
-        account.partner = partner
-        if partner is not None:
-            partner.partner = account
-        return account, partner
+        bob = self._find_partner(alice)
+        alice.partner = bob
+        if bob is not None:
+            bob.partner = alice
 
-    def _stop_chat(self, account):
+        accounts = [account for account in (alice, bob) if account is not None]
+        db.put(accounts)
+        return alice, bob
+
+    def _stop_chat(self, alice):
         """ """
-        partner = account.partner
-        account.partner = None
-        if partner is not None:
-            if partner.partner == account:
-                partner.partner = None
+        bob = alice.partner
+        alice.partner = None
+        if bob is not None:
+            if bob.partner == alice:
+                bob.partner = None
             else:
-                partner = None
-        return account, partner
+                bob = None
+
+        accounts = [account for account in (alice, bob) if account is not None]
+        db.put(accounts)
+        return alice, bob
