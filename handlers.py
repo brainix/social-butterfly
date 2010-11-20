@@ -31,6 +31,7 @@ from google.appengine.ext.webapp import template
 
 from config import DEBUG, TEMPLATES
 import base
+import decorators
 import models
 
 
@@ -75,6 +76,7 @@ class Home(base.WebRequestHandler):
 class Chat(base.ChatRequestHandler):
     """Request handler to respond to XMPP messages."""
 
+    @decorators.require_account()
     def help_command(self, message=None):
         """Alice has typed /help."""
         body = 'Type /start to start chatting.\n'
@@ -82,12 +84,10 @@ class Chat(base.ChatRequestHandler):
         body += 'Type /stop to stop chatting.'
         message.reply(body)
 
+    @decorators.require_account(online=False)
     def start_command(self, message=None):
         """Alice has typed /start."""
         alice = self._message_to_account(message)
-        if alice is None or alice.online:
-            return
-
         alice.online = True
         alice, bob = self._start(alice)
 
@@ -96,12 +96,10 @@ class Chat(base.ChatRequestHandler):
             xmpp.send_message([alice.handle.address, bob.handle.address],
                               'Now chatting.')
 
+    @decorators.require_account(online=True)
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self._message_to_account(message)
-        if alice is None or not alice.online:
-            return
-
         alice, bob = self._stop(alice)
         alice, carol = self._start(alice)
         bob, dave = self._start(bob) if bob is not None else (None, None)
@@ -122,12 +120,10 @@ class Chat(base.ChatRequestHandler):
                 xmpp.send_message([bob.handle.address, dave.handle.address],
                                   'Now chatting.')
 
+    @decorators.require_account(online=True)
     def stop_command(self, message=None):
         """Alice has typed /stop."""
         alice = self._message_to_account(message)
-        if alice is None or not alice.online:
-            return
-
         alice.online = False
         alice, bob = self._stop(alice)
         bob, carol = self._start(bob) if bob is not None else (None, None)
@@ -144,11 +140,10 @@ class Chat(base.ChatRequestHandler):
                 xmpp.send_message([bob.handle.address, carol.handle.address],
                                   'Now chatting.')
 
+    @decorators.require_account(online=True)
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self._message_to_account(message)
-        if alice is None or not alice.online:
-            return
         bob = alice.partner
         if bob is None:
             return
