@@ -24,42 +24,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div id="content">
-        <h1>social-butterfly - {{ title }}</h1>
 
-        {% ifequal error_code 404 %}
-            <p>
-                Once upon a midnight dreary, while I websurfed weak and weary,<br />
-                Over many a strange and spurious website of &lsquo;hot chicks galore,&rsquo;<br />
-                While I clicked my fav&rsquo;rite bookmark, suddenly there came a warning,<br />
-                And my heart was filled with mourning, mourning for my dear amour.<br />
-                &ldquo;&lsquo;Tis not possible,&rdquo; I muttered, &ldquo;give me back my cheap hardcore!&rdquo;
-            </p>
-            <p>Quoth the server, &ldquo;<b>404</b>.&rdquo;
-        {% endifequal %}
+    {% ifequal error_code 404 %}
+        <p>
+            Once upon a midnight dreary, while I websurfed weak and weary,<br />
+            Over many a strange and spurious website of &lsquo;hot chicks galore,&rsquo;<br />
+            While I clicked my fav&rsquo;rite bookmark, suddenly there came a warning,<br />
+            And my heart was filled with mourning, mourning for my dear amour.<br />
+            &ldquo;&lsquo;Tis not possible,&rdquo; I muttered, &ldquo;give me back my cheap hardcore!&rdquo;
+        </p>
+        <p>Quoth the server, &ldquo;<b>404</b>.&rdquo;
+    {% endifequal %}
 
-        {% ifequal error_code 500 %}
-            <h2>Oops &hellip;</h2>
-            <p>
-                We&rsquo;re sorry, but social-butterfly has vomited on itself.
-                <span class="no_break">:-(</span>
-                <a href="javascript:location.reload(true);">Try again?</a>
-            </p>
-            <h2>If you&rsquo;ve discovered a bug,</h2>
-            <p>
-                <a href="http://code.google.com/p/social-butterfly/issues/list">report it</a>.
-                Please make your issue report as detailed as possible.  Your
-                details help us resolve the problem more quickly.
-            </p>
-        {% endifequal %}
-
-        {% ifequal error_code 503 %}
-            <h2>Oops &hellip;</h2>
-            <p>
-                We&rsquo;re sorry, but Google App Engine is in read-only
-                mode.  Google should restore write access soon, so please
-                try again in a bit.
-            </p>
-        {% endifequal %}
-    </div>
 {% endblock %}

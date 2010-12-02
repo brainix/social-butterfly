@@ -97,13 +97,13 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
     def message_to_account(self, message):
-        """ """
+        """From an XMPP message, find the user account that sent it."""
         key_name = models.Account.key_name(message.sender)
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
     def _find_partner(self, alice):
-        """ """
+        """Alice is looking to chat.  Find her a partner, Bob."""
         bobs = models.Account.all()
         bobs = bobs.filter('online =', True)
         bobs = bobs.filter('partner =', None)
@@ -113,16 +113,16 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
                 return bob
         return None
 
-    def _link(self, alice):
-        """ """
+    def _link_partners(self, alice):
+        """Alice is looking to chat.  Find her a partner, Bob, and link them."""
         bob = self._find_partner(alice)
         alice.partner = bob
         if bob is not None:
             bob.partner = alice
         return alice, bob
 
-    def _unlink(self, alice):
-        """ """
+    def _unlink_partners(self, alice):
+        """Alice has stopped chatting.  Unlink her from her partner, Bob."""
         bob = alice.partner
         alice.partner = None
         if bob is not None:
@@ -132,22 +132,25 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
                 bob = None
         return alice, bob
 
-    def _start_or_stop(self, alice, start=True):
+    def _start_or_stop_chat(self, alice, start=True):
         """ """
-        alice, bob = self._link(alice) if start else self._unlink(alice)
+        if start:
+            alice, bob = self._link_partners(alice)
+        else:
+            alice, bob = self._unlink_partners(alice)
         accounts = [account for account in (alice, bob) if account is not None]
         db.put(accounts)
         return alice, bob
 
-    def start(self, alice):
+    def start_chat(self, alice):
         """ """
-        return self._start_or_stop(alice, start=True)
+        return self._start_or_stop_chat(alice, start=True)
 
-    def stop(self, alice):
+    def stop_chat(self, alice):
         """ """
-        return self._start_or_stop(alice, start=False)
+        return self._start_or_stop_chat(alice, start=False)
 
-    def notify(self, accounts):
+    def chat_status(self, accounts):
         """ """
         accounts = [account for account in accounts if account is not None]
         for account in accounts:

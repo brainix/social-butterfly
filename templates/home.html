@@ -24,13 +24,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div id="content">
-        <h1>social-butterfly - Chat with Strangers</h1>
-
-        <form name="signup" action="/" method="post">
-            Google Talk:
-            <input type="text" name="handle" />
-            <input type="submit" value="Start Chatting" />
-        </form>
-    </div>
+    <form name="signup" action="/" method="post">
+        <input type="text" name="handle" value="you@gmail.com" />
+        <input type="submit" class="submit" value="Chat with Strangers" />
+        <div class="throbber">
+            <img src="/assets/throbber.gif" height="36" alt="signing up..." />
+        </div>
+    </form>
 {% endblock %}

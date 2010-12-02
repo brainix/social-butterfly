@@ -27,11 +27,18 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <title>social-butterfly{% if title %} - {{ title }}{% endif %}</title>
+        <title>social butterfly{% if title %} - {{ title }}{% endif %}</title>
         <link type="text/css" rel="stylesheet" href="/assets/style.css" />
     </head>
     <body>
-        {% block content %}{% endblock %}
+        <div id="heading">
+            <h1>social butterfly</h1>
+            <h2>{{ title }}.</h2>
+        </div>
+
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
 
         <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>

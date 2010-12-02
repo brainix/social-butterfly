@@ -27,4 +27,79 @@
 
 $(function() {
     // Hooray, a page has been loaded!
+
+    var handle = $('[name="signup"] [name="handle"]');
+    handle.focus(focusHandle);
+    handle.blur(blurHandle);
+
+    $('[name="signup"]').submit(signup);
+
+    var defaultHandle = handle.attr('defaultValue');
+    handle.val(defaultHandle);
 });
+
+
+/*----------------------------------------------------------------------------*\
+ |                               focusHandle()                                |
+\*----------------------------------------------------------------------------*/
+
+function focusHandle() {
+    var handle = $('[name="signup"] [name="handle"]');
+    var defaultHandle = handle.attr('defaultValue');
+    if (handle.val() == defaultHandle) {
+        handle.val('');
+    }
+}
+
+
+/*----------------------------------------------------------------------------*\
+ |                                blurHandle()                                |
+\*----------------------------------------------------------------------------*/
+
+function blurHandle() {
+    var handle = $('[name="signup"] [name="handle"]');
+    if (handle.val() == '') {
+        var defaultHandle = handle.attr('defaultValue');
+        handle.val(defaultHandle);
+    }
+}
+
+
+/*----------------------------------------------------------------------------*\
+ |                                  signup()                                  |
+\*----------------------------------------------------------------------------*/
+
+var signupSubmitted = false;
+
+function signup() {
+    if (signupSubmitted) {
+        var message = "You've already submitted a request to chat.\n";
+        message += "Please wait for this request to complete.";
+        alert(message);
+    } else {
+        signupSubmitted = true;
+        var handle = $('[name="signup"] [name="handle"]');
+        var throbber = $('[name="signup"] .throbber');
+        var button = $('[name="signup"] :submit');
+
+        handle.addClass('handle_with_throbber_shown');
+        throbber.show();
+        button.hide();
+
+        $.ajax({
+            type: 'POST',
+            url: '/',
+            data: {handle: handle.val()},
+            success: function(data, textStatus, xmlHttpRequest) {
+            },
+            complete: function(xmlHttpRequest, textStatus) {
+                button.show();
+                throbber.hide();
+                handle.removeClass('handle_with_throbber_shown');
+                signupSubmitted = false;
+            }
+        });
+    }
+
+    return false;
+}

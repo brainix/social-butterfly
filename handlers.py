@@ -89,26 +89,26 @@ class Chat(base.ChatRequestHandler):
         """Alice has typed /start."""
         alice = self.message_to_account(message)
         alice.online = True
-        alice, bob = self.start(alice)
-        self.notify((alice, bob))
+        alice, bob = self.start_chat(alice)
+        self.chat_status((alice, bob))
 
     @decorators.require_account(online=True)
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
-        alice, bob = self.stop(alice)
-        alice, carol = self.start(alice)
-        bob, dave = self.start(bob) if bob is not None else (None, None)
-        self.notify((alice, carol, bob, dave))
+        alice, bob = self.stop_chat(alice)
+        alice, carol = self.start_chat(alice)
+        bob, dave = self.start_chat(bob) if bob is not None else (None, None)
+        self.chat_status((alice, carol, bob, dave))
 
     @decorators.require_account(online=True)
     def stop_command(self, message=None):
         """Alice has typed /stop."""
         alice = self.message_to_account(message)
         alice.online = False
-        alice, bob = self.stop(alice)
-        bob, carol = self.start(bob) if bob is not None else (None, None)
-        self.notify((alice, bob, carol))
+        alice, bob = self.stop_chat(alice)
+        bob, carol = self.start_chat(bob) if bob is not None else (None, None)
+        self.chat_status((alice, bob, carol))
 
     @decorators.require_account(online=True)
     def text_message(self, message=None):
@@ -117,5 +117,8 @@ class Chat(base.ChatRequestHandler):
         bob = alice.partner
         if bob is None:
             return
+
+        _log.debug('%s -> %s : %s' % (alice.handle.address, bob.handle.address,
+                                      message.body))
         body = 'Partner: ' + message.body
         xmpp.send_message(bob.handle.address, body)
