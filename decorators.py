@@ -34,11 +34,26 @@ def require_account(online=None):
     def wrap1(method):
         @functools.wraps(method)
         def wrap2(self, message=None):
+            assert online in (None, False, True)
+            if online is None:
+                log = 'decorated method %s requires registered account'
+            elif not online:
+                log = 'decorated method %s requires offline user'
+            else:
+                log = 'decorated method %s requires online user'
+            _log.debug(log % method.func_name)
+
             alice = self.message_to_account(message)
+            log = 'decorator requirements failed; '
             if alice is None:
-                return
-            if online is not None and alice.online != online:
-                return
-            return method(self, message=message)
+                _log.warning(log + "user %s hasn't registered" % message.sender)
+            elif online is not None and alice.online != online:
+                if not online:
+                    _log.warning(log + "user %s isn't offline" % message.sender)
+                else:
+                    _log.warning(log + "user %s isn't online" % message.sender)
+            else:
+                _log.debug('decorator requirements passed; calling method')
+                return method(self, message=message)
         return wrap2
     return wrap1

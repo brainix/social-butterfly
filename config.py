@@ -33,6 +33,7 @@ _log = logging.getLogger(__name__)
 # so turn off debug mode.
 _SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE', '')
 DEBUG = _SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
+DEBUG = True
 _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 
 

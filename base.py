@@ -40,7 +40,7 @@ import models
 _log = logging.getLogger(__name__)
 
 
-class _CommonRequestHandler(object):
+class _BaseRequestHandler(object):
     """Methods common to all request handlers."""
 
     def handle_exception(self, exception, debug_mode):
@@ -76,16 +76,6 @@ class _CommonRequestHandler(object):
         error_url = self.request.url.split('//', 1)[-1]
         self.error(error_code)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
-
-
-class _BaseRequestHandler(_CommonRequestHandler):
-    """Abstract base request handler class."""
-
-    def get(*args, **kwds):
-        """Abstract method to handle requests."""
-        raise NotImplementedError
-
-    trace = delete = options = head = put = post = get
 
 
 class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):

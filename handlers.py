@@ -45,12 +45,6 @@ class NotFound(base.WebRequestHandler):
         """Someone has issued a GET request on a nonexistent URL."""
         return self._serve_error(404)
 
-    def post(self, *args, **kwds):
-        """Someone has issued a POST request on a nonexistent URL."""
-        self.error(404)
-
-    trace = delete = options = head = put = post
-
 
 class Home(base.WebRequestHandler):
     """Request handler to serve the homepage."""
@@ -68,7 +62,7 @@ class Home(base.WebRequestHandler):
         key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
         if account is None:
-            account = models.Account(handle=handle)
+            account = models.Account(key_name=key_name, handle=handle, online=False)
             account.put()
         xmpp.send_invite(handle.address)
 
@@ -79,8 +73,8 @@ class Chat(base.ChatRequestHandler):
     @decorators.require_account()
     def help_command(self, message=None):
         """Alice has typed /help."""
-        body = 'Type /start to start chatting.\n'
-        body += 'Type /next to chat with someone else.\n'
+        body = 'Type /start to start chatting.\n\n'
+        body += 'Type /next to chat with someone else.\n\n'
         body += 'Type /stop to stop chatting.'
         message.reply(body)
 

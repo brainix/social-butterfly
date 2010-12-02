@@ -90,6 +90,7 @@ function signup() {
             type: 'POST',
             url: '/',
             data: {handle: handle.val()},
+            cache: false,
             success: function(data, textStatus, xmlHttpRequest) {
             },
             complete: function(xmlHttpRequest, textStatus) {

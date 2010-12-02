@@ -30,10 +30,10 @@ class Account(db.Model):
     handle = db.IMProperty(indexed=False, required=True)
 
     online = db.BooleanProperty(required=True)
-    partner = db.SelfReferenceProperty(indexed=False)
+    partner = db.SelfReferenceProperty()
     datetime = db.DateTimeProperty(auto_now=True, required=True)
 
     @staticmethod
     def key_name(handle):
         """Convert an IM handle into an account key."""
-        return 'account_' + handle
+        return 'account_' + handle.split('/')[0].lower()
