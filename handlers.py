@@ -73,6 +73,8 @@ class Chat(base.ChatRequestHandler):
     @decorators.require_account()
     def help_command(self, message=None):
         """Alice has typed /help."""
+        alice = self.message_to_account(message)
+        _log.debug('%s typed /help' % alice.handle.address)
         body = 'Type /start to start chatting.\n\n'
         body += 'Type /next to chat with someone else.\n\n'
         body += 'Type /stop to stop chatting.'
@@ -82,6 +84,7 @@ class Chat(base.ChatRequestHandler):
     def start_command(self, message=None):
         """Alice has typed /start."""
         alice = self.message_to_account(message)
+        _log.debug('%s typed /start' % alice.handle.address)
         alice.online = True
         alice, bob = self.start_chat(alice)
         self.chat_status((alice, bob))
@@ -90,6 +93,7 @@ class Chat(base.ChatRequestHandler):
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
+        _log.debug('%s typed /next' % alice.handle.address)
         alice, bob = self.stop_chat(alice)
         alice, carol = self.start_chat(alice)
         bob, dave = self.start_chat(bob) if bob is not None else (None, None)
@@ -99,6 +103,7 @@ class Chat(base.ChatRequestHandler):
     def stop_command(self, message=None):
         """Alice has typed /stop."""
         alice = self.message_to_account(message)
+        _log.debug('%s typed /stop' % alice.handle.address)
         alice.online = False
         alice, bob = self.stop_chat(alice)
         bob, carol = self.start_chat(bob) if bob is not None else (None, None)
@@ -108,11 +113,24 @@ class Chat(base.ChatRequestHandler):
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self.message_to_account(message)
+        _log.debug('%s typed message' % alice.handle.address)
         bob = alice.partner
         if bob is None:
+            _log.warning('%s typed message, but has no chat partner' %
+                         alice.handle.address)
             return
 
-        _log.debug('%s -> %s : %s' % (alice.handle.address, bob.handle.address,
-                                      message.body))
+        _log.info('%s typed message, delivering to %s' %
+                  (alice.handle.address, bob.handle.address))
         body = 'Partner: ' + message.body
-        xmpp.send_message(bob.handle.address, body)
+        statuses = xmpp.send_message(bob.handle.address, body)
+
+        if statuses[0] == xmpp.NO_ERROR:
+            _log.info('%s typed message, delivered to %s' %
+                      (alice.handle.address, bob.handle.address))
+        elif statuses[0] == xmpp.INVALID_JID:
+            _log.critical('%s typed message, not delivered to %s (invalid JID)' %
+                          (alice.handle.address, bob.handle.address))
+        elif statuses[0] == xmpp.OTHER_ERROR:
+            _log.warning('%s typed message, not delivered to %s (other error)' %
+                         (alice.handle.address, bob.handle.address))

@@ -28,11 +28,11 @@
 $(function() {
     // Hooray, a page has been loaded!
 
-    var handle = $('[name="signup"] [name="handle"]');
+    var handle = $('#content .signup [name="handle"]');
     handle.focus(focusHandle);
     handle.blur(blurHandle);
 
-    $('[name="signup"]').submit(signup);
+    $('#content .signup').submit(signup);
 
     var defaultHandle = handle.attr('defaultValue');
     handle.val(defaultHandle);
@@ -44,7 +44,7 @@ $(function() {
 \*----------------------------------------------------------------------------*/
 
 function focusHandle() {
-    var handle = $('[name="signup"] [name="handle"]');
+    var handle = $('#content .signup [name="handle"]');
     var defaultHandle = handle.attr('defaultValue');
     if (handle.val() == defaultHandle) {
         handle.val('');
@@ -57,7 +57,7 @@ function focusHandle() {
 \*----------------------------------------------------------------------------*/
 
 function blurHandle() {
-    var handle = $('[name="signup"] [name="handle"]');
+    var handle = $('#content .signup [name="handle"]');
     if (handle.val() == '') {
         var defaultHandle = handle.attr('defaultValue');
         handle.val(defaultHandle);
@@ -78,9 +78,9 @@ function signup() {
         alert(message);
     } else {
         signupSubmitted = true;
-        var handle = $('[name="signup"] [name="handle"]');
-        var throbber = $('[name="signup"] .throbber');
-        var button = $('[name="signup"] :submit');
+        var handle = $('#content .signup [name="handle"]');
+        var throbber = $('#content .signup .throbber');
+        var button = $('#content .signup :submit');
 
         handle.addClass('handle_with_throbber_shown');
         throbber.show();

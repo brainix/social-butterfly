@@ -24,9 +24,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <form name="signup" action="/" method="post">
-        <input type="text" name="handle" value="you@gmail.com" />
-        <input type="submit" class="submit" value="Chat with Strangers" />
+
+    <form class="signup" action="/" method="post">
+        <div>
+            <input type="text" name="handle" value="you@gmail.com" />
+        </div>
+
+        <div>
+            <input type="submit" class="submit" value="Chat with Strangers" />
+        </div>
+
         <div class="throbber">
             <img src="/assets/throbber.gif" height="36" alt="signing up..." />
         </div>
