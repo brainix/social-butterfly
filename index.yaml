@@ -1,0 +1,7 @@
+indexes:
+
+- kind: Account
+  properties:
+  - name: online
+  - name: partner
+  - name: datetime
