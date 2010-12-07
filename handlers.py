@@ -123,14 +123,14 @@ class Chat(base.ChatRequestHandler):
         _log.info('%s typed message, delivering to %s' %
                   (alice.handle.address, bob.handle.address))
         body = 'Partner: ' + message.body
-        statuses = xmpp.send_message(bob.handle.address, body)
+        status = xmpp.send_message(bob.handle.address, body)
 
-        if statuses[0] == xmpp.NO_ERROR:
+        if status == xmpp.NO_ERROR:
             _log.info('%s typed message, delivered to %s' %
                       (alice.handle.address, bob.handle.address))
-        elif statuses[0] == xmpp.INVALID_JID:
+        elif status == xmpp.INVALID_JID:
             _log.critical('%s typed message, not delivered to %s (invalid JID)' %
                           (alice.handle.address, bob.handle.address))
-        elif statuses[0] == xmpp.OTHER_ERROR:
+        elif status == xmpp.OTHER_ERROR:
             _log.warning('%s typed message, not delivered to %s (other error)' %
                          (alice.handle.address, bob.handle.address))

@@ -36,4 +36,4 @@ class Account(db.Model):
     @staticmethod
     def key_name(handle):
         """Convert an IM handle into an account key."""
-        return 'account_' + handle.split('/')[0].lower()
+        return 'account_' + handle.split('/', 1)[0].lower()

@@ -99,8 +99,9 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
         bobs = bobs.filter('partner =', None)
         bobs = bobs.order('datetime')
         for bob in bobs:
-            if bob != alice and xmpp.get_presence(bob.address):
-                return bob
+            if bob.handle.address != alice.handle.address:
+                if xmpp.get_presence(bob.handle.address):
+                    return bob
         return None
 
     def _link_partners(self, alice):
@@ -112,7 +113,7 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
         return alice, bob
 
     def _unlink_partners(self, alice):
-        """Alice has stopped chatting.  Unlink her from her partner, Bob."""
+        """Alice is not looking to chat.  Unlink her from her partner, Bob."""
         bob = alice.partner
         alice.partner = None
         if bob is not None:
