@@ -62,7 +62,8 @@ class Home(base.WebRequestHandler):
         key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
         if account is None:
-            account = models.Account(key_name=key_name, handle=handle, online=False)
+            account = models.Account(key_name=key_name, handle=handle,
+                                     online=False)
             account.put()
         xmpp.send_invite(handle.address)
 
@@ -74,63 +75,126 @@ class Chat(base.ChatRequestHandler):
     def help_command(self, message=None):
         """Alice has typed /help."""
         alice = self.message_to_account(message)
-        _log.debug('%s typed /help' % alice.handle.address)
-        body = 'Type /start to start chatting.\n\n'
+        _log.debug('%s typed /help' % alice)
+        body = 'Type /online to make yourself available for chat.\n\n'
         body += 'Type /next to chat with someone else.\n\n'
-        body += 'Type /stop to stop chatting.'
+        body += 'Type /offline to make yourself unavailable for chat.'
         message.reply(body)
 
     @decorators.require_account(online=False)
-    def start_command(self, message=None):
-        """Alice has typed /start."""
+    def online_command(self, message=None):
+        """Alice has typed /online."""
         alice = self.message_to_account(message)
-        _log.debug('%s typed /start' % alice.handle.address)
+        _log.debug('%s typed /online' % alice)
         alice.online = True
         alice, bob = self.start_chat(alice)
-        self.chat_status((alice, bob))
+
+        # Notify Alice.
+        body = "You've made yourself available for chat.\n\n"
+        if bob is None:
+            body += 'Looking for a chat partner...'
+            message.reply(body)
+        else:
+            body += 'Now chatting with a partner.  Say hello!'
+            message.reply(body)
+
+        # Notify Bob.
+        if bob is not None:
+            body = 'Now chatting with a partner.  Say hello!'
+            xmpp.send_message(str(bob), body)
 
     @decorators.require_account(online=True)
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
-        _log.debug('%s typed /next' % alice.handle.address)
+        _log.debug('%s typed /next' % alice)
         alice, bob = self.stop_chat(alice)
         alice, carol = self.start_chat(alice)
-        bob, dave = self.start_chat(bob) if bob is not None else (None, None)
-        self.chat_status((alice, carol, bob, dave))
+        if bob is None:
+            dave = None
+        elif bob == carol:
+            dave = alice
+        else:
+            bob, dave = self.start_chat(bob)
+
+        # Notify Alice.
+        body = "You've disconnected from your current chat partner.\n\n"
+        if carol is None:
+            body += 'Looking for a new chat partner...'
+        else:
+            body += 'Now chatting with a new partner.  Say hello!'
+        message.reply(body)
+
+        # Notify Bob.
+        if bob is not None and bob not in (alice,):
+            body = 'Your current chat partner has disconnected.\n\n'
+            if dave is None:
+                body += 'Looking for a new chat partner...'
+            else:
+                body += 'Now chatting with a new partner.  Say hello!'
+            xmpp.send_message(str(bob), body)
+
+        # Notify Carol.
+        if carol is not None and carol not in (alice, bob):
+            body = 'Now chatting with a partner.  Say hello!'
+            xmpp.send_message(str(carol), body)
+
+        # Notify Dave.
+        if dave is not None and dave not in (alice, bob, carol):
+            body = 'Now chatting with a partner.  Say hello!'
+            xmpp.send_message(str(dave), body)
 
     @decorators.require_account(online=True)
-    def stop_command(self, message=None):
-        """Alice has typed /stop."""
+    def offline_command(self, message=None):
+        """Alice has typed /offline."""
         alice = self.message_to_account(message)
-        _log.debug('%s typed /stop' % alice.handle.address)
+        _log.debug('%s typed /offline' % alice)
         alice.online = False
         alice, bob = self.stop_chat(alice)
-        bob, carol = self.start_chat(bob) if bob is not None else (None, None)
-        self.chat_status((alice, bob, carol))
+        if bob is None:
+            carol = None
+        else:
+            bob, carol = self.start_chat(bob)
+
+        # Notify Alice.
+        body = "You've made yourself unavailable for chat."
+        message.reply(body)
+
+        # Notify Bob.
+        if bob is not None and bob not in (alice,):
+            body = 'Your current chat partner has disconnected.\n\n'
+            if carol is None:
+                body += 'Looking for a new chat partner...'
+                xmpp.send_message(str(bob), body)
+            else:
+                body += 'Now chatting with a new partner.  Say hello!'
+                message.reply(body)
+
+        # Notify Carol.
+        if carol is not None and carol not in (alice, bob):
+            body = 'Now chatting with a partner.  Say hello!'
+            xmpp.send_message(str(carol), body)
 
     @decorators.require_account(online=True)
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self.message_to_account(message)
-        _log.debug('%s typed message' % alice.handle.address)
+        _log.debug('%s typed IM' % alice)
         bob = alice.partner
         if bob is None:
-            _log.warning('%s typed message, but has no chat partner' %
-                         alice.handle.address)
+            _log.warning('%s typed IM, but has no chat partner' % alice)
             return
 
-        _log.info('%s typed message, delivering to %s' %
-                  (alice.handle.address, bob.handle.address))
+        _log.info("sending %s's IM to %s" % (alice, bob))
         body = 'Partner: ' + message.body
-        status = xmpp.send_message(bob.handle.address, body)
+        status = xmpp.send_message(str(bob), body)
 
         if status == xmpp.NO_ERROR:
-            _log.info('%s typed message, delivered to %s' %
-                      (alice.handle.address, bob.handle.address))
-        elif status == xmpp.INVALID_JID:
-            _log.critical('%s typed message, not delivered to %s (invalid JID)' %
-                          (alice.handle.address, bob.handle.address))
-        elif status == xmpp.OTHER_ERROR:
-            _log.warning('%s typed message, not delivered to %s (other error)' %
-                         (alice.handle.address, bob.handle.address))
+            _log.info("sent %s's IM to %s" % (alice, bob))
+        else:
+            if status == xmpp.INVALID_JID:
+                body = "couldn't send %s's IM to %s (invalid JID)"
+                _log.critical(body % (alice, bob))
+            elif status == xmpp.OTHER_ERROR:
+                body = "couldn't send %s's IM to %s (other error)"
+                _log.warning(body % (alice, bob))

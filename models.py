@@ -37,3 +37,14 @@ class Account(db.Model):
     def key_name(handle):
         """Convert an IM handle into an account key."""
         return 'account_' + handle.split('/', 1)[0].lower()
+
+    def __str__(self):
+        return self.handle.address
+
+    def __eq__(self, other):
+        """ """
+        return str(self) == str(other)
+
+    def __ne__(self, other):
+        """ """
+        return str(self) != str(other)

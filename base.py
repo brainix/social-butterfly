@@ -99,8 +99,8 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
         bobs = bobs.filter('partner =', None)
         bobs = bobs.order('datetime')
         for bob in bobs:
-            if bob.handle.address != alice.handle.address:
-                if xmpp.get_presence(bob.handle.address):
+            if bob != alice:
+                if xmpp.get_presence(str(bob)):
                     return bob
         return None
 
@@ -140,10 +140,3 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
     def stop_chat(self, alice):
         """ """
         return self._start_or_stop_chat(alice, start=False)
-
-    def chat_status(self, accounts):
-        """ """
-        accounts = [account for account in accounts if account is not None]
-        for account in accounts:
-            body = 'Now chatting.' if account.partner else 'No longer chatting.'
-            xmpp.send_message(account.handle.address, body)
