@@ -65,9 +65,9 @@ class _BaseRequestHandler(object):
             error_code = 500
 
         # Serve the error page.
-        self._serve_error(error_code)
+        self.serve_error(error_code)
 
-    def _serve_error(self, error_code):
+    def serve_error(self, error_code):
         """Houston, we have a problem...  Serve an error page."""
         if not error_code in HTTP_CODE_TO_TITLE:
             error_code = 500
@@ -75,7 +75,8 @@ class _BaseRequestHandler(object):
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
         self.error(error_code)
-        self.response.out.write(template.render(path, locals(), debug=DEBUG))
+        html = template.render(path, locals(), debug=DEBUG)
+        self.response.out.write(html)
 
 
 class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
@@ -92,28 +93,28 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
-    def _find_partner(self, alice):
-        """Alice is looking to chat.  Find her a partner, Bob."""
-        bobs = models.Account.all()
-        bobs = bobs.filter('online =', True)
-        bobs = bobs.filter('partner =', None)
-        bobs = bobs.order('datetime')
-        for bob in bobs:
-            if bob != alice:
-                if xmpp.get_presence(str(bob)):
-                    return bob
+    def _find_partner(self, alice, bob):
+        """Alice is looking to chat.  Find her a partner."""
+        carols = models.Account.all()
+        carols = carols.filter('online =', True)
+        carols = carols.filter('partner =', None)
+        carols = carols.order('datetime')
+        for carol in carols:
+            if carol not in (alice, bob):
+                if xmpp.get_presence(str(carol)):
+                    return carol
         return None
 
-    def _link_partners(self, alice):
-        """Alice is looking to chat.  Find her a partner, Bob, and link them."""
-        bob = self._find_partner(alice)
-        alice.partner = bob
-        if bob is not None:
-            bob.partner = alice
-        return alice, bob
+    def _link_partners(self, alice, bob):
+        """Alice is looking to chat.  Find her a partner, and link them."""
+        carol = self._find_partner(alice, bob)
+        alice.partner = carol
+        if carol is not None:
+            carol.partner = alice
+        return alice, carol
 
     def _unlink_partners(self, alice):
-        """Alice is not looking to chat.  Unlink her from her partner, Bob."""
+        """Alice is not looking to chat.  Unlink her from her partner."""
         bob = alice.partner
         alice.partner = None
         if bob is not None:
@@ -123,19 +124,19 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
                 bob = None
         return alice, bob
 
-    def _start_or_stop_chat(self, alice, start=True):
+    def _start_or_stop_chat(self, alice, bob=None, start=True):
         """ """
         if start:
-            alice, bob = self._link_partners(alice)
+            alice, carol = self._link_partners(alice, bob)
         else:
-            alice, bob = self._unlink_partners(alice)
-        accounts = [account for account in (alice, bob) if account is not None]
+            alice, carol = self._unlink_partners(alice)
+        accounts = [account for account in (alice, carol) if account is not None]
         db.put(accounts)
-        return alice, bob
+        return alice, carol
 
-    def start_chat(self, alice):
+    def start_chat(self, alice, bob):
         """ """
-        return self._start_or_stop_chat(alice, start=True)
+        return self._start_or_stop_chat(alice, bob=bob, start=True)
 
     def stop_chat(self, alice):
         """ """

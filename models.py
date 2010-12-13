@@ -39,6 +39,7 @@ class Account(db.Model):
         return 'account_' + handle.split('/', 1)[0].lower()
 
     def __str__(self):
+        """ """
         return self.handle.address
 
     def __eq__(self, other):

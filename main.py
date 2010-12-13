@@ -43,3 +43,7 @@ def main():
     )
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)
+
+
+if __name__ == '__main__':
+    main()
