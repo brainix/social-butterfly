@@ -114,6 +114,8 @@ b {
     border: 1px solid #959EA1;
     color: #B62F2F;
     font-size: 16px;
+    line-height: 175%;
+    margin-top: 0.75em;
     width: 100%;
 }
 

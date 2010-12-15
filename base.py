@@ -97,12 +97,14 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
         """Alice is looking to chat.  Find her a partner."""
         carols = models.Account.all()
         carols = carols.filter('online =', True)
+        num_carols = carols.count(3)
         carols = carols.filter('partner =', None)
         carols = carols.order('datetime')
         for carol in carols:
-            if carol not in (alice, bob):
-                if xmpp.get_presence(str(carol)):
-                    return carol
+            if carol != alice:
+                if carol != bob or num_carols == 2:
+                    if xmpp.get_presence(str(carol)):
+                        return carol
         return None
 
     def _link_partners(self, alice, bob):
