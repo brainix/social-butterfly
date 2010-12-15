@@ -3,20 +3,20 @@
  |                                                                            |
  |  Copyright (c) 2010, Code A La Mode, original authors.                     |
  |                                                                            |
- |      This file is part of social-butterfly.                                |
+ |      This file is part of Social Butterfly.                                |
  |                                                                            |
- |      social-butterfly is free software; you can redistribute it and/or     |
+ |      Social Butterfly is free software; you can redistribute it and/or     |
  |      modify it under the terms of the GNU General Public License as        |
  |      published by the Free Software Foundation, either version 3 of the    |
  |      License, or (at your option) any later version.                       |
  |                                                                            |
- |      social-butterfly is distributed in the hope that it will be useful,   |
+ |      Social Butterfly is distributed in the hope that it will be useful,   |
  |      but WITHOUT ANY WARRANTY; without even the implied warranty of        |
  |      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         |
  |      GNU General Public License for more details.                          |
  |                                                                            |
  |      You should have received a copy of the GNU General Public License     |
- |      along with social-butterfly.  If not, see:                            |
+ |      along with Social Butterfly.  If not, see:                            |
  |          <http://www.gnu.org/licenses/>.                                   |
 \*----------------------------------------------------------------------------*/
 
@@ -28,11 +28,11 @@
 $(function() {
     // Hooray, a page has been loaded!
 
-    var handle = $('#content .signup [name="handle"]');
+    var handle = $('#content .sign_up .register [name="handle"]');
     handle.focus(focusHandle);
     handle.blur(blurHandle);
 
-    $('#content .signup').submit(signup);
+    $('#content .sign_up .register').submit(signUp);
 
     var defaultHandle = handle.attr('defaultValue');
     handle.val(defaultHandle);
@@ -44,7 +44,7 @@ $(function() {
 \*----------------------------------------------------------------------------*/
 
 function focusHandle() {
-    var handle = $('#content .signup [name="handle"]');
+    var handle = $('#content .sign_up .register [name="handle"]');
     var defaultHandle = handle.attr('defaultValue');
     if (handle.val() == defaultHandle) {
         handle.val('');
@@ -57,7 +57,7 @@ function focusHandle() {
 \*----------------------------------------------------------------------------*/
 
 function blurHandle() {
-    var handle = $('#content .signup [name="handle"]');
+    var handle = $('#content .sign_up .register [name="handle"]');
     if (handle.val() == '') {
         var defaultHandle = handle.attr('defaultValue');
         handle.val(defaultHandle);
@@ -66,38 +66,39 @@ function blurHandle() {
 
 
 /*----------------------------------------------------------------------------*\
- |                                  signup()                                  |
+ |                                  signUp()                                  |
 \*----------------------------------------------------------------------------*/
 
-var signupSubmitted = false;
+var signUpSubmitted = false;
 
-function signup() {
-    if (signupSubmitted) {
-        var message = "You've already submitted a request to chat.\n";
+function signUp() {
+    if (signUpSubmitted) {
+        var message = "You've already submitted a request to sign up.\n";
         message += "Please wait for this request to complete.";
         alert(message);
     } else {
-        signupSubmitted = true;
-        var handle = $('#content .signup [name="handle"]');
-        var throbber = $('#content .signup .throbber');
-        var button = $('#content .signup :submit');
-
-        handle.addClass('handle_with_throbber_shown');
-        throbber.show();
-        button.hide();
+        signUpSubmitted = true;
+        var handle = $('#content .sign_up .register [name="handle"]').val();
 
         $.ajax({
             type: 'POST',
             url: '/',
-            data: {handle: handle.val()},
+            data: {handle: handle},
             cache: false,
             success: function(data, textStatus, xmlHttpRequest) {
+                var signUpForm = $('#content .sign_up');
+                signUpForm.fadeOut('slow', function() {
+                    var signedUpText = $('#content .signed_up');
+                    signedUpText.fadeIn('slow');
+                });
+            },
+            error: function(xmlHttpRequest, textStatus, errorThrown) {
+                var message = 'Oops, something has gone wrong.\n';
+                message += 'Please try to sign up again in a bit.';
+                alert(message);
             },
             complete: function(xmlHttpRequest, textStatus) {
-                button.show();
-                throbber.hide();
-                handle.removeClass('handle_with_throbber_shown');
-                signupSubmitted = false;
+                signUpSubmitted = false;
             }
         });
     }

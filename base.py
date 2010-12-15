@@ -3,20 +3,20 @@
 #                                                                              #
 #   Copyright (c) 2010, Code A La Mode, original authors.                      #
 #                                                                              #
-#       This file is part of social-butterfly.                                 #
+#       This file is part of Social Butterfly.                                 #
 #                                                                              #
-#       social-butterfly is free software; you can redistribute it and/or      #
+#       Social Butterfly is free software; you can redistribute it and/or      #
 #       modify it under the terms of the GNU General Public License as         #
 #       published by the Free Software Foundation, either version 3 of the     #
 #       License, or (at your option) any later version.                        #
 #                                                                              #
-#       social-butterfly is distributed in the hope that it will be useful,    #
+#       Social Butterfly is distributed in the hope that it will be useful,    #
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
 #       GNU General Public License for more details.                           #
 #                                                                              #
 #       You should have received a copy of the GNU General Public License      #
-#       along with social-butterfly.  If not, see:                             #
+#       along with Social Butterfly.  If not, see:                             #
 #           <http://www.gnu.org/licenses/>.                                    #
 #------------------------------------------------------------------------------#
 """Google App Engine request handlers (abstract base classes)."""
@@ -48,7 +48,7 @@ class _BaseRequestHandler(object):
 
         This method overrides the webapp.RequestHandler class's
         handle_exception method.  This method gets called whenever there's an
-        uncaught exception anywhere in the social-butterfly code.
+        uncaught exception anywhere in the Social Butterfly code.
         """
         # Get and log the traceback.
         error_message = traceback.format_exc()
