@@ -59,6 +59,11 @@ class Home(base.WebRequestHandler):
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
+        handle = handle.strip()
+        handle = handle.lower()
+        if not handle.endswith('@gmail.com'):
+            handle += '@gmail.com'
+
         handle = db.IM('xmpp', handle)
         key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
@@ -90,18 +95,10 @@ class Chat(base.ChatRequestHandler):
         alice.online = True
         alice, bob = self.start_chat(alice, None)
 
-        # Notify Alice.
-        body = "You've made yourself available for chat.\n\n"
-        if bob is None:
-            body += 'Looking for a chat partner...'
-        else:
-            body += 'Now chatting with a partner.  Say hello!'
-        message.reply(body)
-
-        # Notify Bob.
+        # Notify Alice and Bob.
+        self._notify_started(alice)
         if bob is not None:
-            body = 'Now chatting with a partner.  Say hello!'
-            xmpp.send_message(str(bob), body)
+            self._notify_chatting(bob)
 
     @decorators.require_account(online=True)
     def next_command(self, message=None):
@@ -111,38 +108,20 @@ class Chat(base.ChatRequestHandler):
         alice, bob = self.stop_chat(alice)
         alice, carol = self.start_chat(alice, bob)
         if bob is None:
-            dave = None
+            bob, dave = None, None
         elif bob == carol:
-            dave = alice
+            bob, dave = carol, alice
         else:
             bob, dave = self.start_chat(bob, alice)
 
-        # Notify Alice.
-        body = "You've disconnected from your current chat partner.\n\n"
-        if carol is None:
-            body += 'Looking for a new chat partner...'
-        else:
-            body += 'Now chatting with a new partner.  Say hello!'
-        message.reply(body)
-
-        # Notify Bob.
+        # Notify Alice, Bob, Carol, and Dave.
+        self._notify_nexted(alice)
         if bob is not None and bob not in (alice,):
-            body = 'Your current chat partner has disconnected.\n\n'
-            if dave is None:
-                body += 'Looking for a new chat partner...'
-            else:
-                body += 'Now chatting with a new partner.  Say hello!'
-            xmpp.send_message(str(bob), body)
-
-        # Notify Carol.
+            self._notify_been_nexted(bob)
         if carol is not None and carol not in (alice, bob):
-            body = 'Now chatting with a partner.  Say hello!'
-            xmpp.send_message(str(carol), body)
-
-        # Notify Dave.
+            self._notify_chatting(carol)
         if dave is not None and dave not in (alice, bob, carol):
-            body = 'Now chatting with a partner.  Say hello!'
-            xmpp.send_message(str(dave), body)
+            self._notify_chatting(dave)
 
     @decorators.require_account(online=True)
     def stop_command(self, message=None):
@@ -156,23 +135,12 @@ class Chat(base.ChatRequestHandler):
         else:
             bob, carol = self.start_chat(bob, alice)
 
-        # Notify Alice.
-        body = "You've made yourself unavailable for chat."
-        message.reply(body)
-
-        # Notify Bob.
+        # Notify Alice, Bob, and Carol.
+        self._notify_stopped(alice)
         if bob is not None and bob not in (alice,):
-            body = 'Your current chat partner has disconnected.\n\n'
-            if carol is None:
-                body += 'Looking for a new chat partner...'
-            else:
-                body += 'Now chatting with a new partner.  Say hello!'
-            xmpp.send_message(str(bob), body)
-
-        # Notify Carol.
+            self._notify_been_nexted(bob)
         if carol is not None and carol not in (alice, bob):
-            body = 'Now chatting with a partner.  Say hello!'
-            xmpp.send_message(str(carol), body)
+            self._notify_chatting(carol)
 
     @decorators.require_account(online=True)
     def text_message(self, message=None):
@@ -180,18 +148,14 @@ class Chat(base.ChatRequestHandler):
         alice = self.message_to_account(message)
         _log.debug('%s typed IM' % alice)
         bob = alice.partner
+        deliverable = self._is_deliverable(alice)
 
-        if bob is None:
-            _log.warning('%s typed IM, but has no chat partner' % alice)
-        elif bob.partner != alice:
-            body = "%s typed IM, but %s's partner is %s, " % (alice, alice, bob)
-            body += "and %s's partner is %s" % (bob, bob.partner)
-            _log.warning(body)
-        else:
+        if deliverable:
             _log.info("sending %s's IM to %s" % (alice, bob))
             body = 'Partner: ' + message.body
             status = xmpp.send_message(str(bob), body)
 
+            assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID, xmpp.OTHER_ERROR)
             if status == xmpp.NO_ERROR:
                 _log.info("sent %s's IM to %s" % (alice, bob))
             else:
@@ -201,3 +165,71 @@ class Chat(base.ChatRequestHandler):
                 elif status == xmpp.OTHER_ERROR:
                     body = "couldn't send %s's IM to %s (other error)"
                     _log.warning(body % (alice, bob))
+                deliverable = False
+
+        if not deliverable:
+            self._notify_undeliverable(alice)
+
+    def _is_deliverable(self, alice):
+        """ """
+        bob = alice.partner
+        if bob is None:
+            _log.warning('%s typed IM, but has no chat partner' % alice)
+            deliverable = False
+        elif bob.partner != alice:
+            body = "%s typed IM, but %s's partner is %s, " % (alice, alice, bob)
+            body += "and %s's partner is %s" % (bob, bob.partner)
+            _log.warning(body)
+            deliverable = False
+        elif not xmpp.get_presence(str(bob)):
+            body = "%s typed IM, but %s's partner is %s, " % (alice, alice, bob)
+            body += 'and %s is offline' % bob
+            _log.warning(body)
+            deliverable = False
+        else:
+            deliverable = True
+        return deliverable
+
+    def _notify_started(self, alice):
+        """Notify Alice that she's made herself available for chat."""
+        body = "You've made yourself available for chat.\n\n"
+        if alice.partner is None:
+            body += 'Looking for a chat partner...'
+        else:
+            body += 'Now chatting with a partner.  Say hello!'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_chatting(self, alice):
+        """Notify Alice that she's now chatting with a partner."""
+        body = 'Now chatting with a partner.  Say hello!'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_nexted(self, alice):
+        """Notify Alice that she's /nexted her partner."""
+        body = "You've disconnected from your current chat partner.\n\n"
+        if alice.partner is None:
+            body += 'Looking for a new chat partner...'
+        else:
+            body += 'Now chatting with a new partner.  Say hello!'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_been_nexted(self, alice):
+        """Notify Alice that her partner has /nexted her."""
+        body = 'Your current chat partner has disconnected.\n\n'
+        if alice.partner is None:
+            body += 'Looking for a new chat partner...'
+        else:
+            body += 'Now chatting with a new partner.  Say hello!'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_stopped(self, alice):
+        """Notify Alice that she's made herself unavailable for chat."""
+        body = "You've made yourself unavailable for chat."
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_undeliverable(self, alice):
+        """Notify Alice that we couldn't deliver her message to her partner."""
+        body = "Couldn't deliver your message to your chat partner.\n\n"
+        body += 'Please try to send your message again, '
+        body += 'or type /next to chat with someone else.'
+        status = xmpp.send_message(str(alice), body)
