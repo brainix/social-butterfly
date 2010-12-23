@@ -1,27 +1,27 @@
 #!/usr/bin/python
 
-#------------------------------------------------------------------------------#
-#   shell.py                                                                   #
-#                                                                              #
-#   Copyright (c) 2010, Code A La Mode, original authors.                      #
-#                                                                              #
-#       This file is part of Social Butterfly.                                 #
-#                                                                              #
-#       Social Butterfly is free software; you can redistribute it and/or      #
-#       modify it under the terms of the GNU General Public License as         #
-#       published by the Free Software Foundation, either version 3 of the     #
-#       License, or (at your option) any later version.                        #
-#                                                                              #
-#       Social Butterfly is distributed in the hope that it will be useful,    #
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
-#       GNU General Public License for more details.                           #
-#                                                                              #
-#       You should have received a copy of the GNU General Public License      #
-#       along with Social Butterfly.  If not, see:                             #
-#           <http://www.gnu.org/licenses/>.                                    #
-#------------------------------------------------------------------------------#
-"""Launch an interactive Python shell w/ access to Social Butterfly's datastore.
+#-----------------------------------------------------------------------------#
+#   shell.py                                                                  #
+#                                                                             #
+#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#                                                                             #
+#       This file is part of Social Butterfly.                                #
+#                                                                             #
+#       Social Butterfly is free software; you can redistribute it and/or     #
+#       modify it under the terms of the GNU General Public License as        #
+#       published by the Free Software Foundation, either version 3 of the    #
+#       License, or (at your option) any later version.                       #
+#                                                                             #
+#       Social Butterfly is distributed in the hope that it will be useful,   #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#       GNU General Public License for more details.                          #
+#                                                                             #
+#       You should have received a copy of the GNU General Public License     #
+#       along with Social Butterfly.  If not, see:                            #
+#           <http://www.gnu.org/licenses/>.                                   #
+#-----------------------------------------------------------------------------#
+"""Run an interactive Python shell w/ access to Social Butterfly's datastore.
 
 Some of this code was written by Nick Johnson and swiftly yoinked by Raj Shah.
 See:
@@ -44,13 +44,15 @@ def main():
 
     # Set the environment variables required to authenticate in order to do
     # anything "interesting" with/to the datastore:
-    os.environ['AUTH_DOMAIN'], os.environ['USER_EMAIL'] = auth_domain, email
+    os.environ['AUTH_DOMAIN'] = auth_domain
+    os.environ['USER_EMAIL'] = email
 
     # Get the necessary local Google App Engine modules:
     remote_api_stub = _import_modules(parser, base_dir)
 
     # Connect to the remote datastore:
-    remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', _auth, host)
+    remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', _auth,
+                                             host)
 
     # Finally, launch the interactive console:
     code.interact('%s shell' % app_id, None, locals())
@@ -134,7 +136,9 @@ def _auth():
     This function gets called the first time the user attempts some datastore
     operation that requires authentication.
     """
-    return raw_input('username: '), getpass.getpass('password: ')
+    username = raw_input('username: ')
+    password = getpass.getpass('password: ')
+    return username, password
 
 
 if __name__ == '__main__':

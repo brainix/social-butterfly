@@ -1,24 +1,24 @@
-#------------------------------------------------------------------------------#
-#   config.py                                                                  #
-#                                                                              #
-#   Copyright (c) 2010, Code A La Mode, original authors.                      #
-#                                                                              #
-#       This file is part of Social Butterfly.                                 #
-#                                                                              #
-#       Social Butterfly is free software; you can redistribute it and/or      #
-#       modify it under the terms of the GNU General Public License as         #
-#       published by the Free Software Foundation, either version 3 of the     #
-#       License, or (at your option) any later version.                        #
-#                                                                              #
-#       Social Butterfly is distributed in the hope that it will be useful,    #
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
-#       GNU General Public License for more details.                           #
-#                                                                              #
-#       You should have received a copy of the GNU General Public License      #
-#       along with Social Butterfly.  If not, see:                             #
-#           <http://www.gnu.org/licenses/>.                                    #
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
+#   config.py                                                                 #
+#                                                                             #
+#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#                                                                             #
+#       This file is part of Social Butterfly.                                #
+#                                                                             #
+#       Social Butterfly is free software; you can redistribute it and/or     #
+#       modify it under the terms of the GNU General Public License as        #
+#       published by the Free Software Foundation, either version 3 of the    #
+#       License, or (at your option) any later version.                       #
+#                                                                             #
+#       Social Butterfly is distributed in the hope that it will be useful,   #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#       GNU General Public License for more details.                          #
+#                                                                             #
+#       You should have received a copy of the GNU General Public License     #
+#       along with Social Butterfly.  If not, see:                            #
+#           <http://www.gnu.org/licenses/>.                                   #
+#-----------------------------------------------------------------------------#
 
 
 import logging
@@ -28,11 +28,6 @@ import os
 _log = logging.getLogger(__name__)
 
 
-# Programmatically determine whether to turn on debug mode.  If we're running
-# on the SDK, then turn on debug mode.  Otherwise we're running on the cloud,
-# so turn off debug mode.
-_SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE', '')
-DEBUG = _SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
 DEBUG = True
 _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 

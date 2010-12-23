@@ -1,24 +1,24 @@
-#------------------------------------------------------------------------------#
-#   handlers.py                                                                #
-#                                                                              #
-#   Copyright (c) 2010, Code A La Mode, original authors.                      #
-#                                                                              #
-#       This file is part of Social Butterfly.                                 #
-#                                                                              #
-#       Social Butterfly is free software; you can redistribute it and/or      #
-#       modify it under the terms of the GNU General Public License as         #
-#       published by the Free Software Foundation, either version 3 of the     #
-#       License, or (at your option) any later version.                        #
-#                                                                              #
-#       Social Butterfly is distributed in the hope that it will be useful,    #
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
-#       GNU General Public License for more details.                           #
-#                                                                              #
-#       You should have received a copy of the GNU General Public License      #
-#       along with Social Butterfly.  If not, see:                             #
-#           <http://www.gnu.org/licenses/>.                                    #
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
+#   handlers.py                                                               #
+#                                                                             #
+#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#                                                                             #
+#       This file is part of Social Butterfly.                                #
+#                                                                             #
+#       Social Butterfly is free software; you can redistribute it and/or     #
+#       modify it under the terms of the GNU General Public License as        #
+#       published by the Free Software Foundation, either version 3 of the    #
+#       License, or (at your option) any later version.                       #
+#                                                                             #
+#       Social Butterfly is distributed in the hope that it will be useful,   #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#       GNU General Public License for more details.                          #
+#                                                                             #
+#       You should have received a copy of the GNU General Public License     #
+#       along with Social Butterfly.  If not, see:                            #
+#           <http://www.gnu.org/licenses/>.                                   #
+#-----------------------------------------------------------------------------#
 """Google App Engine request handlers (concrete implementation classes)."""
 
 
@@ -109,6 +109,10 @@ class Chat(base.ChatRequestHandler):
         alice, carol = self.start_chat(alice, bob)
         if bob is None:
             bob, dave = None, None
+        elif bob == alice:
+            # This should never be the case, because this would mean that Alice
+            # was previously chatting with herself.
+            bob, dave = alice, carol
         elif bob == carol:
             bob, dave = carol, alice
         else:
@@ -155,7 +159,9 @@ class Chat(base.ChatRequestHandler):
             body = 'Partner: ' + message.body
             status = xmpp.send_message(str(bob), body)
 
-            assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID, xmpp.OTHER_ERROR)
+            assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
+                              xmpp.OTHER_ERROR)
+
             if status == xmpp.NO_ERROR:
                 _log.info("sent %s's IM to %s" % (alice, bob))
             else:
@@ -171,22 +177,25 @@ class Chat(base.ChatRequestHandler):
             self._notify_undeliverable(alice)
 
     def _is_deliverable(self, alice):
-        """ """
+        """Alice has typed an IM.  Determine if it can be delivered to Bob."""
         bob = alice.partner
         if bob is None:
+            # Oops.  Alice doesn't have a chat partner.
             _log.warning('%s typed IM, but has no chat partner' % alice)
             deliverable = False
         elif bob.partner != alice:
-            body = "%s typed IM, but %s's partner is %s, " % (alice, alice, bob)
-            body += "and %s's partner is %s" % (bob, bob.partner)
-            _log.warning(body)
-            deliverable = False
-        elif not xmpp.get_presence(str(bob)):
-            body = "%s typed IM, but %s's partner is %s, " % (alice, alice, bob)
-            body += 'and %s is offline' % bob
+            # Oops.  Alice thinks that her chat partner is Bob, but Bob doesn't
+            # think that his chat partner is Alice.  This can happen because we
+            # don't link/unlink chat partners transactionally, so we have to
+            # check for this case every time anyone types a message.
+            body = "%s typed IM, but %s's partner is %s and %s's partner is %s"
+            body %= (alice, alice, bob, bob, bob.partner)
             _log.warning(body)
             deliverable = False
         else:
+            # Nothing else can go wrong.  Alice's message must be deliverable
+            # to Bob.
+            _log.debug('%s typed IM, OK to deliver to %s' % (alice, bob))
             deliverable = True
         return deliverable
 

@@ -1,24 +1,24 @@
-#------------------------------------------------------------------------------#
-#   decorators.py                                                              #
-#                                                                              #
-#   Copyright (c) 2010, Code A La Mode, original authors.                      #
-#                                                                              #
-#       This file is part of Social Butterfly.                                 #
-#                                                                              #
-#       Social Butterfly is free software; you can redistribute it and/or      #
-#       modify it under the terms of the GNU General Public License as         #
-#       published by the Free Software Foundation, either version 3 of the     #
-#       License, or (at your option) any later version.                        #
-#                                                                              #
-#       Social Butterfly is distributed in the hope that it will be useful,    #
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
-#       GNU General Public License for more details.                           #
-#                                                                              #
-#       You should have received a copy of the GNU General Public License      #
-#       along with Social Butterfly.  If not, see:                             #
-#           <http://www.gnu.org/licenses/>.                                    #
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
+#   decorators.py                                                             #
+#                                                                             #
+#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#                                                                             #
+#       This file is part of Social Butterfly.                                #
+#                                                                             #
+#       Social Butterfly is free software; you can redistribute it and/or     #
+#       modify it under the terms of the GNU General Public License as        #
+#       published by the Free Software Foundation, either version 3 of the    #
+#       License, or (at your option) any later version.                       #
+#                                                                             #
+#       Social Butterfly is distributed in the hope that it will be useful,   #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#       GNU General Public License for more details.                          #
+#                                                                             #
+#       You should have received a copy of the GNU General Public License     #
+#       along with Social Butterfly.  If not, see:                            #
+#           <http://www.gnu.org/licenses/>.                                   #
+#-----------------------------------------------------------------------------#
 """Decorators to alter the behavior of request handler methods."""
 
 
@@ -45,13 +45,14 @@ def require_account(online=None):
 
             alice = self.message_to_account(message)
             log = 'decorator requirements failed; '
+            sender = message.sender
             if alice is None:
-                _log.warning(log + "user %s hasn't registered" % message.sender)
+                _log.warning(log + "user %s hasn't registered" % sender)
             elif online is not None and alice.online != online:
                 if not online:
-                    _log.warning(log + "user %s isn't offline" % message.sender)
+                    _log.warning(log + "user %s isn't offline" % sender)
                 else:
-                    _log.warning(log + "user %s isn't online" % message.sender)
+                    _log.warning(log + "user %s isn't online" % sender)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)

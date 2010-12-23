@@ -1,24 +1,24 @@
-#------------------------------------------------------------------------------#
-#   base.py                                                                    #
-#                                                                              #
-#   Copyright (c) 2010, Code A La Mode, original authors.                      #
-#                                                                              #
-#       This file is part of Social Butterfly.                                 #
-#                                                                              #
-#       Social Butterfly is free software; you can redistribute it and/or      #
-#       modify it under the terms of the GNU General Public License as         #
-#       published by the Free Software Foundation, either version 3 of the     #
-#       License, or (at your option) any later version.                        #
-#                                                                              #
-#       Social Butterfly is distributed in the hope that it will be useful,    #
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
-#       GNU General Public License for more details.                           #
-#                                                                              #
-#       You should have received a copy of the GNU General Public License      #
-#       along with Social Butterfly.  If not, see:                             #
-#           <http://www.gnu.org/licenses/>.                                    #
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
+#   base.py                                                                   #
+#                                                                             #
+#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#                                                                             #
+#       This file is part of Social Butterfly.                                #
+#                                                                             #
+#       Social Butterfly is free software; you can redistribute it and/or     #
+#       modify it under the terms of the GNU General Public License as        #
+#       published by the Free Software Foundation, either version 3 of the    #
+#       License, or (at your option) any later version.                       #
+#                                                                             #
+#       Social Butterfly is distributed in the hope that it will be useful,   #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#       GNU General Public License for more details.                          #
+#                                                                             #
+#       You should have received a copy of the GNU General Public License     #
+#       along with Social Butterfly.  If not, see:                            #
+#           <http://www.gnu.org/licenses/>.                                   #
+#-----------------------------------------------------------------------------#
 """Google App Engine request handlers (abstract base classes)."""
 
 
@@ -132,7 +132,8 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
             alice, carol = self._link_partners(alice, bob)
         else:
             alice, carol = self._unlink_partners(alice)
-        accounts = [account for account in (alice, carol) if account is not None]
+        accounts = [account for account in (alice, carol)
+                    if account is not None]
         db.put(accounts)
         return alice, carol
 
