@@ -44,8 +44,8 @@ class Account(db.Model):
 
     def __eq__(self, other):
         """ """
-        return self.handle.address == other.handle.address
+        return str(self) == str(other)
 
     def __ne__(self, other):
         """ """
-        return self.handle.address != other.handle.address
+        return str(self) != str(other)

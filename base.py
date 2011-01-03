@@ -103,7 +103,7 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
         carols = carols.order('datetime')
         for carol in carols:
             if carol != alice:
-                if carol != bob or num_carols == 2:
+                if carol != bob or num_carols == 1:
                     if xmpp.get_presence(str(carol)):
                         return carol
         return None

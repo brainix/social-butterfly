@@ -73,13 +73,12 @@ class Home(base.WebRequestHandler):
         """ """
         handle = handle.strip()
         handle = handle.lower()
+
         valid_gmail_domains = ['@' + domain for domain in VALID_GMAIL_DOMAINS]
         valid_gmail_domains = tuple(valid_gmail_domains)
         if not handle.endswith(valid_gmail_domains):
             handle += valid_gmail_domains[0]
-        local, domain = handle.rsplit('@', 1)
-        local = local.replace('.', '')
-        handle = local + '@' + domain
+
         return handle
 
     def _validate(self, handle):
@@ -94,7 +93,7 @@ class Home(base.WebRequestHandler):
             return False
 
         if not MIN_GMAIL_ADDR_LEN <= len(local) <= MAX_GMAIL_ADDR_LEN:
-            body += "handle's local part doesn't meet length reqs"
+            body += "handle's local part doesn't meet length requirements"
             _log.warning(body)
             return False
 
