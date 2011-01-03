@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
  |  script.js                                                                |
  |                                                                           |
- |  Copyright (c) 2010, Code A La Mode, original authors.                    |
+ |  Copyright (c) 2010-2011, Code A La Mode, original authors.               |
  |                                                                           |
  |      This file is part of Social Butterfly.                               |
  |                                                                           |
@@ -93,8 +93,17 @@ function signUp() {
                 });
             },
             error: function(xmlHttpRequest, textStatus, errorThrown) {
-                var message = 'Oops, something has gone wrong.\n';
-                message += 'Please try to sign up again in a bit.';
+                var message = '';
+                switch (xmlHttpRequest.status) {
+                    case 400:
+                        message = "Oops, you've entered an invalid Google ";
+                        message += 'Talk address.\n\nPlease correct your ';
+                        message += 'Google Talk address and sign up again.';
+                        break;
+                    default:
+                        message = 'Oops, something has gone wrong.\n\nPlease ';
+                        message += 'try to sign up again.';
+                }
                 alert(message);
             },
             complete: function(xmlHttpRequest, textStatus) {

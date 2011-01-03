@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------#
 #   handlers.py                                                               #
 #                                                                             #
-#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#   Copyright (c) 2010-2011, Code A La Mode, original authors.                #
 #                                                                             #
 #       This file is part of Social Butterfly.                                #
 #                                                                             #
@@ -29,7 +29,8 @@ from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES
+from config import DEBUG, TEMPLATES, MIN_GMAIL_ADDR_LEN, MAX_GMAIL_ADDR_LEN
+from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
 import base
 import decorators
 import models
@@ -50,28 +51,80 @@ class Home(base.WebRequestHandler):
     """Request handler to serve the homepage."""
 
     def get(self):
-        """Serve the about us page."""
-        path, debug = os.path.join(TEMPLATES, 'home.html'), DEBUG
+        """Serve the homepage."""
+        path = os.path.join(TEMPLATES, 'home.html')
+        debug = DEBUG
         title = 'chat with strangers'
-        html = template.render(path, locals(), debug=DEBUG)
+        html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
+        _log.info('%s signing up' % handle)
+        handle = self._sanitize(handle)
+        if not self._validate(handle):
+            self.serve_error(400)
+        else:
+            self._create_and_invite(handle)
+            _log.info('%s signed up' % handle)
+
+    def _sanitize(self, handle):
+        """ """
         handle = handle.strip()
         handle = handle.lower()
-        if not handle.endswith('@gmail.com'):
-            handle += '@gmail.com'
+        valid_gmail_domains = ['@' + domain for domain in VALID_GMAIL_DOMAINS]
+        valid_gmail_domains = tuple(valid_gmail_domains)
+        if not handle.endswith(valid_gmail_domains):
+            handle += valid_gmail_domains[0]
+        local, domain = handle.rsplit('@', 1)
+        local = local.replace('.', '')
+        handle = local + '@' + domain
+        return handle
 
+    def _validate(self, handle):
+        """ """
+        body = "%s couldn't sign up: " % handle
+
+        try:
+            local, domain = handle.split('@')
+        except ValueError:
+            body += "handle doesn't have exactly one at sign"
+            _log.warning(body)
+            return False
+
+        if not MIN_GMAIL_ADDR_LEN <= len(local) <= MAX_GMAIL_ADDR_LEN:
+            body += "handle's local part doesn't meet length reqs"
+            _log.warning(body)
+            return False
+
+        for c in local:
+            if not c.isalnum() and c not in VALID_GMAIL_CHARS:
+                body += "handle's local part has invalid char %s" % c
+                _log.warning(body)
+                return False
+
+        if domain not in VALID_GMAIL_DOMAINS:
+            body += "handle ends with invalid domain %s" % domain
+            _log.warning(body)
+            return False
+
+        return True
+
+    def _create_and_invite(self, handle):
+        """ """
         handle = db.IM('xmpp', handle)
         key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
-        if account is None:
+        if account is not None:
+            _log.info('%s account not created: already exists' % handle)
+        else:
             account = models.Account(key_name=key_name, handle=handle,
                                      online=False)
             account.put()
+            _log.info('%s account created' % handle)
         xmpp.send_invite(str(account))
+        _log.info('%s invited' % handle)
 
 
 class Chat(base.ChatRequestHandler):

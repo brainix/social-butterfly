@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------#
 #   base.py                                                                   #
 #                                                                             #
-#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#   Copyright (c) 2010-2011, Code A La Mode, original authors.                #
 #                                                                             #
 #       This file is part of Social Butterfly.                                #
 #                                                                             #
@@ -71,7 +71,8 @@ class _BaseRequestHandler(object):
         """Houston, we have a problem...  Serve an error page."""
         if not error_code in HTTP_CODE_TO_TITLE:
             error_code = 500
-        path, debug = os.path.join(TEMPLATES, 'error.html'), DEBUG
+        path = os.path.join(TEMPLATES, 'error.html')
+        debug = DEBUG
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
         self.error(error_code)

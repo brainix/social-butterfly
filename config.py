@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------#
 #   config.py                                                                 #
 #                                                                             #
-#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#   Copyright (c) 2010-2011, Code A La Mode, original authors.                #
 #                                                                             #
 #       This file is part of Social Butterfly.                                #
 #                                                                             #
@@ -34,6 +34,12 @@ _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 
 _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
+
+
+MIN_GMAIL_ADDR_LEN = 6
+MAX_GMAIL_ADDR_LEN = 64
+VALID_GMAIL_CHARS = ('.',)
+VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com')
 
 
 HTTP_CODE_TO_TITLE = {

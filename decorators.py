@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------#
 #   decorators.py                                                             #
 #                                                                             #
-#   Copyright (c) 2010, Code A La Mode, original authors.                     #
+#   Copyright (c) 2010-2011, Code A La Mode, original authors.                #
 #                                                                             #
 #       This file is part of Social Butterfly.                                #
 #                                                                             #
