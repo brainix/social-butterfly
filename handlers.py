@@ -62,14 +62,15 @@ class Home(base.WebRequestHandler):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
         _log.info('%s signing up' % handle)
-        handle = self._sanitize(handle)
-        if not self._validate(handle):
+        handle = self._sanitize_handle(handle)
+        if not self._validate_handle(handle):
             self.serve_error(400)
         else:
-            self._create_and_invite(handle)
+            account = self._create_account(handle)
+            xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
 
-    def _sanitize(self, handle):
+    def _sanitize_handle(self, handle):
         """ """
         handle = handle.strip()
         handle = handle.lower()
@@ -81,7 +82,7 @@ class Home(base.WebRequestHandler):
 
         return handle
 
-    def _validate(self, handle):
+    def _validate_handle(self, handle):
         """ """
         body = "%s couldn't sign up: " % handle
 
@@ -110,7 +111,7 @@ class Home(base.WebRequestHandler):
 
         return True
 
-    def _create_and_invite(self, handle):
+    def _create_account(self, handle):
         """ """
         handle = db.IM('xmpp', handle)
         key_name = models.Account.key_name(handle.address)
@@ -122,14 +123,13 @@ class Home(base.WebRequestHandler):
                                      online=False)
             account.put()
             _log.info('%s account created' % handle)
-        xmpp.send_invite(str(account))
-        _log.info('%s invited' % handle)
+        return account
 
 
 class Chat(base.ChatRequestHandler):
     """Request handler to respond to XMPP messages."""
 
-    @decorators.require_account()
+    @decorators.require_account
     def help_command(self, message=None):
         """Alice has typed /help."""
         alice = self.message_to_account(message)
@@ -139,94 +139,110 @@ class Chat(base.ChatRequestHandler):
         body += 'Type /stop to make yourself unavailable for chat.'
         message.reply(body)
 
-    @decorators.require_account(online=False)
+    @decorators.require_account
     def start_command(self, message=None):
         """Alice has typed /start."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /start' % alice)
-        alice.online = True
-        alice, bob = self.start_chat(alice, None)
+        if alice.online:
+            self._notify_already_started(alice)
+        else:
+            alice.online = True
+            alice, bob = self.start_chat(alice, None)
 
-        # Notify Alice and Bob.
-        self._notify_started(alice)
-        if bob is not None:
-            self._notify_chatting(bob)
+            # Notify Alice and Bob.
+            self._notify_started(alice)
+            if bob is not None:
+                self._notify_chatting(bob)
 
-    @decorators.require_account(online=True)
+    @decorators.require_account
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /next' % alice)
-        alice, bob = self.stop_chat(alice)
-        alice, carol = self.start_chat(alice, bob)
-        if bob is None:
-            bob, dave = None, None
-        elif bob == alice:
-            # This should never be the case, because this would mean that Alice
-            # was previously chatting with herself.
-            bob, dave = alice, carol
-        elif bob == carol:
-            bob, dave = carol, alice
+        if not alice.online:
+            self._notify_not_started(alice)
+        elif alice.partner is None:
+            self._notify_not_chatting(alice)
         else:
-            bob, dave = self.start_chat(bob, alice)
+            alice, bob = self.stop_chat(alice)
+            alice, carol = self.start_chat(alice, bob)
+            if bob is None:
+                bob, dave = None, None
+            elif bob == alice:
+                # This should never be the case, because this would mean that
+                # Alice was previously chatting with herself.
+                bob, dave = alice, carol
+            elif bob == carol:
+                bob, dave = carol, alice
+            else:
+                bob, dave = self.start_chat(bob, alice)
 
-        # Notify Alice, Bob, Carol, and Dave.
-        self._notify_nexted(alice)
-        if bob is not None and bob not in (alice,):
-            self._notify_been_nexted(bob)
-        if carol is not None and carol not in (alice, bob):
-            self._notify_chatting(carol)
-        if dave is not None and dave not in (alice, bob, carol):
-            self._notify_chatting(dave)
+            # Notify Alice, Bob, Carol, and Dave.
+            self._notify_nexted(alice)
+            if bob is not None and bob not in (alice,):
+                self._notify_been_nexted(bob)
+            if carol is not None and carol not in (alice, bob):
+                self._notify_chatting(carol)
+            if dave is not None and dave not in (alice, bob, carol):
+                self._notify_chatting(dave)
 
-    @decorators.require_account(online=True)
+    @decorators.require_account
     def stop_command(self, message=None):
         """Alice has typed /stop."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /stop' % alice)
-        alice.online = False
-        alice, bob = self.stop_chat(alice)
-        if bob is None:
-            carol = None
+        if not alice.online:
+            self._notify_already_stopped(alice)
         else:
-            bob, carol = self.start_chat(bob, alice)
+            alice.online = False
+            alice, bob = self.stop_chat(alice)
+            if bob is None:
+                carol = None
+            else:
+                bob, carol = self.start_chat(bob, alice)
 
-        # Notify Alice, Bob, and Carol.
-        self._notify_stopped(alice)
-        if bob is not None and bob not in (alice,):
-            self._notify_been_nexted(bob)
-        if carol is not None and carol not in (alice, bob):
-            self._notify_chatting(carol)
+            # Notify Alice, Bob, and Carol.
+            self._notify_stopped(alice)
+            if bob is not None and bob not in (alice,):
+                self._notify_been_nexted(bob)
+            if carol is not None and carol not in (alice, bob):
+                self._notify_chatting(carol)
 
-    @decorators.require_account(online=True)
+    @decorators.require_account
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self.message_to_account(message)
         _log.debug('%s typed IM' % alice)
-        bob = alice.partner
-        deliverable = self._is_deliverable(alice)
+        if not alice.online:
+            self._notify_not_started(alice)
+        elif alice.partner is None:
+            self._notify_not_chatting(alice)
+        else:
+            bob = alice.partner
+            deliverable = self._is_deliverable(alice)
 
-        if deliverable:
-            _log.info("sending %s's IM to %s" % (alice, bob))
-            body = 'Partner: ' + message.body
-            status = xmpp.send_message(str(bob), body)
+            if deliverable:
+                _log.info("sending %s's IM to %s" % (alice, bob))
+                body = 'Partner: ' + message.body
+                status = xmpp.send_message(str(bob), body)
 
-            assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
-                              xmpp.OTHER_ERROR)
+                assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
+                                  xmpp.OTHER_ERROR)
 
-            if status == xmpp.NO_ERROR:
-                _log.info("sent %s's IM to %s" % (alice, bob))
-            else:
-                if status == xmpp.INVALID_JID:
-                    body = "couldn't send %s's IM to %s (invalid JID)"
-                    _log.critical(body % (alice, bob))
-                elif status == xmpp.OTHER_ERROR:
-                    body = "couldn't send %s's IM to %s (other error)"
-                    _log.warning(body % (alice, bob))
-                deliverable = False
+                if status == xmpp.NO_ERROR:
+                    _log.info("sent %s's IM to %s" % (alice, bob))
+                else:
+                    if status == xmpp.INVALID_JID:
+                        body = "couldn't send %s's IM to %s (invalid JID)"
+                        _log.critical(body % (alice, bob))
+                    elif status == xmpp.OTHER_ERROR:
+                        body = "couldn't send %s's IM to %s (other error)"
+                        _log.warning(body % (alice, bob))
+                    deliverable = False
 
-        if not deliverable:
-            self._notify_undeliverable(alice)
+            if not deliverable:
+                self._notify_undeliverable(alice)
 
     def _is_deliverable(self, alice):
         """Alice has typed an IM.  Determine if it can be delivered to Bob."""
@@ -251,6 +267,15 @@ class Chat(base.ChatRequestHandler):
             deliverable = True
         return deliverable
 
+    def _notify_already_started(self, alice):
+        """ """
+        body = "You'd already made yourself available for chat.\n\n"
+        if alice.partner is None:
+            body += 'Looking for a chat partner...'
+        else:
+            body += "And you're already chatting with a partner!"
+        status = xmpp.send_message(str(alice), body)
+
     def _notify_started(self, alice):
         """Notify Alice that she's made herself available for chat."""
         body = "You've made yourself available for chat.\n\n"
@@ -263,6 +288,19 @@ class Chat(base.ChatRequestHandler):
     def _notify_chatting(self, alice):
         """Notify Alice that she's now chatting with a partner."""
         body = 'Now chatting with a partner.  Say hello!'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_not_started(self, alice):
+        """ """
+        body = "You're not currently chatting with a partner, and you're "
+        body += 'unavailable for chat.\n\nType /start to make yourself '
+        body += 'available for chat.'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_not_chatting(self, alice):
+        """ """
+        body = "You're not currently chatting with a partner, but you're "
+        body += 'available for chat.\n\nLooking for a chat partner...'
         status = xmpp.send_message(str(alice), body)
 
     def _notify_nexted(self, alice):
@@ -281,6 +319,11 @@ class Chat(base.ChatRequestHandler):
             body += 'Looking for a new chat partner...'
         else:
             body += 'Now chatting with a new partner.  Say hello!'
+        status = xmpp.send_message(str(alice), body)
+
+    def _notify_already_stopped(self, alice):
+        """ """
+        body = "You'd already made yourself unavailable for chat."
         status = xmpp.send_message(str(alice), body)
 
     def _notify_stopped(self, alice):

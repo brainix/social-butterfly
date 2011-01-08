@@ -29,32 +29,20 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-def require_account(online=None):
+def require_account(method):
     """ """
-    def wrap1(method):
-        @functools.wraps(method)
-        def wrap2(self, message=None):
-            assert online in (None, False, True)
-            if online is None:
-                body = 'decorated method %s requires registered account'
-            elif not online:
-                body = 'decorated method %s requires offline user'
-            else:
-                body = 'decorated method %s requires online user'
-            _log.debug(body % method.func_name)
-
-            alice = self.message_to_account(message)
-            body = 'decorator requirements failed; '
-            sender = message.sender
-            if alice is None:
-                _log.warning(body + "user %s hasn't registered" % sender)
-            elif online is not None and alice.online != online:
-                if not online:
-                    _log.warning(body + "user %s isn't offline" % sender)
-                else:
-                    _log.warning(body + "user %s isn't online" % sender)
-            else:
-                _log.debug('decorator requirements passed; calling method')
-                return method(self, message=message)
-        return wrap2
-    return wrap1
+    @functools.wraps(method)
+    def wrap(self, message=None):
+        body = 'decorated method %s requires registered account'
+        _log.debug(body % method.func_name)
+        alice = self.message_to_account(message)
+        if alice is None:
+            body = "decorator requirements failed; %s hasn't registered"
+            _log.warning(body % message.sender)
+            body = "To chat with strangers on Social Butterfly, you must sign "
+            body += 'up here:\n\nhttp://social-butterfly.appspot.com/'
+            message.reply(body)
+        else:
+            _log.debug('decorator requirements passed; calling method')
+            return method(self, message=message)
+    return wrap

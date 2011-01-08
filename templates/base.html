@@ -32,7 +32,7 @@
     </head>
     <body>
         <div id="heading">
-            <h1>Social Butterfly</h1>
+            <h1><a href="/">Social Butterfly</a></h1>
             <h2>{{ title }}</h2>
         </div>
 
@@ -45,8 +45,25 @@
             <p>We <i>have</i> the technology!</p>
         </div>
 
+        <div id="fb-root"></div>
         <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
         <script type="text/javascript" src="/assets/script.js"></script>
+        <script>
+            window.fbAsyncInit = function() {
+                FB.init({
+                    appId: '161343000578121',
+                    status: true,
+                    cookie: true,
+                    xfbml: true
+                });
+            };
+            (function() {
+                var scriptElement = document.createElement('script');
+                scriptElement.async = true;
+                scriptElement.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+                $('#fb-root').append(scriptElement);
+            }());
+        </script>
     </body>
 </html>
