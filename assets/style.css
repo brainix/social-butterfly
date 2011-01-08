@@ -64,17 +64,13 @@ b {
     margin-bottom: 42px;
 }
 
-#heading h1 a {
+#heading h1 {
     color: #D1D9DC;
     font-size: 102px;
     letter-spacing: -7px;
     margin-top: -15px;
     margin-left: -3px;
     margin-bottom: -20px;
-}
-
-#heading h1 a:hover {
-    color: #B62F2F;
 }
 
 #heading h2, #content h3 {
