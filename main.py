@@ -19,6 +19,7 @@
 #       along with Social Butterfly.  If not, see:                            #
 #           <http://www.gnu.org/licenses/>.                                   #
 #-----------------------------------------------------------------------------#
+"""It's time for the dog and pony show..."""
 
 
 import logging
