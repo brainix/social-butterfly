@@ -86,7 +86,7 @@ b {
 \*---------------------------------------------------------------------------*/
 
 #content {
-    margin-bottom: 50px;
+    margin-bottom: 22px;
 }
 
 #content p {
@@ -122,6 +122,10 @@ b {
 
 #content .signed_up {
     display: none;
+}
+
+#content iframe {
+    margin-bottom: 28px;
 }
 
 
