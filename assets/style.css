@@ -86,7 +86,7 @@ b {
 \*---------------------------------------------------------------------------*/
 
 #content {
-    margin-bottom: 22px;
+    margin-bottom: 50px;
 }
 
 #content p {
@@ -124,8 +124,8 @@ b {
     display: none;
 }
 
-#content iframe {
-    margin-bottom: 28px;
+#content .twitter-share-button {
+    margin-top: 50px;
 }
 
 
