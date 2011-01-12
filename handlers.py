@@ -34,6 +34,7 @@ from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
 import base
 import decorators
 import models
+import notifications
 
 
 _log = logging.getLogger(__name__)
@@ -126,7 +127,7 @@ class Home(base.WebRequestHandler):
         return account
 
 
-class Chat(base.ChatRequestHandler):
+class Chat(base.ChatRequestHandler, notifications.Notifications):
     """Request handler to respond to XMPP messages."""
 
     @decorators.require_account
@@ -145,15 +146,15 @@ class Chat(base.ChatRequestHandler):
         alice = self.message_to_account(message)
         _log.debug('%s typed /start' % alice)
         if alice.online:
-            self._notify_already_started(alice)
+            self.notify_already_started(alice)
         else:
             alice.online = True
             alice, bob = self.start_chat(alice, None)
 
             # Notify Alice and Bob.
-            self._notify_started(alice)
+            self.notify_started(alice)
             if bob is not None:
-                self._notify_chatting(bob)
+                self.notify_chatting(bob)
 
     @decorators.require_account
     def next_command(self, message=None):
@@ -161,9 +162,9 @@ class Chat(base.ChatRequestHandler):
         alice = self.message_to_account(message)
         _log.debug('%s typed /next' % alice)
         if not alice.online:
-            self._notify_not_started(alice)
+            self.notify_not_started(alice)
         elif alice.partner is None:
-            self._notify_not_chatting(alice)
+            self.notify_not_chatting(alice)
         else:
             alice, bob = self.stop_chat(alice)
             alice, carol = self.start_chat(alice, bob)
@@ -179,13 +180,13 @@ class Chat(base.ChatRequestHandler):
                 bob, dave = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, Carol, and Dave.
-            self._notify_nexted(alice)
+            self.notify_nexted(alice)
             if bob is not None and bob not in (alice,):
-                self._notify_been_nexted(bob)
+                self.notify_been_nexted(bob)
             if carol is not None and carol not in (alice, bob):
-                self._notify_chatting(carol)
+                self.notify_chatting(carol)
             if dave is not None and dave not in (alice, bob, carol):
-                self._notify_chatting(dave)
+                self.notify_chatting(dave)
 
     @decorators.require_account
     def stop_command(self, message=None):
@@ -193,7 +194,7 @@ class Chat(base.ChatRequestHandler):
         alice = self.message_to_account(message)
         _log.debug('%s typed /stop' % alice)
         if not alice.online:
-            self._notify_already_stopped(alice)
+            self.notify_already_stopped(alice)
         else:
             alice.online = False
             alice, bob = self.stop_chat(alice)
@@ -203,11 +204,11 @@ class Chat(base.ChatRequestHandler):
                 bob, carol = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, and Carol.
-            self._notify_stopped(alice)
+            self.notify_stopped(alice)
             if bob is not None and bob not in (alice,):
-                self._notify_been_nexted(bob)
+                self.notify_been_nexted(bob)
             if carol is not None and carol not in (alice, bob):
-                self._notify_chatting(carol)
+                self.notify_chatting(carol)
 
     @decorators.require_account
     def text_message(self, message=None):
@@ -215,9 +216,9 @@ class Chat(base.ChatRequestHandler):
         alice = self.message_to_account(message)
         _log.debug('%s typed IM' % alice)
         if not alice.online:
-            self._notify_not_started(alice)
+            self.notify_not_started(alice)
         elif alice.partner is None:
-            self._notify_not_chatting(alice)
+            self.notify_not_chatting(alice)
         else:
             bob = alice.partner
             deliverable = self._is_deliverable(alice)
@@ -242,7 +243,7 @@ class Chat(base.ChatRequestHandler):
                     deliverable = False
 
             if not deliverable:
-                self._notify_undeliverable(alice)
+                self.notify_undeliverable(alice)
 
     def _is_deliverable(self, alice):
         """Alice has typed an IM.  Determine if it can be delivered to Bob."""
@@ -267,73 +268,20 @@ class Chat(base.ChatRequestHandler):
             deliverable = True
         return deliverable
 
-    def _notify_already_started(self, alice):
+
+class PairUsers(base.WebRequestHandler, notifications.Notifications):
+    """ """
+
+    def get(self, *args, **kwds):
         """ """
-        body = "You'd already made yourself available for chat.\n\n"
-        if alice.partner is None:
-            body += 'Looking for a chat partner...'
-        else:
-            body += "And you're already chatting with a partner!"
-        status = xmpp.send_message(str(alice), body)
+        assert self.request.headers['X-AppEngine-Cron'] == 'true'
+        alices, num_alices = self.get_available_users()
+        alices = [alice for alice in alices if xmpp.get_presence(str(alice))]
+        if len(alices) % 2:
+            alices = alices[:-1]
+        for index in range(len(alices)):
+            alices[index].partner = alices[index + (-1 if index % 2 else 1)]
+        db.put(alices)
 
-    def _notify_started(self, alice):
-        """Notify Alice that she's made herself available for chat."""
-        body = "You've made yourself available for chat.\n\n"
-        if alice.partner is None:
-            body += 'Looking for a chat partner...'
-        else:
-            body += 'Now chatting with a partner.  Say hello!'
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_chatting(self, alice):
-        """Notify Alice that she's now chatting with a partner."""
-        body = 'Now chatting with a partner.  Say hello!'
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_not_started(self, alice):
-        """ """
-        body = "You're not currently chatting with a partner, and you're "
-        body += 'unavailable for chat.\n\nType /start to make yourself '
-        body += 'available for chat.'
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_not_chatting(self, alice):
-        """ """
-        body = "You're not currently chatting with a partner, but you're "
-        body += 'available for chat.\n\nLooking for a chat partner...'
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_nexted(self, alice):
-        """Notify Alice that she's /nexted her partner."""
-        body = "You've disconnected from your current chat partner.\n\n"
-        if alice.partner is None:
-            body += 'Looking for a new chat partner...'
-        else:
-            body += 'Now chatting with a new partner.  Say hello!'
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_been_nexted(self, alice):
-        """Notify Alice that her partner has /nexted her."""
-        body = 'Your current chat partner has disconnected.\n\n'
-        if alice.partner is None:
-            body += 'Looking for a new chat partner...'
-        else:
-            body += 'Now chatting with a new partner.  Say hello!'
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_already_stopped(self, alice):
-        """ """
-        body = "You'd already made yourself unavailable for chat."
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_stopped(self, alice):
-        """Notify Alice that she's made herself unavailable for chat."""
-        body = "You've made yourself unavailable for chat."
-        status = xmpp.send_message(str(alice), body)
-
-    def _notify_undeliverable(self, alice):
-        """Notify Alice that we couldn't deliver her message to her partner."""
-        body = "Couldn't deliver your message to your chat partner.\n\n"
-        body += 'Please try to send your message again, '
-        body += 'or type /next to chat with someone else.'
-        status = xmpp.send_message(str(alice), body)
+        for alice in alices:
+            self.notify_chatting(alice)

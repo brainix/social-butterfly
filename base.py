@@ -79,6 +79,15 @@ class _BaseRequestHandler(object):
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
+    def get_available_users(self):
+        """ """
+        carols = models.Account.all()
+        carols = carols.filter('online =', True)
+        num_carols = carols.count(2)
+        carols = carols.filter('partner =', None)
+        carols = carols.order('datetime')
+        return carols, num_carols
+
 
 class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
     """Abstract base web request handler class."""
@@ -96,11 +105,7 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
-        carols = models.Account.all()
-        carols = carols.filter('online =', True)
-        num_carols = carols.count(2)
-        carols = carols.filter('partner =', None)
-        carols = carols.order('datetime')
+        carols, num_carols = self.get_available_users()
         for carol in carols:
             if carol != alice:
                 if carol != bob or num_carols == 1:

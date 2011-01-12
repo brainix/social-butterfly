@@ -38,9 +38,10 @@ def main():
     """It's time for the dog and pony show..."""
     logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
     url_mapping = (
-        ('/_ah/xmpp/message/chat/', handlers.Chat),     # XMPP message handler.
-        ('/',                       handlers.Home),     # /
-        ('(.*)',                    handlers.NotFound), # 404: Not Found.
+        ('/_pair_users',            handlers.PairUsers),    # Cron handler.
+        ('/_ah/xmpp/message/chat/', handlers.Chat),         # XMPP handler.
+        ('/',                       handlers.Home),         # /
+        ('(.*)',                    handlers.NotFound),     # 404: Not Found.
     )
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)

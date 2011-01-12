@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------#
-#   app.yaml                                                                  #
+#   cron.yaml                                                                 #
 #                                                                             #
 #   Copyright (c) 2010-2011, Code A La Mode, original authors.                #
 #                                                                             #
@@ -21,45 +21,7 @@
 #-----------------------------------------------------------------------------#
 
 
-application: social-butterfly
-version: 1
-runtime: python
-api_version: 1
-
-builtins:
-- remote_api: on
-- appstats: on
-- datastore_admin: on
-
-
-handlers:
-
-- url: /assets
-  static_dir: assets
-
-- url: /_pair_users
-  script: main.py
-  login: admin
-
-- url: /.*
-  script: main.py
-
-
-inbound_services:
-- xmpp_message
-
-skip_files:
-# Default stuff:
-- ^(.*/)?app\.yaml
-- ^(.*/)?app\.yml
-- ^(.*/)?index\.yaml
-- ^(.*/)?index\.yml
-- ^(.*/)?#.*#
-- ^(.*/)?.*~
-- ^(.*/)?.*\.py[co]
-- ^(.*/)?.*/RCS/.*
-- ^(.*/)?\..*
-
-# Social Butterfly specific stuff:
-- ^(.*/)?.*\.swp$
-- ^(.*/)?IGNORE\.txt
+cron:
+- description: pair up online and available users
+  url: /_pair_users
+  schedule: every 5 minutes
