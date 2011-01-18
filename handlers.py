@@ -275,7 +275,28 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
     def get(self, *args, **kwds):
         """ """
         assert self.request.headers['X-AppEngine-Cron'] == 'true'
-        alices, num_alices = self.get_available_users()
+        self._pair_currently_chatting_users()
+        self._pair_not_currently_chatting_users()
+
+    def _pair_currently_chatting_users(self):
+        """ """
+        alices, num_alices = self.get_users(online=True, chatting=True)
+        alices = [alice for alice in alices if xmpp.get_presence(str(alice))]
+        for alice in alices:
+            bob = alice.partner
+            if not xmpp.get_presence(str(bob)):
+                alice, bob = self.stop_chat(alice)
+                alice, carol = self.start_chat(alice, bob)
+
+                self.notify_been_nexted(alice)
+                if bob is not None and bob not in (alice,):
+                    self.notify_stopped(bob)
+                if carol is not None and carol not in (alice, bob):
+                    self.notify_chatting(carol)
+
+    def _pair_not_currently_chatting_users(self):
+        """ """
+        alices, num_alices = self.get_users(online=True, chatting=False)
         alices = [alice for alice in alices if xmpp.get_presence(str(alice))]
         if len(alices) % 2:
             alices = alices[:-1]

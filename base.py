@@ -79,12 +79,19 @@ class _BaseRequestHandler(object):
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
-    def get_available_users(self):
+    def get_users(self, online=True, chatting=False):
         """ """
+        assert online in (None, False, True)
+        assert chatting in (None, False, True)
+
         carols = models.Account.all()
-        carols = carols.filter('online =', True)
+        if online is not None:
+            carols = carols.filter('online =', online)
         num_carols = carols.count(2)
-        carols = carols.filter('partner =', None)
+        if chatting == False:
+            carols = carols.filter('partner =', None)
+        elif chatting == True:
+            carols = carols.filter('partner !=', None)
         carols = carols.order('datetime')
         return carols, num_carols
 
@@ -105,7 +112,7 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
-        carols, num_carols = self.get_available_users()
+        carols, num_carols = self.get_users(online=True, chatting=False)
         for carol in carols:
             if carol != alice:
                 if carol != bob or num_carols == 1:
