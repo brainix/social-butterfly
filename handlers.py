@@ -272,9 +272,9 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
 class PairUsers(base.WebRequestHandler, notifications.Notifications):
     """ """
 
+    @decorators.require_cron
     def get(self, *args, **kwds):
         """ """
-        assert self.request.headers['X-AppEngine-Cron'] == 'true'
         self._pair_currently_chatting_users()
         self._pair_not_currently_chatting_users()
 

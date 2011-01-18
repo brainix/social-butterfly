@@ -46,3 +46,14 @@ def require_account(method):
             _log.debug('decorator requirements passed; calling method')
             return method(self, message=message)
     return wrap
+
+
+def require_cron(method):
+    """ """
+    @functools.wraps(method)
+    def wrap(self, *args, **kwds):
+        if self.request.headers.get('X-AppEngine-Cron') != 'true':
+            return self.serve_error(401)
+        else:
+            return method(self, *args, **kwds)
+    return wrap
