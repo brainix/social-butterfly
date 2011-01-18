@@ -289,8 +289,6 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
                 alice, carol = self.start_chat(alice, bob)
 
                 self.notify_been_nexted(alice)
-                if bob is not None and bob not in (alice,):
-                    self.notify_stopped(bob)
                 if carol is not None and carol not in (alice, bob):
                     self.notify_chatting(carol)
 

@@ -92,17 +92,9 @@ class _BaseRequestHandler(object):
             carols = carols.filter('partner =', None)
         elif chatting == True:
             carols = carols.filter('partner !=', None)
+            carols.order('partner')
         carols = carols.order('datetime')
         return carols, num_carols
-
-
-class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
-    """Abstract base web request handler class."""
-    pass
-
-
-class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
-    """Abstract base chat request handler class."""
 
     def message_to_account(self, message):
         """From an XMPP message, find the user account that sent it."""
@@ -157,3 +149,13 @@ class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
     def stop_chat(self, alice):
         """ """
         return self._start_or_stop_chat(alice, start=False)
+
+
+class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
+    """Abstract base web request handler class."""
+    pass
+
+
+class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
+    """Abstract base chat request handler class."""
+    pass
