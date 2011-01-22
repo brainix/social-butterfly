@@ -162,8 +162,14 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         alice = self.message_to_account(message)
         _log.debug('%s typed /next' % alice)
         if not alice.online:
+            # Alice hasn't yet made herself available for chat.  She must first
+            # type /start and start chatting with a partner before she can type
+            # /next to chat with a different partner.
             self.notify_not_started(alice)
         elif alice.partner is None:
+            # Alice has made herself available for chat, but she isn't
+            # currently chatting with a partner.  She must be chatting with a
+            # partner in order to type /next to chat with a different partner.
             self.notify_not_chatting(alice)
         else:
             alice, bob = self.stop_chat(alice)
@@ -280,27 +286,31 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
 
     def _pair_currently_chatting_users(self):
         """ """
-        alices, num_alices = self.get_users(online=True, chatting=True)
-        alices = [alice for alice in alices if xmpp.get_presence(str(alice))]
+        alices = self.get_users(online=True, chatting=True, present=True)
         for alice in alices:
             bob = alice.partner
             if not xmpp.get_presence(str(bob)):
                 alice, bob = self.stop_chat(alice)
                 alice, carol = self.start_chat(alice, bob)
 
+                body = '%s has signed off; cron paired %s with %s'
+                _log.debug(body % (bob, alice, carol))
                 self.notify_been_nexted(alice)
                 if carol is not None and carol not in (alice, bob):
                     self.notify_chatting(carol)
 
     def _pair_not_currently_chatting_users(self):
         """ """
-        alices, num_alices = self.get_users(online=True, chatting=False)
-        alices = [alice for alice in alices if xmpp.get_presence(str(alice))]
-        if len(alices) % 2:
-            alices = alices[:-1]
-        for index in range(len(alices)):
-            alices[index].partner = alices[index + (-1 if index % 2 else 1)]
-        db.put(alices)
-
-        for alice in alices:
-            self.notify_chatting(alice)
+        alice = None
+        bobs = self.get_users(online=True, chatting=False, present=True)
+        for bob in bobs:
+            if alice is None:
+                alice = bob
+            else:
+                alice.partner = bob
+                bob.partner = alice
+                db.put([alice, bob])
+                _log.debug('cron paired %s with %s' % (alice, bob))
+                self.notify_chatting(alice)
+                self.notify_chatting(bob)
+                bob = None

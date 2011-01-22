@@ -79,22 +79,45 @@ class _BaseRequestHandler(object):
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
-    def get_users(self, online=True, chatting=False):
+    def _only_one(self):
+        """ """
+        carols = models.Account.all()
+        carols = carols.filter('online =', True)
+        only_one = carols.count(2) == 1
+        return only_one
+
+    def get_users(self, online=True, chatting=False, present=True):
         """ """
         assert online in (None, False, True)
         assert chatting in (None, False, True)
+        assert present in (None, False, True)
 
         carols = models.Account.all()
         if online is not None:
             carols = carols.filter('online =', online)
-        num_carols = carols.count(2)
         if chatting == False:
             carols = carols.filter('partner =', None)
         elif chatting == True:
             carols = carols.filter('partner !=', None)
             carols.order('partner')
         carols = carols.order('datetime')
-        return carols, num_carols
+
+        # The rest of this method could be more clearly written as follows:
+        #
+        #   if present is None:
+        #       carols = [carol for carol in carols]
+        #   else:
+        #       carols = [carol for carol in carols
+        #                 if present == xmpp.get_presence(str(carol))]
+        #   return carols
+        #
+        # Instead, we use a generator to lazily fetch Carols and determine if
+        # each Carol is present for chat.  This generator approach is more
+        # scalable.
+
+        for carol in carols:
+            if present is None or present == xmpp.get_presence(str(carol)):
+                yield carol
 
     def message_to_account(self, message):
         """From an XMPP message, find the user account that sent it."""
@@ -104,13 +127,12 @@ class _BaseRequestHandler(object):
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
-        carols, num_carols = self.get_users(online=True, chatting=False)
+        carols = self.get_users(online=True, chatting=False, present=True)
+        only_one = self._only_one()
         for carol in carols:
             if carol != alice:
-                if carol != bob or num_carols == 1:
-                    if xmpp.get_presence(str(carol)):
-                        return carol
-        return None
+                if carol != bob or only_one:
+                    return carol
 
     def _link_partners(self, alice, bob):
         """Alice is looking to chat.  Find her a partner, and link them."""
