@@ -22,6 +22,7 @@
 """Google App Engine request handlers (concrete implementation classes)."""
 
 
+import datetime
 import logging
 import os
 
@@ -30,7 +31,7 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
 from config import DEBUG, TEMPLATES, MIN_GMAIL_ADDR_LEN, MAX_GMAIL_ADDR_LEN
-from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
+from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS, MAX_CRON_TIME
 import base
 import decorators
 import models
@@ -287,6 +288,7 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
     def _pair_currently_chatting_users(self):
         """ """
         alices = self.get_users(online=True, chatting=True, present=True)
+        start = datetime.datetime.now()
         for alice in alices:
             bob = alice.partner
             if not xmpp.get_presence(str(bob)):
@@ -299,10 +301,14 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
                 if carol is not None and carol not in (alice, bob):
                     self.notify_chatting(carol)
 
+            if self._time_since(start) > MAX_CRON_TIME:
+                break
+
     def _pair_not_currently_chatting_users(self):
         """ """
         alice = None
         bobs = self.get_users(online=True, chatting=False, present=True)
+        start = datetime.datetime.now()
         for bob in bobs:
             if alice is None:
                 alice = bob
@@ -310,7 +316,18 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
                 alice.partner = bob
                 bob.partner = alice
                 db.put([alice, bob])
+
                 _log.debug('cron paired %s with %s' % (alice, bob))
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
-                bob = None
+                alice = None
+
+            if self._time_since(start) > MAX_CRON_TIME:
+                break
+
+    def _time_since(self, start):
+        """ """
+        now = datetime.datetime.now()
+        delta = now - start
+        diff = delta.seconds + delta.microseconds / 1000000.0
+        return diff
