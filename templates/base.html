@@ -34,6 +34,7 @@
         <meta name="keywords" content="Social Butterfly, chat with strangers, Google Talk" />
         <meta name="description" content="Social Butterfly allows you to anonymously chat with strangers through Google Talk." />
         <meta name="author" content="Code A La Mode" />
+        <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
     </head>
     <body>
         <div id="heading">
@@ -55,6 +56,10 @@
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
         <script type="text/javascript" src="/assets/script.js"></script>
         <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-2153971-5']);
+            _gaq.push(['_trackPageview']);
+
             window.fbAsyncInit = function() {
                 FB.init({
                     appId: '161343000578121',
@@ -63,12 +68,20 @@
                     xfbml: true
                 });
             };
+
             (function() {
+                var ga = document.createElement('script');
+                ga.type = 'text/javascript';
+                ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(ga, s);
+
                 var scriptElement = document.createElement('script');
                 scriptElement.async = true;
                 scriptElement.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
                 $('#fb-root').append(scriptElement);
-            }());
+            })();
         </script>
     </body>
 </html>
