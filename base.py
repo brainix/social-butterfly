@@ -82,19 +82,19 @@ class _BaseRequestHandler(object):
     def _only_one(self):
         """ """
         carols = models.Account.all()
-        carols = carols.filter('online =', True)
+        carols = carols.filter('started =', True)
         only_one = carols.count(2) == 1
         return only_one
 
-    def get_users(self, online=True, chatting=False, present=True):
+    def get_users(self, started=True, chatting=False, available=True):
         """ """
-        assert online in (None, False, True)
+        assert started in (None, False, True)
         assert chatting in (None, False, True)
-        assert present in (None, False, True)
+        assert available in (None, False, True)
 
         carols = models.Account.all()
-        if online is not None:
-            carols = carols.filter('online =', online)
+        if started is not None:
+            carols = carols.filter('started =', started)
         if chatting == False:
             carols = carols.filter('partner =', None)
         elif chatting == True:
@@ -104,19 +104,19 @@ class _BaseRequestHandler(object):
 
         # The rest of this method could be more clearly written as follows:
         #
-        #   if present is None:
+        #   if available is None:
         #       carols = [carol for carol in carols]
         #   else:
         #       carols = [carol for carol in carols
-        #                 if present == xmpp.get_presence(str(carol))]
+        #                 if available == xmpp.get_presence(str(carol))]
         #   return carols
         #
         # Instead, we use a generator to lazily fetch Carols and determine if
-        # each Carol is present for chat.  This generator approach is more
+        # each Carol is available for chat.  This generator approach is more
         # scalable.
 
         for carol in carols:
-            if present is None or present == xmpp.get_presence(str(carol)):
+            if available is None or available == xmpp.get_presence(str(carol)):
                 yield carol
 
     def message_to_account(self, message):
@@ -127,7 +127,7 @@ class _BaseRequestHandler(object):
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
-        carols = self.get_users(online=True, chatting=False, present=True)
+        carols = self.get_users(started=True, chatting=False, available=True)
         only_one = self._only_one()
         for carol in carols:
             if carol != alice:

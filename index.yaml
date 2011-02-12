@@ -2,6 +2,6 @@ indexes:
 
 - kind: Account
   properties:
-  - name: online
+  - name: started
   - name: partner
   - name: datetime

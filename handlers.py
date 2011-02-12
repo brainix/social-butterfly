@@ -122,7 +122,7 @@ class Home(base.WebRequestHandler):
             _log.info('%s account not created: already exists' % handle)
         else:
             account = models.Account(key_name=key_name, handle=handle,
-                                     online=False)
+                                     started=False)
             account.put()
             _log.info('%s account created' % handle)
         return account
@@ -146,10 +146,10 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         """Alice has typed /start."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /start' % alice)
-        if alice.online:
+        if alice.started:
             self.notify_already_started(alice)
         else:
-            alice.online = True
+            alice.started = True
             alice, bob = self.start_chat(alice, None)
 
             # Notify Alice and Bob.
@@ -162,7 +162,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /next' % alice)
-        if not alice.online:
+        if not alice.started:
             # Alice hasn't yet made herself available for chat.  She must first
             # type /start and start chatting with a partner before she can type
             # /next to chat with a different partner.
@@ -200,10 +200,10 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         """Alice has typed /stop."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /stop' % alice)
-        if not alice.online:
+        if not alice.started:
             self.notify_already_stopped(alice)
         else:
-            alice.online = False
+            alice.started = False
             alice, bob = self.stop_chat(alice)
             if bob is None:
                 carol = None
@@ -222,7 +222,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self.message_to_account(message)
         _log.debug('%s typed IM' % alice)
-        if not alice.online:
+        if not alice.started:
             self.notify_not_started(alice)
         elif alice.partner is None:
             self.notify_not_chatting(alice)
@@ -287,7 +287,7 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
 
     def _pair_currently_chatting_users(self):
         """ """
-        alices = self.get_users(online=True, chatting=True, present=True)
+        alices = self.get_users(started=True, chatting=True, available=True)
         start = datetime.datetime.now()
         for alice in alices:
             bob = alice.partner
@@ -307,7 +307,7 @@ class PairUsers(base.WebRequestHandler, notifications.Notifications):
     def _pair_not_currently_chatting_users(self):
         """ """
         alice = None
-        bobs = self.get_users(online=True, chatting=False, present=True)
+        bobs = self.get_users(started=True, chatting=False, available=True)
         start = datetime.datetime.now()
         for bob in bobs:
             if alice is None:

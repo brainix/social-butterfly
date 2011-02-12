@@ -29,7 +29,7 @@ class Account(db.Model):
     """ """
     handle = db.IMProperty(indexed=False, required=True)
 
-    online = db.BooleanProperty(required=True)
+    started = db.BooleanProperty(required=True)
     partner = db.SelfReferenceProperty()
     datetime = db.DateTimeProperty(auto_now=True, required=True)
 
