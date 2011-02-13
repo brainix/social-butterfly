@@ -86,15 +86,17 @@ class _BaseRequestHandler(object):
         only_one = carols.count(2) == 1
         return only_one
 
-    def get_users(self, started=True, chatting=False, available=True):
+    def get_users(self, started=True, available=True, chatting=False):
         """ """
         assert started in (None, False, True)
-        assert chatting in (None, False, True)
         assert available in (None, False, True)
+        assert chatting in (None, False, True)
 
         carols = models.Account.all()
         if started is not None:
             carols = carols.filter('started =', started)
+        if available is not None:
+            carols = carols.filter('available =', available)
         if chatting == False:
             carols = carols.filter('partner =', None)
         elif chatting == True:
@@ -102,22 +104,7 @@ class _BaseRequestHandler(object):
             carols.order('partner')
         carols = carols.order('datetime')
 
-        # The rest of this method could be more clearly written as follows:
-        #
-        #   if available is None:
-        #       carols = [carol for carol in carols]
-        #   else:
-        #       carols = [carol for carol in carols
-        #                 if available == xmpp.get_presence(str(carol))]
-        #   return carols
-        #
-        # Instead, we use a generator to lazily fetch Carols and determine if
-        # each Carol is available for chat.  This generator approach is more
-        # scalable.
-
-        for carol in carols:
-            if available is None or available == xmpp.get_presence(str(carol)):
-                yield carol
+        return carols
 
     def message_to_account(self, message):
         """From an XMPP message, find the user account that sent it."""
@@ -127,7 +114,7 @@ class _BaseRequestHandler(object):
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
-        carols = self.get_users(started=True, chatting=False, available=True)
+        carols = self.get_users(started=True, available=True, chatting=False)
         only_one = self._only_one()
         for carol in carols:
             if carol != alice:

@@ -22,7 +22,6 @@
 """Google App Engine request handlers (concrete implementation classes)."""
 
 
-import datetime
 import logging
 import os
 
@@ -122,7 +121,7 @@ class Home(base.WebRequestHandler):
             _log.info('%s account not created: already exists' % handle)
         else:
             account = models.Account(key_name=key_name, handle=handle,
-                                     started=False)
+                                     started=False, available=False)
             account.put()
             _log.info('%s account created' % handle)
         return account
@@ -138,7 +137,8 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         _log.debug('%s typed /help' % alice)
         body = 'Type /start to make yourself available for chat.\n\n'
         body += 'Type /next to chat with someone else.\n\n'
-        body += 'Type /stop to make yourself unavailable for chat.'
+        body += 'Type /stop to make yourself unavailable for chat.\n\n'
+        body += 'Type /help to see this help text.'
         message.reply(body)
 
     @decorators.require_account
@@ -154,8 +154,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
 
             # Notify Alice and Bob.
             self.notify_started(alice)
-            if bob is not None:
-                self.notify_chatting(bob)
+            self.notify_chatting(bob)
 
     @decorators.require_account
     def next_command(self, message=None):
@@ -188,11 +187,11 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
 
             # Notify Alice, Bob, Carol, and Dave.
             self.notify_nexted(alice)
-            if bob is not None and bob not in (alice,):
+            if bob not in (alice,):
                 self.notify_been_nexted(bob)
-            if carol is not None and carol not in (alice, bob):
+            if carol not in (alice, bob):
                 self.notify_chatting(carol)
-            if dave is not None and dave not in (alice, bob, carol):
+            if dave not in (alice, bob, carol):
                 self.notify_chatting(dave)
 
     @decorators.require_account
@@ -212,9 +211,9 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
 
             # Notify Alice, Bob, and Carol.
             self.notify_stopped(alice)
-            if bob is not None and bob not in (alice,):
+            if bob not in (alice,):
                 self.notify_been_nexted(bob)
-            if carol is not None and carol not in (alice, bob):
+            if carol not in (alice, bob):
                 self.notify_chatting(carol)
 
     @decorators.require_account
@@ -276,58 +275,41 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         return deliverable
 
 
-class PairUsers(base.WebRequestHandler, notifications.Notifications):
+class Available(base.WebRequestHandler, notifications.Notifications):
     """ """
 
-    @decorators.require_cron
-    def get(self, *args, **kwds):
+    def post(self):
         """ """
-        self._pair_currently_chatting_users()
-        self._pair_not_currently_chatting_users()
-
-    def _pair_currently_chatting_users(self):
-        """ """
-        alices = self.get_users(started=True, chatting=True, available=True)
-        start = datetime.datetime.now()
-        for alice in alices:
+        handle = self.request.get('from')
+        key_name = models.Account.key_name(handle)
+        alice = models.Account.get_by_key_name(key_name)
+        _log.debug('%s became available' % alice)
+        if not alice.available:
+            alice.available = True
+            db.put(alice)
             bob = alice.partner
-            if not xmpp.get_presence(str(bob)):
-                alice, bob = self.stop_chat(alice)
-                alice, carol = self.start_chat(alice, bob)
+            if bob is None:
+                alice, bob = self.start_chat(alice, bob)
+                if bob is not None:
+                    self.notify_chatting(alice)
+                    self.notify_chatting(bob)
 
-                body = '%s has signed off; cron paired %s with %s'
-                _log.debug(body % (bob, alice, carol))
-                self.notify_been_nexted(alice)
-                if carol is not None and carol not in (alice, bob):
-                    self.notify_chatting(carol)
 
-            if self._time_since(start) > MAX_CRON_TIME:
-                break
+class Unavailable(base.WebRequestHandler, notifications.Notifications):
+    """ """
 
-    def _pair_not_currently_chatting_users(self):
+    def post(self):
         """ """
-        alice = None
-        bobs = self.get_users(started=True, chatting=False, available=True)
-        start = datetime.datetime.now()
-        for bob in bobs:
-            if alice is None:
-                alice = bob
-            else:
-                alice.partner = bob
-                bob.partner = alice
-                db.put([alice, bob])
-
-                _log.debug('cron paired %s with %s' % (alice, bob))
-                self.notify_chatting(alice)
-                self.notify_chatting(bob)
-                alice = None
-
-            if self._time_since(start) > MAX_CRON_TIME:
-                break
-
-    def _time_since(self, start):
-        """ """
-        now = datetime.datetime.now()
-        delta = now - start
-        diff = delta.seconds + delta.microseconds / 1000000.0
-        return diff
+        handle = self.request.get('from')
+        key_name = models.Account.key_name(handle)
+        alice = models.Account.get_by_key_name(key_name)
+        _log.debug('%s became unavailable' % alice)
+        if alice.available:
+            alice.available = False
+            db.put(alice)
+            bob = alice.partner
+            if bob is not None:
+                alice, bob = self.stop_chat(alice, bob)
+                bob, carol = self.start_chat(bob, alice)
+                self.notify_been_nexted(bob)
+                self.notify_chatting(carol)

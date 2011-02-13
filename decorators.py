@@ -63,32 +63,13 @@ def require_account(method):
     return wrap
 
 
-def require_cron(method):
-    """Only allow cron to access the request handler method.
-    
-    On Google App Engine, whenever cron fires, it issues a GET request on the
-    URL specified in cron.yaml.  And it sets the request header
-    X-AppEngine-Cron with the value 'true'.  Ensure that this request header is
-    set, otherwise, raise a 401: Unauthorized error.
-    """
-    @functools.wraps(method)
-    def wrap(self, *args, **kwds):
-        _log.debug('decorated %s can only be called by cron' % method)
-        if self.request.headers.get('X-AppEngine-Cron') != 'true':
-            body = "decorator requirements failed; not called by cron"
-            _log.warning(body % message.sender)
-            self.serve_error(401)
-        else:
-            _log.debug('decorator requirements passed; calling method')
-            return method(self, *args, **kwds)
-    return wrap
-
-
 def send_notification(method):
     """ """
     @functools.wraps(method)
     def wrap(self, alice):
-        body = method(self, alice)
-        status = xmpp.send_message(str(alice), body)
-        assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID, xmpp.OTHER_ERROR)
+        if alice is not None:
+            body = method(self, alice)
+            status = xmpp.send_message(str(alice), body)
+            assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
+                              xmpp.OTHER_ERROR)
     return wrap

@@ -22,6 +22,3 @@
 
 
 cron:
-- description: pair up online and available users
-  url: /_pair_users
-  schedule: every 5 minutes

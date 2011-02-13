@@ -37,18 +37,18 @@ handlers:
 - url: /assets
   static_dir: assets
 
-- url: /_pair_users
-  script: main.py
-  login: admin
-
 - url: /.*
   script: main.py
 
 
 inbound_services:
 - xmpp_message
+- xmpp_presence
+- xmpp_subscribe
+
 
 skip_files:
+
 # Default stuff:
 - ^(.*/)?app\.yaml
 - ^(.*/)?app\.yml
