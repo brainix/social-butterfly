@@ -2,6 +2,7 @@ indexes:
 
 - kind: Account
   properties:
-  - name: started
+  - name: available
   - name: partner
+  - name: started
   - name: datetime

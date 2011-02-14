@@ -309,7 +309,7 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
             db.put(alice)
             bob = alice.partner
             if bob is not None:
-                alice, bob = self.stop_chat(alice, bob)
+                alice, bob = self.stop_chat(alice)
                 bob, carol = self.start_chat(bob, alice)
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
