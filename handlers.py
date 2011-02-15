@@ -30,7 +30,7 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
 from config import DEBUG, TEMPLATES, MIN_GMAIL_ADDR_LEN, MAX_GMAIL_ADDR_LEN
-from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS, MAX_CRON_TIME
+from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
 import base
 import decorators
 import models
@@ -127,6 +127,18 @@ class Home(base.WebRequestHandler):
         return account
 
 
+class Subscribed(base.WebRequestHandler, notifications.Notifications):
+    """ """
+
+    def post(self):
+        """ """
+        handle = self.request.get('from')
+        key_name = models.Account.key_name(handle)
+        alice = models.Account.get_by_key_name(key_name)
+        _log.debug('%s subscribed' % alice)
+        self.send_help(alice)
+
+
 class Chat(base.ChatRequestHandler, notifications.Notifications):
     """Request handler to respond to XMPP messages."""
 
@@ -135,11 +147,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
         """Alice has typed /help."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /help' % alice)
-        body = 'Type /start to make yourself available for chat.\n\n'
-        body += 'Type /next to chat with someone else.\n\n'
-        body += 'Type /stop to make yourself unavailable for chat.\n\n'
-        body += 'Type /help to see this help text.'
-        message.reply(body)
+        self.send_help(alice)
 
     @decorators.require_account
     def start_command(self, message=None):
@@ -310,6 +318,7 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
             bob = alice.partner
             if bob is not None:
                 alice, bob = self.stop_chat(alice)
-                bob, carol = self.start_chat(bob, alice)
-                self.notify_been_nexted(bob)
-                self.notify_chatting(carol)
+                if bob is not None:
+                    bob, carol = self.start_chat(bob, alice)
+                    self.notify_been_nexted(bob)
+                    self.notify_chatting(carol)

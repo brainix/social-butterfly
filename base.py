@@ -26,7 +26,6 @@ import logging
 import os
 import traceback
 
-from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -83,6 +82,7 @@ class _BaseRequestHandler(object):
         """ """
         carols = models.Account.all()
         carols = carols.filter('started =', True)
+        carols = carols.filter('available =', True)
         only_one = carols.count(2) == 1
         return only_one
 

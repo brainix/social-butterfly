@@ -34,6 +34,15 @@ class Notifications(object):
     """ """
 
     @decorators.send_notification
+    def send_help(self, alice):
+        """ """
+        body = 'Type /start to make yourself available for chat.\n\n'
+        body += 'Type /next to chat with someone else.\n\n'
+        body += 'Type /stop to make yourself unavailable for chat.\n\n'
+        body += 'Type /help to see this help text.'
+        return body
+
+    @decorators.send_notification
     def notify_already_started(self, alice):
         """ """
         body = "You'd already made yourself available for chat.\n\n"

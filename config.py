@@ -42,9 +42,6 @@ VALID_GMAIL_CHARS = ('.',)
 VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com')
 
 
-MAX_CRON_TIME = 10
-
-
 HTTP_CODE_TO_TITLE = {
     100: 'Continue',
     101: 'Switching Protocols',

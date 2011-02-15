@@ -38,11 +38,12 @@ def main():
     """It's time for the dog and pony show..."""
     logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
     url_mapping = (
-        ('/_ah/xmpp/presence/unavailable/', handlers.Unavailable),  # Unavailable handler.
-        ('/_ah/xmpp/presence/available/',   handlers.Available),    # Available handler.
-        ('/_ah/xmpp/message/chat/',         handlers.Chat),         # Chat handler.
-        ('/',                               handlers.Home),         # /
-        ('(.*)',                            handlers.NotFound),     # 404: Not Found.
+        ('/_ah/xmpp/presence/unavailable/',     handlers.Unavailable),  # Unavailable handler.
+        ('/_ah/xmpp/presence/available/',       handlers.Available),    # Available handler.
+        ('/_ah/xmpp/message/chat/',             handlers.Chat),         # Chat handler.
+        ('/_ah/xmpp/subscription/subscribed/',  handlers.Subscribed),   # Subscribed handler.
+        ('/',                                   handlers.Home),         # /
+        ('(.*)',                                handlers.NotFound),     # 404: Not Found.
     )
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)
