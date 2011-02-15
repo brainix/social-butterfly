@@ -118,7 +118,7 @@ class Home(base.WebRequestHandler):
         key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
         if account is not None:
-            _log.info('%s account not created: already exists' % handle)
+            _log.warning('%s account not created: already exists' % handle)
         else:
             account = models.Account(key_name=key_name, handle=handle,
                                      started=False, available=False)
@@ -272,8 +272,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
             # don't link/unlink chat partners transactionally, so we have to
             # check for this case every time anyone types a message.
             body = "%s typed IM, but %s's partner is %s and %s's partner is %s"
-            body %= (alice, alice, bob, bob, bob.partner)
-            _log.warning(body)
+            _log.error(body % (alice, alice, bob, bob, bob.partner))
             deliverable = False
         else:
             # Nothing else can go wrong.  Alice's message must be deliverable
@@ -288,17 +287,27 @@ class Available(base.WebRequestHandler, notifications.Notifications):
 
     def post(self):
         """ """
-        handle = self.request.get('from')
-        key_name = models.Account.key_name(handle)
-        alice = models.Account.get_by_key_name(key_name)
+        alice = self.request_to_account()
         _log.debug('%s became available' % alice)
-        if not alice.available:
+
+        if alice.available:
+            body = '%s became available, but was already marked available'
+            _log.error(body % alice)
+        else:
             alice.available = True
-            db.put(alice)
-            bob = alice.partner
-            if bob is None:
-                alice, bob = self.start_chat(alice, bob)
-                if bob is not None:
+
+            if alice.partner is not None:
+                db.put(alice)
+                body = '%s became available, but already had partner %s'
+                _log.error(body % (alice, alice.partner))
+            else:
+                alice, bob = self.start_chat(alice, None)
+                if bob is None:
+                    body = '%s became available; looking for partner'
+                    _log.info(body % alice)
+                else:
+                    body = '%s became available; found partner %s'
+                    _log.info(body % (alice, bob))
                     self.notify_chatting(alice)
                     self.notify_chatting(bob)
 
@@ -308,17 +317,26 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
 
     def post(self):
         """ """
-        handle = self.request.get('from')
-        key_name = models.Account.key_name(handle)
-        alice = models.Account.get_by_key_name(key_name)
+        alice = self.request_to_account()
         _log.debug('%s became unavailable' % alice)
-        if alice.available:
+
+        if not alice.available:
+            body = '%s became unavailable, but was already marked unavailable'
+            _log.error(body % alice)
+        else:
             alice.available = False
-            db.put(alice)
-            bob = alice.partner
-            if bob is not None:
+
+            if alice.partner is None:
+                db.put(alice)
+                _log.info('%s became unavailable, had no partner' % alice)
+            else:
                 alice, bob = self.stop_chat(alice)
-                if bob is not None:
-                    bob, carol = self.start_chat(bob, alice)
-                    self.notify_been_nexted(bob)
-                    self.notify_chatting(carol)
+                body = '%s became unavailable, had partner %s' % (alice, bob)
+                _log.info(body)
+                bob, carol = self.start_chat(bob, alice)
+                if carol is None:
+                    _log.info('looking for new partner for %s' % bob)
+                else:
+                    _log.info('found new partner for %s: %s' % (bob, carol))
+                self.notify_been_nexted(bob)
+                self.notify_chatting(carol)

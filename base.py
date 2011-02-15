@@ -112,6 +112,13 @@ class _BaseRequestHandler(object):
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
+    def request_to_account(self):
+        """ """
+        handle = self.request.get('from')
+        key_name = models.Account.key_name(handle)
+        alice = models.Account.get_by_key_name(key_name)
+        return alice
+
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
         carols = self.get_users(started=True, available=True, chatting=False)
