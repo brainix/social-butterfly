@@ -295,9 +295,11 @@ class Available(base.WebRequestHandler, notifications.Notifications):
             _log.error(body % alice)
         else:
             alice.available = True
+            db.put(alice)
 
-            if alice.partner is not None:
-                db.put(alice)
+            if not alice.started:
+                _log.info("%s became available, but hasn't /started" % alice)
+            elif alice.partner is not None:
                 body = '%s became available, but already had partner %s'
                 _log.error(body % (alice, alice.partner))
             else:
@@ -325,9 +327,11 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
             _log.error(body % alice)
         else:
             alice.available = False
+            db.put(alice)
 
-            if alice.partner is None:
-                db.put(alice)
+            if not alice.started:
+                _log.info("%s became unavailable, but hasn't /started" % alice)
+            elif alice.partner is None:
                 _log.info('%s became unavailable, had no partner' % alice)
             else:
                 alice, bob = self.stop_chat(alice)
