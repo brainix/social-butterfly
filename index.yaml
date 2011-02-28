@@ -6,3 +6,9 @@ indexes:
   - name: partner
   - name: started
   - name: datetime
+
+- kind: Account
+  properties:
+  - name: available
+  - name: started
+  - name: datetime

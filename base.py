@@ -86,7 +86,7 @@ class _BaseRequestHandler(object):
         only_one = carols.count(2) == 1
         return only_one
 
-    def get_users(self, started=True, available=True, chatting=False):
+    def _get_users(self, started=True, available=True, chatting=False):
         """ """
         assert started in (None, False, True)
         assert available in (None, False, True)
@@ -106,6 +106,12 @@ class _BaseRequestHandler(object):
 
         return carols
 
+    def num_active_users(self):
+        """Return the number of started and available users."""
+        carols = self._get_users(started=True, available=True, chatting=None)
+        num_carols = carols.count()
+        return num_carols
+
     def message_to_account(self, message):
         """From an XMPP message, find the user account that sent it."""
         key_name = models.Account.key_name(message.sender)
@@ -121,7 +127,7 @@ class _BaseRequestHandler(object):
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner."""
-        carols = self.get_users(started=True, available=True, chatting=False)
+        carols = self._get_users(started=True, available=True, chatting=False)
         only_one = self._only_one()
         for carol in carols:
             if carol != alice:

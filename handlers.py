@@ -313,6 +313,15 @@ class Available(base.WebRequestHandler, notifications.Notifications):
                     self.notify_chatting(alice)
                     self.notify_chatting(bob)
 
+        self._send_presence(alice)
+
+    def _send_presence(self, alice):
+        """ """
+        num = self.num_active_users()
+        noun = 'strangers' if num != 1 else 'stranger'
+        status = '%s %s available for chat.' % (num, noun)
+        xmpp.send_presence(str(alice), status=status)
+
 
 class Unavailable(base.WebRequestHandler, notifications.Notifications):
     """ """
