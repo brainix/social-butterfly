@@ -292,7 +292,7 @@ class Available(base.WebRequestHandler, notifications.Notifications):
 
         if alice.available:
             body = '%s became available, but was already marked available'
-            _log.error(body % alice)
+            _log.info(body % alice)
         else:
             alice.available = True
             db.put(alice)
@@ -333,7 +333,7 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
 
         if not alice.available:
             body = '%s became unavailable, but was already marked unavailable'
-            _log.error(body % alice)
+            _log.info(body % alice)
         else:
             alice.available = False
             db.put(alice)
