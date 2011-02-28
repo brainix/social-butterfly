@@ -73,3 +73,18 @@ def send_notification(method):
             assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
                               xmpp.OTHER_ERROR)
     return wrap
+
+
+def send_presence(method):
+    """ """
+    @functools.wraps(method)
+    def wrap(self, *args, **kwds):
+        return_value = method(self, *args, **kwds)
+        alice = self.request_to_account()
+        if alice is not None:
+            num = self.num_active_users()
+            noun = 'strangers' if num != 1 else 'stranger'
+            status = '%s %s available for chat.' % (num, noun)
+            xmpp.send_presence(str(alice), status=status)
+        return return_value
+    return wrap

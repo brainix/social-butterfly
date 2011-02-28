@@ -285,6 +285,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
 class Available(base.WebRequestHandler, notifications.Notifications):
     """ """
 
+    @decorators.send_presence
     def post(self):
         """ """
         alice = self.request_to_account()
@@ -312,15 +313,6 @@ class Available(base.WebRequestHandler, notifications.Notifications):
                     _log.info(body % (alice, bob))
                     self.notify_chatting(alice)
                     self.notify_chatting(bob)
-
-        self._send_presence(alice)
-
-    def _send_presence(self, alice):
-        """ """
-        num = self.num_active_users()
-        noun = 'strangers' if num != 1 else 'stranger'
-        status = '%s %s available for chat.' % (num, noun)
-        xmpp.send_presence(str(alice), status=status)
 
 
 class Unavailable(base.WebRequestHandler, notifications.Notifications):
