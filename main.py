@@ -24,19 +24,28 @@
 
 import logging
 
+from google.appengine.dist import use_library
+
+from config import DEBUG, LIBRARIES
+
+
+logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
+_log = logging.getLogger(__name__)
+
+
+for library, version in LIBRARIES.items():
+    _log.debug('using library %s %s' % (library, version))
+    use_library(library, version)
+
+
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
-from config import DEBUG
 import handlers
-
-
-_log = logging.getLogger(__name__)
 
 
 def main():
     """It's time for the dog and pony show..."""
-    logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
     url_mapping = (
         ('/_ah/xmpp/presence/unavailable/',     handlers.Unavailable),  # Unavailable handler.
         ('/_ah/xmpp/presence/available/',       handlers.Available),    # Available handler.

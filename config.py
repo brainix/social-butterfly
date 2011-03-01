@@ -32,6 +32,11 @@ DEBUG = True
 _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 
 
+LIBRARIES = {
+    'django': '0.96',
+}
+
+
 _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 
