@@ -23,16 +23,13 @@
 
 
 import logging
-
-from google.appengine.dist import use_library
-
-from config import DEBUG, LIBRARIES
-
-
+from config import DEBUG
 logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
 _log = logging.getLogger(__name__)
 
 
+from google.appengine.dist import use_library
+from config import LIBRARIES
 for library, version in LIBRARIES.items():
     _log.debug('using library %s %s' % (library, version))
     use_library(library, version)
