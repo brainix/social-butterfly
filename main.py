@@ -44,6 +44,7 @@ import handlers
 def main():
     """It's time for the dog and pony show..."""
     url_mapping = (
+        ('/_ah/xmpp/presence/probe/',           handlers.Probe),        # Probe handler.
         ('/_ah/xmpp/presence/unavailable/',     handlers.Unavailable),  # Unavailable handler.
         ('/_ah/xmpp/presence/available/',       handlers.Available),    # Available handler.
         ('/_ah/xmpp/message/chat/',             handlers.Chat),         # Chat handler.

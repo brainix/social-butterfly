@@ -345,3 +345,12 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
+
+
+class Probe(base.WebRequestHandler, notifications.Notifications):
+    """ """
+
+    @decorators.send_presence
+    def post(self):
+        """ """
+        pass
