@@ -295,6 +295,11 @@ class Available(base.WebRequestHandler, notifications.Notifications):
             body = '%s became available, but was already marked available'
             _log.info(body % alice)
         else:
+            # TODO: Refactor this code to keep track of Alice's availability
+            # only if she's already /started.  This could save a lot of
+            # datastore writes.  There's no point keeping track of someone's
+            # availability forever if he/she signed up for Social Butterfly,
+            # used it once, /stopped, then never used it again.
             alice.available = True
             db.put(alice)
 
@@ -327,6 +332,11 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
             body = '%s became unavailable, but was already marked unavailable'
             _log.info(body % alice)
         else:
+            # TODO: Refactor this code to keep track of Alice's availability
+            # only if she's already /started.  This could save a lot of
+            # datastore writes.  There's no point keeping track of someone's
+            # availability forever if he/she signed up for Social Butterfly,
+            # used it once, /stopped, then never used it again.
             alice.available = False
             db.put(alice)
 
