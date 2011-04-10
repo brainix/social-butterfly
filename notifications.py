@@ -27,8 +27,6 @@ import logging
 
 from google.appengine.api import xmpp
 
-import decorators
-
 
 _log = logging.getLogger(__name__)
 
