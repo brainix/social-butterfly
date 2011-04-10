@@ -22,7 +22,10 @@
 """ """
 
 
+import functools
 import logging
+
+from google.appengine.api import xmpp
 
 import decorators
 
@@ -33,7 +36,20 @@ _log = logging.getLogger(__name__)
 class Notifications(object):
     """ """
 
-    @decorators.send_notification
+    def _send_notification(method):
+        """ """
+        @functools.wraps(method)
+        def wrap(self, alice):
+            body = None
+            if alice is not None:
+                body = method(self, alice)
+                status = xmpp.send_message(str(alice), body)
+                assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
+                                  xmpp.OTHER_ERROR)
+            return body
+        return wrap
+
+    @_send_notification
     def send_help(self, alice):
         """ """
         body = 'Type /start to make yourself available for chat.\n\n'
@@ -42,7 +58,7 @@ class Notifications(object):
         body += 'Type /help to see this help text.'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_already_started(self, alice):
         """ """
         body = "You'd already made yourself available for chat.\n\n"
@@ -52,7 +68,7 @@ class Notifications(object):
             body += "And you're already chatting with a partner!"
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_started(self, alice):
         """Notify Alice that she's made herself available for chat."""
         body = "You've made yourself available for chat.\n\n"
@@ -62,13 +78,13 @@ class Notifications(object):
             body += 'Now chatting with a partner.  Say hello!'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_chatting(self, alice):
         """Notify Alice that she's now chatting with a partner."""
         body = 'Now chatting with a partner.  Say hello!'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_not_started(self, alice):
         """ """
         body = "You're not currently chatting with a partner, and you're "
@@ -76,14 +92,14 @@ class Notifications(object):
         body += 'available for chat.'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_not_chatting(self, alice):
         """ """
         body = "You're not currently chatting with a partner, but you're "
         body += 'available for chat.\n\nLooking for a chat partner...'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_nexted(self, alice):
         """Notify Alice that she's /nexted her partner."""
         body = "You've disconnected from your current chat partner.\n\n"
@@ -93,7 +109,7 @@ class Notifications(object):
             body += 'Now chatting with a new partner.  Say hello!'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_been_nexted(self, alice):
         """Notify Alice that her partner has /nexted her."""
         body = 'Your current chat partner has disconnected.\n\n'
@@ -103,19 +119,19 @@ class Notifications(object):
             body += 'Now chatting with a new partner.  Say hello!'
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_already_stopped(self, alice):
         """ """
         body = "You'd already made yourself unavailable for chat."
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_stopped(self, alice):
         """Notify Alice that she's made herself unavailable for chat."""
         body = "You've made yourself unavailable for chat."
         return body
 
-    @decorators.send_notification
+    @_send_notification
     def notify_undeliverable(self, alice):
         """Notify Alice that we couldn't deliver her message to her partner."""
         body = "Couldn't deliver your message to your chat partner.\n\n"

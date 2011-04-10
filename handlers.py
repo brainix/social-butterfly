@@ -32,7 +32,6 @@ from google.appengine.ext.webapp import template
 from config import DEBUG, TEMPLATES, MIN_GMAIL_ADDR_LEN, MAX_GMAIL_ADDR_LEN
 from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
 import base
-import decorators
 import models
 import notifications
 
@@ -142,14 +141,14 @@ class Subscribed(base.WebRequestHandler, notifications.Notifications):
 class Chat(base.ChatRequestHandler, notifications.Notifications):
     """Request handler to respond to XMPP messages."""
 
-    @decorators.require_account
+    @base.ChatRequestHandler.require_account
     def help_command(self, message=None):
         """Alice has typed /help."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /help' % alice)
         self.send_help(alice)
 
-    @decorators.require_account
+    @base.ChatRequestHandler.require_account
     def start_command(self, message=None):
         """Alice has typed /start."""
         alice = self.message_to_account(message)
@@ -158,13 +157,14 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
             self.notify_already_started(alice)
         else:
             alice.started = True
+            alice.available = True
             alice, bob = self.start_chat(alice, None)
 
             # Notify Alice and Bob.
             self.notify_started(alice)
             self.notify_chatting(bob)
 
-    @decorators.require_account
+    @base.ChatRequestHandler.require_account
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
@@ -202,7 +202,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
             if dave not in (alice, bob, carol):
                 self.notify_chatting(dave)
 
-    @decorators.require_account
+    @base.ChatRequestHandler.require_account
     def stop_command(self, message=None):
         """Alice has typed /stop."""
         alice = self.message_to_account(message)
@@ -224,7 +224,7 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
 
-    @decorators.require_account
+    @base.ChatRequestHandler.require_account
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self.message_to_account(message)
@@ -285,39 +285,39 @@ class Chat(base.ChatRequestHandler, notifications.Notifications):
 class Available(base.WebRequestHandler, notifications.Notifications):
     """ """
 
-    @decorators.send_presence
+    @base.WebRequestHandler.send_presence
     def post(self):
         """ """
-        alice = self.request_to_account()
-        _log.debug('%s became available' % alice)
+        alice, made_available = self._make_available()
+        if made_available:
+            alice, bob = self.start_chat(alice, None)
+            if bob is None:
+                body = '%s became available; looking for partner'
+                _log.info(body % alice)
+            else:
+                body = '%s became available; found partner %s'
+                _log.info(body % (alice, bob))
+                self.notify_chatting(alice)
+                self.notify_chatting(bob)
 
-        if alice.available:
+    @base.WebRequestHandler.run_in_transaction
+    def _make_available(self):
+        """ """
+        alice = self.request_to_account()
+        made_available = False
+        if not alice.started:
+            _log.info("%s became available, but hasn't /started" % alice)
+        elif alice.available:
             body = '%s became available, but was already marked available'
             _log.info(body % alice)
+        elif alice.partner is not None:
+            body = '%s became available, but already had partner %s'
+            _log.error(body % (alice, alice.partner))
         else:
-            # TODO: Refactor this code to keep track of Alice's availability
-            # only if she's already /started.  This could save a lot of
-            # datastore writes.  There's no point keeping track of someone's
-            # availability forever if he/she signed up for Social Butterfly,
-            # used it once, /stopped, then never used it again.
             alice.available = True
             db.put(alice)
-
-            if not alice.started:
-                _log.info("%s became available, but hasn't /started" % alice)
-            elif alice.partner is not None:
-                body = '%s became available, but already had partner %s'
-                _log.error(body % (alice, alice.partner))
-            else:
-                alice, bob = self.start_chat(alice, None)
-                if bob is None:
-                    body = '%s became available; looking for partner'
-                    _log.info(body % alice)
-                else:
-                    body = '%s became available; found partner %s'
-                    _log.info(body % (alice, bob))
-                    self.notify_chatting(alice)
-                    self.notify_chatting(bob)
+            made_available = True
+        return alice, made_available
 
 
 class Unavailable(base.WebRequestHandler, notifications.Notifications):
@@ -325,42 +325,42 @@ class Unavailable(base.WebRequestHandler, notifications.Notifications):
 
     def post(self):
         """ """
-        alice = self.request_to_account()
-        _log.debug('%s became unavailable' % alice)
+        alice, made_unavailable = self._make_unavailable()
+        if made_unavailable:
+            alice, bob = self.stop_chat(alice)
+            body = '%s became unavailable, had partner %s' % (alice, bob)
+            _log.info(body)
+            bob, carol = self.start_chat(bob, alice)
+            if carol is None:
+                _log.info('looking for new partner for %s' % bob)
+            else:
+                _log.info('found new partner for %s: %s' % (bob, carol))
+            self.notify_been_nexted(bob)
+            self.notify_chatting(carol)
 
-        if not alice.available:
+    @base.WebRequestHandler.run_in_transaction
+    def _make_unavailable(self):
+        """ """
+        alice = self.request_to_account()
+        made_unavailable = False
+        if not alice.started:
+            _log.info("%s became unavailable, but hasn't /started" % alice)
+        elif not alice.available:
             body = '%s became unavailable, but was already marked unavailable'
             _log.info(body % alice)
+        elif alice.partner is None:
+            _log.info('%s became unavailable, had no partner' % alice)
         else:
-            # TODO: Refactor this code to keep track of Alice's availability
-            # only if she's already /started.  This could save a lot of
-            # datastore writes.  There's no point keeping track of someone's
-            # availability forever if he/she signed up for Social Butterfly,
-            # used it once, /stopped, then never used it again.
             alice.available = False
             db.put(alice)
-
-            if not alice.started:
-                _log.info("%s became unavailable, but hasn't /started" % alice)
-            elif alice.partner is None:
-                _log.info('%s became unavailable, had no partner' % alice)
-            else:
-                alice, bob = self.stop_chat(alice)
-                body = '%s became unavailable, had partner %s' % (alice, bob)
-                _log.info(body)
-                bob, carol = self.start_chat(bob, alice)
-                if carol is None:
-                    _log.info('looking for new partner for %s' % bob)
-                else:
-                    _log.info('found new partner for %s: %s' % (bob, carol))
-                self.notify_been_nexted(bob)
-                self.notify_chatting(carol)
+            made_unavailable = True
+        return alice, made_unavailable
 
 
 class Probe(base.WebRequestHandler, notifications.Notifications):
     """ """
 
-    @decorators.send_presence
+    @base.WebRequestHandler.send_presence
     def post(self):
         """ """
         pass

@@ -22,10 +22,12 @@
 """Google App Engine request handlers (abstract base classes)."""
 
 
+import functools
 import logging
 import os
 import traceback
 
+from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -34,6 +36,7 @@ from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
 import models
+import strangers
 
 
 _log = logging.getLogger(__name__)
@@ -78,45 +81,10 @@ class _BaseRequestHandler(object):
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
-    def _only_one(self):
-        """ """
-        carols = models.Account.all()
-        carols = carols.filter('started =', True)
-        carols = carols.filter('available =', True)
-        only_one = carols.count(2) == 1
-        return only_one
 
-    def _get_users(self, started=True, available=True, chatting=False):
-        """ """
-        assert started in (None, False, True)
-        assert available in (None, False, True)
-        assert chatting in (None, False, True)
-
-        carols = models.Account.all()
-        if started is not None:
-            carols = carols.filter('started =', started)
-        if available is not None:
-            carols = carols.filter('available =', available)
-        if chatting == False:
-            carols = carols.filter('partner =', None)
-        elif chatting == True:
-            carols = carols.filter('partner !=', None)
-            carols.order('partner')
-        carols = carols.order('datetime')
-
-        return carols
-
-    def num_active_users(self):
-        """Return the number of started and available users."""
-        carols = self._get_users(started=True, available=True, chatting=None)
-        num_carols = carols.count()
-        return num_carols
-
-    def message_to_account(self, message):
-        """From an XMPP message, find the user account that sent it."""
-        key_name = models.Account.key_name(message.sender)
-        alice = models.Account.get_by_key_name(key_name)
-        return alice
+class WebRequestHandler(_BaseRequestHandler, strangers.StrangerMixin,
+                        webapp.RequestHandler):
+    """Abstract base web request handler class."""
 
     def request_to_account(self):
         """ """
@@ -125,59 +93,72 @@ class _BaseRequestHandler(object):
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
-    def _find_partner(self, alice, bob):
-        """Alice is looking to chat.  Find her a partner."""
-        carols = self._get_users(started=True, available=True, chatting=False)
-        only_one = self._only_one()
-        for carol in carols:
-            if carol != alice:
-                if carol != bob or only_one:
-                    return carol
-
-    def _link_partners(self, alice, bob):
-        """Alice is looking to chat.  Find her a partner, and link them."""
-        carol = self._find_partner(alice, bob)
-        alice.partner = carol
-        if carol is not None:
-            carol.partner = alice
-        return alice, carol
-
-    def _unlink_partners(self, alice):
-        """Alice is not looking to chat.  Unlink her from her partner."""
-        bob = alice.partner
-        alice.partner = None
-        if bob is not None:
-            if bob.partner == alice:
-                bob.partner = None
-            else:
-                bob = None
-        return alice, bob
-
-    def _start_or_stop_chat(self, alice, bob=None, start=True):
+    @staticmethod
+    def send_presence(method):
         """ """
-        if start:
-            alice, carol = self._link_partners(alice, bob)
-        else:
-            alice, carol = self._unlink_partners(alice)
-        accounts = [account for account in (alice, carol)
-                    if account is not None]
-        db.put(accounts)
-        return alice, carol
+        @functools.wraps(method)
+        def wrap(self, *args, **kwds):
+            return_value = method(self, *args, **kwds)
+            alice = self.request_to_account()
+            if alice is not None:
+                num = self.num_active_users()
+                noun = 'strangers' if num != 1 else 'stranger'
+                status = '%s %s available for chat.' % (num, noun)
+                xmpp.send_presence(str(alice), status=status)
+            return return_value
+        return wrap
 
-    def start_chat(self, alice, bob):
-        """ """
-        return self._start_or_stop_chat(alice, bob=bob, start=True)
+    @staticmethod
+    def run_in_transaction(method):
+        """Transactionally execute a method."""
+        @functools.wraps(method)
+        def wrap(*args, **kwds):
+            method_name = method.func_name
+            _log.debug('transactionally executing %s' % method_name)
+            return_value = db.run_in_transaction(method, *args, **kwds)
+            _log.debug('transactionally executed %s' % method_name)
+            return return_value
+        return wrap
 
-    def stop_chat(self, alice):
-        """ """
-        return self._start_or_stop_chat(alice, start=False)
 
-
-class WebRequestHandler(_BaseRequestHandler, webapp.RequestHandler):
-    """Abstract base web request handler class."""
-    pass
-
-
-class ChatRequestHandler(_BaseRequestHandler, xmpp_handlers.CommandHandler):
+class ChatRequestHandler(_BaseRequestHandler, strangers.StrangerMixin,
+                         xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
-    pass
+
+    def message_to_account(self, message):
+        """From an XMPP message, find the user account that sent it."""
+        key_name = models.Account.key_name(message.sender)
+        alice = models.Account.get_by_key_name(key_name)
+        return alice
+
+    @staticmethod
+    def require_account(method):
+        """Require that the user has signed up to access the request handler.
+
+        Google App Engine provides similar functionality:
+            from google.appengine.ext.webapp.util import login_required
+
+        But Google App Engine's provided decorator is meant for GET webapp
+        request handlers that the user interacts with through his/her browser.
+        We need to decorate GET XMPP request handlers that the user interacts
+        with through Google Talk.
+        
+        So, on authentication failure, instead of redirecting to a login page,
+        we need to reply with an XMPP instant message instructing the user how
+        to sign up.
+        """
+        @functools.wraps(method)
+        def wrap(self, message=None):
+            _log.debug('decorated %s requires registered account' % method)
+            alice = self.message_to_account(message)
+            if alice is None:
+                body = "decorator requirements failed; %s hasn't registered"
+                _log.warning(body % message.sender)
+                body = 'To chat with strangers, sign up here:\n\n'
+                body += 'http://social-butterfly.appspot.com/\n\n'
+                body += 'It takes 5 seconds!'
+                message.reply(body)
+            else:
+                _log.debug('decorator requirements passed; calling method')
+                return method(self, message=message)
+        return wrap
