@@ -31,7 +31,7 @@ from google.appengine.api import xmpp
 _log = logging.getLogger(__name__)
 
 
-class Notifications(object):
+class NotificationsMixin(object):
     """ """
 
     def _send_notification(method):
