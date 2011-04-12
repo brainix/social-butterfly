@@ -42,7 +42,7 @@ import strangers
 _log = logging.getLogger(__name__)
 
 
-class _BaseRequestHandler(object):
+class _BaseHandler(object):
     """Methods common to all request handlers."""
 
     def handle_exception(self, exception, debug_mode):
@@ -82,8 +82,7 @@ class _BaseRequestHandler(object):
         self.response.out.write(html)
 
 
-class WebRequestHandler(_BaseRequestHandler, strangers.StrangerMixin,
-                        webapp.RequestHandler):
+class WebHandler(_BaseHandler, strangers.StrangerMixin, webapp.RequestHandler):
     """Abstract base web request handler class."""
 
     def request_to_account(self):
@@ -121,8 +120,8 @@ class WebRequestHandler(_BaseRequestHandler, strangers.StrangerMixin,
         return wrap
 
 
-class ChatRequestHandler(_BaseRequestHandler, strangers.StrangerMixin,
-                         xmpp_handlers.CommandHandler):
+class ChatHandler(_BaseHandler, strangers.StrangerMixin,
+                  xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
     def message_to_account(self, message):

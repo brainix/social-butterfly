@@ -32,10 +32,10 @@ import base
 _log = logging.getLogger(__name__)
 
 
-class AvailabilityHandler(base.WebRequestHandler):
+class AvailabilityHandler(base.WebHandler):
     """ """
 
-    @base.WebRequestHandler.run_in_transaction
+    @base.WebHandler.run_in_transaction
     def make_available(self):
         """ """
         alice = self.request_to_account()
@@ -56,7 +56,7 @@ class AvailabilityHandler(base.WebRequestHandler):
                 made_available = True
         return alice, made_available
 
-    @base.WebRequestHandler.run_in_transaction
+    @base.WebHandler.run_in_transaction
     def make_unavailable(self):
         """ """
         alice = self.request_to_account()

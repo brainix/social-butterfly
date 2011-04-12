@@ -35,14 +35,6 @@ _log = logging.getLogger(__name__)
 class StrangerMixin(object):
     """ """
 
-    def _only_one(self):
-        """ """
-        carols = models.Account.all()
-        carols = carols.filter('started =', True)
-        carols = carols.filter('available =', True)
-        only_one = carols.count(2) == 1
-        return only_one
-
     def _get_users(self, started=True, available=True, chatting=False):
         """ """
         assert started in (None, False, True)
@@ -70,13 +62,26 @@ class StrangerMixin(object):
         return num_carols
 
     def _find_partner(self, alice, bob):
-        """Alice is looking to chat.  Find her a partner."""
+        """Alice is looking to chat.  Find her a partner, Carol.
+        
+        Bob was Alice's previous chat partner (if any).  Pair Alice with
+        someone different this time (if possible).
+        """
         carols = self._get_users(started=True, available=True, chatting=False)
-        only_one = self._only_one()
+        only_one = carols.count(2) == 1
+
         for carol in carols:
+            # Make sure to not pair Alice with herself.
             if carol != alice:
+                # Try to pair Alice with someone other than Bob this time,
+                # unless Bob is the only other user available for chat.
                 if carol != bob or only_one:
+                    # Hooray, we've found Alice a chat partner!
                     return carol
+
+        # Drat.  We couldn't find Alice a chat partner.  Either no one else is
+        # available for chat, or everyone else available for chat already has a
+        # partner.  Implicitly return None.
 
     def _link_partners(self, alice, bob):
         """Alice is looking to chat.  Find her a partner, and link them."""
@@ -98,7 +103,12 @@ class StrangerMixin(object):
         return alice, bob
 
     def _start_or_stop_chat(self, alice, bob=None, start=True):
-        """ """
+        """Alice is looking to either start or stop chatting.
+        
+        When Alice is looking to start chatting, we also pass Bob in.  Bob was
+        Alice's previous chat partner (if any).  We pass Bob in so that we pair
+        Alice with someone different this time (if possible).
+        """
         if start:
             alice, carol = self._link_partners(alice, bob)
         else:

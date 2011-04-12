@@ -40,7 +40,7 @@ import notifications
 _log = logging.getLogger(__name__)
 
 
-class NotFound(base.WebRequestHandler):
+class NotFound(base.WebHandler):
     """Request handler to serve a 404: Not Found error page."""
 
     def get(self, *args, **kwds):
@@ -48,7 +48,7 @@ class NotFound(base.WebRequestHandler):
         return self.serve_error(404)
 
 
-class Home(base.WebRequestHandler):
+class Home(base.WebHandler):
     """Request handler to serve the homepage."""
 
     def get(self):
@@ -127,7 +127,7 @@ class Home(base.WebRequestHandler):
         return account
 
 
-class Subscribed(base.WebRequestHandler, notifications.NotificationsMixin):
+class Subscribed(base.WebHandler, notifications.NotificationMixin):
     """ """
 
     def post(self):
@@ -139,17 +139,17 @@ class Subscribed(base.WebRequestHandler, notifications.NotificationsMixin):
         self.send_help(alice)
 
 
-class Chat(base.ChatRequestHandler, notifications.NotificationsMixin):
+class Chat(base.ChatHandler, notifications.NotificationMixin):
     """Request handler to respond to XMPP messages."""
 
-    @base.ChatRequestHandler.require_account
+    @base.ChatHandler.require_account
     def help_command(self, message=None):
         """Alice has typed /help."""
         alice = self.message_to_account(message)
         _log.debug('%s typed /help' % alice)
         self.send_help(alice)
 
-    @base.ChatRequestHandler.require_account
+    @base.ChatHandler.require_account
     def start_command(self, message=None):
         """Alice has typed /start."""
         alice = self.message_to_account(message)
@@ -165,7 +165,7 @@ class Chat(base.ChatRequestHandler, notifications.NotificationsMixin):
             self.notify_started(alice)
             self.notify_chatting(bob)
 
-    @base.ChatRequestHandler.require_account
+    @base.ChatHandler.require_account
     def next_command(self, message=None):
         """Alice has typed /next."""
         alice = self.message_to_account(message)
@@ -203,7 +203,7 @@ class Chat(base.ChatRequestHandler, notifications.NotificationsMixin):
             if dave not in (alice, bob, carol):
                 self.notify_chatting(dave)
 
-    @base.ChatRequestHandler.require_account
+    @base.ChatHandler.require_account
     def stop_command(self, message=None):
         """Alice has typed /stop."""
         alice = self.message_to_account(message)
@@ -225,7 +225,7 @@ class Chat(base.ChatRequestHandler, notifications.NotificationsMixin):
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
 
-    @base.ChatRequestHandler.require_account
+    @base.ChatHandler.require_account
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to Bob."""
         alice = self.message_to_account(message)
@@ -284,10 +284,10 @@ class Chat(base.ChatRequestHandler, notifications.NotificationsMixin):
 
 
 class Available(availability.AvailabilityHandler,
-                notifications.NotificationsMixin):
+                notifications.NotificationMixin):
     """ """
 
-    @base.WebRequestHandler.send_presence
+    @base.WebHandler.send_presence
     def post(self):
         """ """
         alice, made_available = self.make_available()
@@ -303,7 +303,7 @@ class Available(availability.AvailabilityHandler,
 
 
 class Unavailable(availability.AvailabilityHandler,
-                  notifications.NotificationsMixin):
+                  notifications.NotificationMixin):
     """ """
 
     def post(self):
@@ -325,10 +325,10 @@ class Unavailable(availability.AvailabilityHandler,
                 self.notify_chatting(carol)
 
 
-class Probe(base.WebRequestHandler, notifications.NotificationsMixin):
+class Probe(base.WebHandler, notifications.NotificationMixin):
     """ """
 
-    @base.WebRequestHandler.send_presence
+    @base.WebHandler.send_presence
     def post(self):
         """ """
         pass
