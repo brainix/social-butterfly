@@ -37,15 +37,22 @@ class NotificationMixin(object):
     def _send_notification(method):
         """ """
         @functools.wraps(method)
-        def wrap(self, alice):
-            body = None
+        def wrap(self, alice, *args, **kwds):
             if alice is not None:
-                body = method(self, alice)
+                body = method(self, alice, *args, **kwds)
                 status = xmpp.send_message(str(alice), body)
                 assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
                                   xmpp.OTHER_ERROR)
-            return body
+                return body
         return wrap
+
+    @_send_notification
+    def notify_requires_account(self, alice):
+        """ """
+        body = 'To chat with strangers, sign up here:\n\n'
+        body += 'http://social-butterfly.appspot.com/\n\n'
+        body += 'It takes 5 seconds!'
+        return body
 
     @_send_notification
     def send_help(self, alice):
@@ -127,6 +134,12 @@ class NotificationMixin(object):
     def notify_stopped(self, alice):
         """Notify Alice that she's made herself unavailable for chat."""
         body = "You've made yourself unavailable for chat."
+        return body
+
+    @_send_notification
+    def send_message(self, alice, body):
+        """ """
+        body = 'Partner: ' + body
         return body
 
     @_send_notification

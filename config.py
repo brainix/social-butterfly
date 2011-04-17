@@ -24,6 +24,7 @@
 
 import logging
 import os
+import string
 
 
 _log = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 
 MIN_GMAIL_ADDR_LEN = 6
 MAX_GMAIL_ADDR_LEN = 64
-VALID_GMAIL_CHARS = ('.',)
+VALID_GMAIL_CHARS = string.ascii_lowercase + string.digits + '.'
 VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com',)
 
 

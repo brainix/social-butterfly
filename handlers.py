@@ -72,7 +72,7 @@ class Home(base.WebHandler):
             _log.info('%s signed up' % handle)
 
     def _sanitize_handle(self, handle):
-        """ """
+        """A user has signed up.  Clean up his/her chat handle."""
         handle = handle.strip()
         handle = handle.lower()
 
@@ -84,7 +84,7 @@ class Home(base.WebHandler):
         return handle
 
     def _validate_handle(self, handle):
-        """ """
+        """A user has signed up.  Validate his/her chat handle."""
         body = "%s couldn't sign up: " % handle
 
         try:
@@ -100,7 +100,7 @@ class Home(base.WebHandler):
             return False
 
         for c in local:
-            if not c.isalnum() and c not in VALID_GMAIL_CHARS:
+            if c not in VALID_GMAIL_CHARS:
                 body += "handle's local part has invalid char %s" % c
                 _log.warning(body)
                 return False
@@ -113,7 +113,7 @@ class Home(base.WebHandler):
         return True
 
     def _create_account(self, handle):
-        """ """
+        """A user has signed up.  Create his/her Social Butterfly account."""
         handle = db.IM('xmpp', handle)
         key_name = models.Account.key_name(handle.address)
         account = models.Account.get_by_key_name(key_name)
@@ -128,18 +128,16 @@ class Home(base.WebHandler):
 
 
 class Subscribed(base.WebHandler, notifications.NotificationMixin):
-    """ """
+    """Request handler to listen for XMPP subscription notifications."""
 
     def post(self):
         """ """
-        handle = self.request.get('from')
-        key_name = models.Account.key_name(handle)
-        alice = models.Account.get_by_key_name(key_name)
+        alice = self.request_to_account()
         _log.debug('%s subscribed' % alice)
         self.send_help(alice)
 
 
-class Chat(base.ChatHandler, notifications.NotificationMixin):
+class Chat(base.ChatHandler):
     """Request handler to respond to XMPP messages."""
 
     @base.ChatHandler.require_account
@@ -236,56 +234,19 @@ class Chat(base.ChatHandler, notifications.NotificationMixin):
             self.notify_not_chatting(alice)
         else:
             bob = alice.partner
-            deliverable = self._is_deliverable(alice)
-
+            deliverable = self.is_deliverable(alice)
             if deliverable:
                 _log.info("sending %s's IM to %s" % (alice, bob))
-                body = 'Partner: ' + message.body
-                status = xmpp.send_message(str(bob), body)
-
-                assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
-                                  xmpp.OTHER_ERROR)
-
-                if status == xmpp.NO_ERROR:
-                    _log.info("sent %s's IM to %s" % (alice, bob))
-                else:
-                    if status == xmpp.INVALID_JID:
-                        body = "couldn't send %s's IM to %s (invalid JID)"
-                        _log.critical(body % (alice, bob))
-                    elif status == xmpp.OTHER_ERROR:
-                        body = "couldn't send %s's IM to %s (other error)"
-                        _log.warning(body % (alice, bob))
-                    deliverable = False
-
-            if not deliverable:
+                self.send_message(bob, message.body)
+                _log.info("sent %s's IM to %s" % (alice, bob))
+            else:
+                _log.info("can't send %s's IM to %s" % (alice, bob))
                 self.notify_undeliverable(alice)
-
-    def _is_deliverable(self, alice):
-        """Alice has typed an IM.  Determine if it can be delivered to Bob."""
-        bob = alice.partner
-        if bob is None:
-            # Oops.  Alice doesn't have a chat partner.
-            _log.warning('%s typed IM, but has no chat partner' % alice)
-            deliverable = False
-        elif bob.partner != alice:
-            # Oops.  Alice thinks that her chat partner is Bob, but Bob doesn't
-            # think that his chat partner is Alice.  This can happen because we
-            # don't link/unlink chat partners transactionally, so we have to
-            # check for this case every time anyone types a message.
-            body = "%s typed IM, but %s's partner is %s and %s's partner is %s"
-            _log.error(body % (alice, alice, bob, bob, bob.partner))
-            deliverable = False
-        else:
-            # Nothing else can go wrong.  Alice's message must be deliverable
-            # to Bob.
-            _log.debug('%s typed IM, OK to deliver to %s' % (alice, bob))
-            deliverable = True
-        return deliverable
 
 
 class Available(availability.AvailabilityHandler,
                 notifications.NotificationMixin):
-    """ """
+    """Request handler to listen for when users become available for chat."""
 
     @base.WebHandler.send_presence
     def post(self):
@@ -304,7 +265,7 @@ class Available(availability.AvailabilityHandler,
 
 class Unavailable(availability.AvailabilityHandler,
                   notifications.NotificationMixin):
-    """ """
+    """Request handler to listen for when users become unavailable for chat."""
 
     def post(self):
         """ """

@@ -125,3 +125,25 @@ class StrangerMixin(object):
     def stop_chat(self, alice):
         """ """
         return self._start_or_stop_chat(alice, start=False)
+
+    def is_deliverable(self, alice):
+        """Alice has typed an IM.  Determine if it can be delivered to Bob."""
+        bob = alice.partner
+        if bob is None:
+            # Oops.  Alice doesn't have a chat partner.
+            _log.warning('%s typed IM, but has no chat partner' % alice)
+            deliverable = False
+        elif bob.partner != alice:
+            # Oops.  Alice thinks that her chat partner is Bob, but Bob doesn't
+            # think that his chat partner is Alice.  This can happen because we
+            # don't link/unlink chat partners transactionally, so we have to
+            # check for this case every time anyone types a message.
+            body = "%s typed IM, but %s's partner is %s and %s's partner is %s"
+            _log.error(body % (alice, alice, bob, bob, bob.partner))
+            deliverable = False
+        else:
+            # Nothing else can go wrong.  Alice's message must be deliverable
+            # to Bob.
+            _log.debug('%s typed IM, OK to deliver to %s' % (alice, bob))
+            deliverable = True
+        return deliverable

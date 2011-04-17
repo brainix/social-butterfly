@@ -36,6 +36,7 @@ from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
 import models
+import notifications
 import strangers
 
 
@@ -120,8 +121,8 @@ class WebHandler(_BaseHandler, strangers.StrangerMixin, webapp.RequestHandler):
         return wrap
 
 
-class ChatHandler(_BaseHandler, strangers.StrangerMixin,
-                  xmpp_handlers.CommandHandler):
+class ChatHandler(_BaseHandler, notifications.NotificationMixin,
+                  strangers.StrangerMixin, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
     def message_to_account(self, message):
@@ -153,10 +154,7 @@ class ChatHandler(_BaseHandler, strangers.StrangerMixin,
             if alice is None:
                 body = "decorator requirements failed; %s hasn't registered"
                 _log.warning(body % message.sender)
-                body = 'To chat with strangers, sign up here:\n\n'
-                body += 'http://social-butterfly.appspot.com/\n\n'
-                body += 'It takes 5 seconds!'
-                message.reply(body)
+                self.notify_requires_account(message.sender)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)
