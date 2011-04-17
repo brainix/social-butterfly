@@ -22,22 +22,25 @@
 """Google App Engine datastore models."""
 
 
+import logging
+
 from google.appengine.ext import db
+
+from config import MIN_GMAIL_ADDR_LEN, MAX_GMAIL_ADDR_LEN
+from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
+
+
+_log = logging.getLogger(__name__)
 
 
 class Account(db.Model):
     """ """
-    handle = db.IMProperty(indexed=False, required=True)
 
+    handle = db.IMProperty(indexed=False, required=True)
     started = db.BooleanProperty(required=True)
     available = db.BooleanProperty(required=True)
     partner = db.SelfReferenceProperty()
     datetime = db.DateTimeProperty(auto_now=True, required=True)
-
-    @staticmethod
-    def key_name(handle):
-        """Convert an IM handle into an account key."""
-        return 'account_' + handle.split('/', 1)[0].lower()
 
     def __str__(self):
         """ """
@@ -50,3 +53,68 @@ class Account(db.Model):
     def __ne__(self, other):
         """ """
         return str(self) != str(other)
+
+    @staticmethod
+    def key_name(handle):
+        """Convert an IM handle into an account key."""
+        return 'account_' + handle.split('/', 1)[0].lower()
+
+    @classmethod
+    def factory(cls, handle):
+        """A user has signed up.  Create his/her Social Butterfly account."""
+        handle = cls._sanitize_handle(handle)
+        _log.debug('creating account for %s' % handle)
+        cls._validate_handle(handle)
+
+        handle = db.IM('xmpp', handle)
+        key_name = cls.key_name(handle.address)
+        account = cls.get_by_key_name(key_name)
+        if account is not None:
+            body = "couldn't create account for %s: already exists" % handle
+            _log.warning(body)
+        else:
+            account = cls(key_name=key_name, handle=handle, started=False,
+                          available=False)
+            account.put()
+            _log.info('created account for %s' % handle)
+        return account
+
+    @staticmethod
+    def _sanitize_handle(handle):
+        """A user has signed up.  Clean up his/her chat handle."""
+        handle = handle.strip().lower()
+
+        valid_gmail_domains = ['@' + domain for domain in VALID_GMAIL_DOMAINS]
+        valid_gmail_domains = tuple(valid_gmail_domains)
+        if not handle.endswith(valid_gmail_domains):
+            handle += valid_gmail_domains[0]
+
+        return handle
+
+    @staticmethod
+    def _validate_handle(handle):
+        """A user has signed up.  Validate his/her chat handle."""
+
+        def log_and_raise(body):
+            head = "couldn't create account for %s: " % handle
+            _log.warning(head + body)
+            raise ValueError(body)
+
+        try:
+            local, domain = handle.split('@')
+        except ValueError:
+            body = "handle doesn't have exactly one at (@) sign"
+            log_and_raise(body)
+
+        if not MIN_GMAIL_ADDR_LEN <= len(local) <= MAX_GMAIL_ADDR_LEN:
+            body = "handle's local part doesn't meet length requirements"
+            log_and_raise(body)
+
+        for c in local:
+            if c not in VALID_GMAIL_CHARS:
+                body = "handle's local part has invalid character %s" % c
+                log_and_raise(body)
+
+        if domain not in VALID_GMAIL_DOMAINS:
+            body = "handle ends with invalid domain %s" % domain
+            log_and_raise(body)

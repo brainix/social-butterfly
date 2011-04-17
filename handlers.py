@@ -26,15 +26,12 @@ import logging
 import os
 
 from google.appengine.api import xmpp
-from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES, MIN_GMAIL_ADDR_LEN, MAX_GMAIL_ADDR_LEN
-from config import VALID_GMAIL_CHARS, VALID_GMAIL_DOMAINS
+from config import DEBUG, TEMPLATES
 import availability
 import base
 import models
-import notifications
 
 
 _log = logging.getLogger(__name__)
@@ -59,75 +56,22 @@ class Home(base.WebHandler):
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
+    @base.WebHandler.run_in_transaction
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
         _log.info('%s signing up' % handle)
-        handle = self._sanitize_handle(handle)
-        if not self._validate_handle(handle):
+        try:
+            account = models.Account.factory(handle)
+        except ValueError:
+            _log.warning("%s couldn't sign up" % handle)
             self.serve_error(400)
         else:
-            account = self._create_account(handle)
             xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
 
-    def _sanitize_handle(self, handle):
-        """A user has signed up.  Clean up his/her chat handle."""
-        handle = handle.strip()
-        handle = handle.lower()
 
-        valid_gmail_domains = ['@' + domain for domain in VALID_GMAIL_DOMAINS]
-        valid_gmail_domains = tuple(valid_gmail_domains)
-        if not handle.endswith(valid_gmail_domains):
-            handle += valid_gmail_domains[0]
-
-        return handle
-
-    def _validate_handle(self, handle):
-        """A user has signed up.  Validate his/her chat handle."""
-        body = "%s couldn't sign up: " % handle
-
-        try:
-            local, domain = handle.split('@')
-        except ValueError:
-            body += "handle doesn't have exactly one at sign"
-            _log.warning(body)
-            return False
-
-        if not MIN_GMAIL_ADDR_LEN <= len(local) <= MAX_GMAIL_ADDR_LEN:
-            body += "handle's local part doesn't meet length requirements"
-            _log.warning(body)
-            return False
-
-        for c in local:
-            if c not in VALID_GMAIL_CHARS:
-                body += "handle's local part has invalid char %s" % c
-                _log.warning(body)
-                return False
-
-        if domain not in VALID_GMAIL_DOMAINS:
-            body += "handle ends with invalid domain %s" % domain
-            _log.warning(body)
-            return False
-
-        return True
-
-    def _create_account(self, handle):
-        """A user has signed up.  Create his/her Social Butterfly account."""
-        handle = db.IM('xmpp', handle)
-        key_name = models.Account.key_name(handle.address)
-        account = models.Account.get_by_key_name(key_name)
-        if account is not None:
-            _log.warning('%s account not created: already exists' % handle)
-        else:
-            account = models.Account(key_name=key_name, handle=handle,
-                                     started=False, available=False)
-            account.put()
-            _log.info('%s account created' % handle)
-        return account
-
-
-class Subscribed(base.WebHandler, notifications.NotificationMixin):
+class Subscribed(base.WebHandler):
     """Request handler to listen for XMPP subscription notifications."""
 
     def post(self):
@@ -244,8 +188,7 @@ class Chat(base.ChatHandler):
                 self.notify_undeliverable(alice)
 
 
-class Available(availability.AvailabilityHandler,
-                notifications.NotificationMixin):
+class Available(availability.AvailabilityHandler):
     """Request handler to listen for when users become available for chat."""
 
     @base.WebHandler.send_presence
@@ -263,8 +206,7 @@ class Available(availability.AvailabilityHandler,
                 self.notify_chatting(bob)
 
 
-class Unavailable(availability.AvailabilityHandler,
-                  notifications.NotificationMixin):
+class Unavailable(availability.AvailabilityHandler):
     """Request handler to listen for when users become unavailable for chat."""
 
     def post(self):
@@ -286,7 +228,7 @@ class Unavailable(availability.AvailabilityHandler,
                 self.notify_chatting(carol)
 
 
-class Probe(base.WebHandler, notifications.NotificationMixin):
+class Probe(base.WebHandler):
     """ """
 
     @base.WebHandler.send_presence

@@ -83,7 +83,8 @@ class _BaseHandler(object):
         self.response.out.write(html)
 
 
-class WebHandler(_BaseHandler, strangers.StrangerMixin, webapp.RequestHandler):
+class WebHandler(_BaseHandler, notifications.NotificationMixin,
+                 strangers.StrangerMixin, webapp.RequestHandler):
     """Abstract base web request handler class."""
 
     def request_to_account(self):
