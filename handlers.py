@@ -76,7 +76,7 @@ class Subscribed(base.WebHandler):
 
     def post(self):
         """ """
-        alice = self.request_to_account()
+        alice = self.get_account()
         _log.debug('%s subscribed' % alice)
         self.send_help(alice)
 
@@ -87,14 +87,14 @@ class Chat(base.ChatHandler):
     @base.ChatHandler.require_account
     def help_command(self, message=None):
         """Alice has typed /help."""
-        alice = self.message_to_account(message)
+        alice = self.get_account(message)
         _log.debug('%s typed /help' % alice)
         self.send_help(alice)
 
     @base.ChatHandler.require_account
     def start_command(self, message=None):
         """Alice has typed /start."""
-        alice = self.message_to_account(message)
+        alice = self.get_account(message)
         _log.debug('%s typed /start' % alice)
         if alice.started:
             self.notify_already_started(alice)
@@ -110,7 +110,7 @@ class Chat(base.ChatHandler):
     @base.ChatHandler.require_account
     def next_command(self, message=None):
         """Alice has typed /next."""
-        alice = self.message_to_account(message)
+        alice = self.get_account(message)
         _log.debug('%s typed /next' % alice)
         if not alice.started:
             # Alice hasn't yet made herself available for chat.  She must first
@@ -148,7 +148,7 @@ class Chat(base.ChatHandler):
     @base.ChatHandler.require_account
     def stop_command(self, message=None):
         """Alice has typed /stop."""
-        alice = self.message_to_account(message)
+        alice = self.get_account(message)
         _log.debug('%s typed /stop' % alice)
         if not alice.started:
             self.notify_already_stopped(alice)
@@ -169,8 +169,8 @@ class Chat(base.ChatHandler):
 
     @base.ChatHandler.require_account
     def text_message(self, message=None):
-        """Alice has typed a message.  Relay it to Bob."""
-        alice = self.message_to_account(message)
+        """Alice has typed a message.  Relay it to her chat partner, Bob."""
+        alice = self.get_account(message)
         _log.debug('%s typed IM' % alice)
         if not alice.started:
             self.notify_not_started(alice)

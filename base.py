@@ -74,20 +74,32 @@ class _BaseHandler(object):
         """Houston, we have a problem...  Serve an error page."""
         if not error_code in HTTP_CODE_TO_TITLE:
             error_code = 500
-        path = os.path.join(TEMPLATES, 'error.html')
-        debug = DEBUG
-        title = HTTP_CODE_TO_TITLE[error_code].lower()
-        error_url = self.request.url.split('//', 1)[-1]
         self.error(error_code)
-        html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
+        self._serve_error(error_code)
+
+    def _serve_error(self, error_code):
+        """ """
+        raise NotImplementedError
+
+    def get_account(self):
+        """ """
+        raise NotImplementedError
 
 
 class WebHandler(_BaseHandler, notifications.NotificationMixin,
                  strangers.StrangerMixin, webapp.RequestHandler):
     """Abstract base web request handler class."""
 
-    def request_to_account(self):
+    def _serve_error(self, error_code):
+        """ """
+        path = os.path.join(TEMPLATES, 'error.html')
+        debug = DEBUG
+        title = HTTP_CODE_TO_TITLE[error_code].lower()
+        error_url = self.request.url.split('//', 1)[-1]
+        html = template.render(path, locals(), debug=DEBUG)
+        self.response.out.write(html)
+
+    def get_account(self):
         """ """
         handle = self.request.get('from')
         key_name = models.Account.key_name(handle)
@@ -100,7 +112,7 @@ class WebHandler(_BaseHandler, notifications.NotificationMixin,
         @functools.wraps(method)
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
-            alice = self.request_to_account()
+            alice = self.get_account()
             if alice is not None:
                 num = self.num_active_users()
                 noun = 'strangers' if num != 1 else 'stranger'
@@ -126,7 +138,11 @@ class ChatHandler(_BaseHandler, notifications.NotificationMixin,
                   strangers.StrangerMixin, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
-    def message_to_account(self, message):
+    def _serve_error(self, error_code):
+        """ """
+        pass
+
+    def get_account(self, message):
         """From an XMPP message, find the user account that sent it."""
         key_name = models.Account.key_name(message.sender)
         alice = models.Account.get_by_key_name(key_name)
@@ -151,7 +167,7 @@ class ChatHandler(_BaseHandler, notifications.NotificationMixin,
         @functools.wraps(method)
         def wrap(self, message=None):
             _log.debug('decorated %s requires registered account' % method)
-            alice = self.message_to_account(message)
+            alice = self.get_account(message)
             if alice is None:
                 body = "decorator requirements failed; %s hasn't registered"
                 _log.warning(body % message.sender)

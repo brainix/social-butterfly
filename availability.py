@@ -38,7 +38,7 @@ class AvailabilityHandler(base.WebHandler):
     @base.WebHandler.run_in_transaction
     def make_available(self):
         """ """
-        alice = self.request_to_account()
+        alice = self.get_account()
         made_available = False
         if not alice.started:
             _log.info("%s became available, but hasn't /started" % alice)
@@ -59,7 +59,7 @@ class AvailabilityHandler(base.WebHandler):
     @base.WebHandler.run_in_transaction
     def make_unavailable(self):
         """ """
-        alice = self.request_to_account()
+        alice = self.get_account()
         made_unavailable = False
         if not alice.started:
             _log.info("%s became unavailable, but hasn't /started" % alice)
