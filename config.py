@@ -50,9 +50,19 @@ _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 
 
+# The local part (the part before the at (@) symbol) of Gmail addresses must be
+# at least 6 characters in length...
 MIN_GMAIL_ADDR_LEN = 6
+
+# ...and at most 64 characters in length.
 MAX_GMAIL_ADDR_LEN = 64
-VALID_GMAIL_CHARS = string.ascii_lowercase + string.digits + '.'
+
+VALID_GMAIL_CHARS = ''.join((
+    string.ascii_lowercase,
+    string.digits,
+    '.',
+))
+
 VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com',)
 
 

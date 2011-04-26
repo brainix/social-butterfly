@@ -110,11 +110,11 @@ class Account(db.Model):
             body = "handle's local part doesn't meet length requirements"
             log_and_raise(body)
 
-        for c in local:
-            if c not in VALID_GMAIL_CHARS:
-                body = "handle's local part has invalid character %s" % c
-                log_and_raise(body)
+        invalid = set(local).difference(VALID_GMAIL_CHARS)
+        if invalid:
+            body = "handle's local part has invalid characters"
+            log_and_raise(body)
 
         if domain not in VALID_GMAIL_DOMAINS:
-            body = "handle ends with invalid domain %s" % domain
+            body = 'handle ends with invalid domain'
             log_and_raise(body)
