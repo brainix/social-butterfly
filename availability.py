@@ -35,44 +35,41 @@ _log = logging.getLogger(__name__)
 class AvailabilityHandler(base.WebHandler):
     """ """
 
-    @base.WebHandler.run_in_transaction
     def make_available(self):
         """ """
-        alice = self.get_account()
-        made_available = False
-        if not alice.started:
-            _log.info("%s became available, but hasn't /started" % alice)
-        elif alice.available:
-            body = '%s became available, but was already marked available'
-            _log.info(body % alice)
-        else:
-            if alice.partner is not None:
-                body = '%s became available, but already had partner %s'
-                _log.error(body % (alice, alice.partner))
-            else:
-                _log.debug('%s became available; had no partner' % alice)
-                alice.available = True
-                db.put(alice)
-                made_available = True
-        return alice, made_available
+        return self._change_availability(True)
 
-    @base.WebHandler.run_in_transaction
     def make_unavailable(self):
         """ """
-        alice = self.get_account()
-        made_unavailable = False
-        if not alice.started:
-            _log.info("%s became unavailable, but hasn't /started" % alice)
-        elif not alice.available:
-            body = '%s became unavailable, but was already marked unavailable'
-            _log.info(body % alice)
-        else:
+        return self._change_availability(False)
+
+    def _change_availability(self, available):
+        """ """
+        alice, state, body, confirmed = self._confirm_availability(available)
+        if confirmed:
             if alice.partner is not None:
-                body = '%s became unavailable; had partner %s'
-                _log.debug(body % (alice, alice.partner))
+                if available:
+                    body += ', but already had partner %s' % alice.partner
+                    _log.error(body)
+                else:
+                    _log.debug(body + '; had partner %s' % alice.partner)
             else:
-                _log.debug('%s became unavailable; had no partner' % alice)
-            alice.available = False
+                _log.debug(body + '; had no partner')
+        return alice, confirmed
+
+    @base.WebHandler.run_in_transaction
+    def _confirm_availability(self, available):
+        """ """
+        alice = self.get_account()
+        state = 'available' if available else 'unavailable'
+        body = '%s became %s' % (alice, state)
+        confirmed = False
+        if not alice.started:
+            _log.info(body + ", but hasn't /started")
+        elif alice.available == available:
+            _log.info(body + ", but was already marked %s" % state)
+        else:
+            alice.available = available
             db.put(alice)
-            made_unavailable = True
-        return alice, made_unavailable
+            confirmed = True
+        return alice, state, body, confirmed

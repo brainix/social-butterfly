@@ -110,8 +110,8 @@ class Account(db.Model):
             body = "handle's local part doesn't meet length requirements"
             log_and_raise(body)
 
-        invalid = set(local).difference(VALID_GMAIL_CHARS)
-        if invalid:
+        invalid_chars = set(local).difference(VALID_GMAIL_CHARS)
+        if invalid_chars:
             body = "handle's local part has invalid characters"
             log_and_raise(body)
 

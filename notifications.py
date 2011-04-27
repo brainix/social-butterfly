@@ -46,6 +46,16 @@ class NotificationMixin(object):
                 return body
         return wrap
 
+    def _send_presence(method):
+        """ """
+        @functools.wraps(method)
+        def wrap(self, alice, *args, **kwds):
+            if alice is not None:
+                status = method(self, alice, *args, **kwds)
+                xmpp.send_presence(str(alice), status=status)
+                return status
+        return wrap
+
     @_send_notification
     def notify_requires_account(self, alice):
         """ """
@@ -149,3 +159,10 @@ class NotificationMixin(object):
         body += 'Please try to send your message again, '
         body += 'or type /next to chat with someone else.'
         return body
+
+    @_send_presence
+    def send_status(self, alice, num_active_users):
+        """ """
+        noun = 'strangers' if num_active_users != 1 else 'stranger'
+        status = '%s %s available for chat.' % (num_active_users, noun)
+        return status

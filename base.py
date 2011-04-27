@@ -27,7 +27,6 @@ import logging
 import os
 import traceback
 
-from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -113,11 +112,8 @@ class WebHandler(_BaseHandler, notifications.NotificationMixin,
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
-            if alice is not None:
-                num = self.num_active_users()
-                noun = 'strangers' if num != 1 else 'stranger'
-                status = '%s %s available for chat.' % (num, noun)
-                xmpp.send_presence(str(alice), status=status)
+            num_active_users = self.num_active_users()
+            self.send_status(alice, num_active_users)
             return return_value
         return wrap
 
