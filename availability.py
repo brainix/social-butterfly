@@ -37,16 +37,16 @@ class AvailabilityHandler(base.WebHandler):
 
     def make_available(self):
         """ """
-        return self._change_availability(True)
+        return self._make_available(True)
 
     def make_unavailable(self):
         """ """
-        return self._change_availability(False)
+        return self._make_available(False)
 
-    def _change_availability(self, available):
+    def _make_available(self, available):
         """ """
-        alice, state, body, confirmed = self._confirm_availability(available)
-        if confirmed:
+        alice, body, changed = self._change_available(available)
+        if changed:
             if alice.partner is not None:
                 if available:
                     body += ', but already had partner %s' % alice.partner
@@ -55,15 +55,15 @@ class AvailabilityHandler(base.WebHandler):
                     _log.debug(body + '; had partner %s' % alice.partner)
             else:
                 _log.debug(body + '; had no partner')
-        return alice, confirmed
+        return alice, changed
 
     @base.WebHandler.run_in_transaction
-    def _confirm_availability(self, available):
+    def _change_available(self, available):
         """ """
         alice = self.get_account()
         state = 'available' if available else 'unavailable'
         body = '%s became %s' % (alice, state)
-        confirmed = False
+        changed = False
         if not alice.started:
             _log.info(body + ", but hasn't /started")
         elif alice.available == available:
@@ -71,5 +71,5 @@ class AvailabilityHandler(base.WebHandler):
         else:
             alice.available = available
             db.put(alice)
-            confirmed = True
-        return alice, state, body, confirmed
+            changed = True
+        return alice, body, changed
