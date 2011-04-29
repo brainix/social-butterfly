@@ -45,8 +45,30 @@ class AvailabilityHandler(base.WebHandler):
 
     def _make_available(self, available):
         """ """
-        alice, body, changed = self._change_available(available)
-        if changed:
+        alice, changed = self._change_available(available)
+        self._log_available(available, alice, changed)
+        return alice, changed
+
+    @base.WebHandler.run_in_transaction
+    def _change_available(self, available):
+        """ """
+        alice = self.get_account()
+        changed = False
+        if alice.started and alice.available != available:
+            alice.available = available
+            db.put(alice)
+            changed = True
+        return alice, changed
+
+    def _log_available(self, available, alice, changed):
+        state = 'available' if available else 'unavailable'
+        body = str(alice) + ' became ' + state
+        if not changed:
+            if not alice.started:
+                _log.info(body + ", but hasn't /started")
+            elif alice.available == available:
+                _log.info(body + ", but was already marked " + state)
+        else:
             if alice.partner is not None:
                 if available:
                     body += ', but already had partner %s' % alice.partner
@@ -55,21 +77,3 @@ class AvailabilityHandler(base.WebHandler):
                     _log.debug(body + '; had partner %s' % alice.partner)
             else:
                 _log.debug(body + '; had no partner')
-        return alice, changed
-
-    @base.WebHandler.run_in_transaction
-    def _change_available(self, available):
-        """ """
-        alice = self.get_account()
-        state = 'available' if available else 'unavailable'
-        body = '%s became %s' % (alice, state)
-        changed = False
-        if not alice.started:
-            _log.info(body + ", but hasn't /started")
-        elif alice.available == available:
-            _log.info(body + ", but was already marked %s" % state)
-        else:
-            alice.available = available
-            db.put(alice)
-            changed = True
-        return alice, body, changed
