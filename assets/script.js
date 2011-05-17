@@ -34,7 +34,7 @@ $(function() {
 
     $('#content .sign_up .register').submit(signUp);
 
-    var defaultHandle = handle.attr('defaultValue');
+    var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
 });
 
@@ -45,7 +45,7 @@ $(function() {
 
 function focusHandle() {
     var handle = $('#content .sign_up .register [name="handle"]');
-    var defaultHandle = handle.attr('defaultValue');
+    var defaultHandle = handle.prop('defaultValue');
     if (handle.val() == defaultHandle) {
         handle.val('');
     }
@@ -59,7 +59,7 @@ function focusHandle() {
 function blurHandle() {
     var handle = $('#content .sign_up .register [name="handle"]');
     if (handle.val() == '') {
-        var defaultHandle = handle.attr('defaultValue');
+        var defaultHandle = handle.prop('defaultValue');
         handle.val(defaultHandle);
     }
 }

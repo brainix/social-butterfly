@@ -193,7 +193,10 @@ class Available(availability.AvailabilityHandler):
 
     @base.WebHandler.send_presence
     def post(self):
-        """ """
+        """Alice has become available for chat.
+        
+        Mark her available, and if possible, pair her with a chat partner, Bob.
+        """
         alice, made_available = self.make_available()
         if made_available:
             alice, bob = self.start_chat(alice, None)
@@ -210,7 +213,11 @@ class Unavailable(availability.AvailabilityHandler):
     """Request handler to listen for when users become unavailable for chat."""
 
     def post(self):
-        """ """
+        """Alice has become unavailable for chat.
+        
+        Mark her unavailable.  If she had a chat partner, Bob, pair him with a
+        new partner, Carol.
+        """
         alice, made_unavailable = self.make_unavailable()
         if made_unavailable:
             alice, bob = self.stop_chat(alice)
@@ -229,9 +236,10 @@ class Unavailable(availability.AvailabilityHandler):
 
 
 class Probe(base.WebHandler):
-    """ """
+    """Request handler to listen for when users probe for chat status."""
 
     @base.WebHandler.send_presence
     def post(self):
         """ """
-        pass
+        alice = self.get_account()
+        _log.debug('%s probed' % alice)

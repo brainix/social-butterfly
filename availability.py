@@ -61,6 +61,7 @@ class AvailabilityHandler(base.WebHandler):
         return alice, changed
 
     def _log_available(self, available, alice, changed):
+        """ """
         state = 'available' if available else 'unavailable'
         body = str(alice) + ' became ' + state
         if not changed:
