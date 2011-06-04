@@ -124,8 +124,9 @@ b {
     display: none;
 }
 
-#content .twitter-share-button {
-    margin-top: 50px;
+#content .twitter-share-button-wrapper,
+#content .google-plus-one-button-wrapper {
+    margin-top: 35px;
 }
 
 
