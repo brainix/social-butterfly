@@ -24,4 +24,4 @@
 blacklist:
 
 - subnet: 0.1.0.10
-  description: keeps issuing POSTS to XMPP URLs, causing errors
+  description: keeps issuing POSTs to XMPP URLs, causing errors
