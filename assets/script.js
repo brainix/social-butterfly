@@ -36,6 +36,34 @@ $(function() {
 
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
+
+    preloadImages(
+        '/assets/images/0.png',
+        '/assets/images/0-1.png',
+        '/assets/images/1.png',
+        '/assets/images/1-2.png',
+        '/assets/images/2.png',
+        '/assets/images/2-3.png',
+        '/assets/images/3.png',
+        '/assets/images/3-4.png',
+        '/assets/images/4.png',
+        '/assets/images/4-5.png',
+        '/assets/images/5.png',
+        '/assets/images/5-6.png',
+        '/assets/images/6.png',
+        '/assets/images/6-7.png',
+        '/assets/images/7.png',
+        '/assets/images/7-8.png',
+        '/assets/images/8.png',
+        '/assets/images/8-9.png',
+        '/assets/images/9.png',
+        '/assets/images/9-0.png',
+        '/assets/images/9-1.png',
+        '/assets/images/9-10.png',
+        '/assets/images/10.png',
+        '/assets/images/10-0.png',
+        '/assets/images/10-1.png'
+    );
 });
 
 
@@ -113,4 +141,22 @@ function signUp() {
     }
 
     return false;
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              preloadImages()                              |
+\*---------------------------------------------------------------------------*/
+
+var imageCache = [];
+
+function preloadImages() {
+    // Given arguments corresponding to URLs to images, preload those images.
+    if (document.images) {
+        for (var index = arguments.length; index--;) {
+            var cachedImage = document.createElement("img");
+            cachedImage.src = arguments[index];
+            imageCache.push(cachedImage);
+        }
+    }
 }
