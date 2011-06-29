@@ -22,33 +22,18 @@
 """It's time for the dog and pony show..."""
 
 
-# Let's get the ball rolling.  First things first: let's configure the logger.
+import coldstart
+
 import logging
-from config import DEBUG
-logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
-_log = logging.getLogger(__name__)
 
-
-# Now that the logger is configured, before we do anything else, before we even
-# import anything else, let's tell Google App Engine which library versions we
-# want to use.  We have to do this now, before the rest of our imports, to
-# ensure that we import the correct libraries.
-#
-# For more information, see:
-#   http://code.google.com/appengine/docs/python/tools/libraries.html
-from google.appengine.dist import use_library
-from config import LIBRARIES
-for library, version in LIBRARIES.items():
-    _log.debug('using library %s %s' % (library, version))
-    use_library(library, version)
-
-
-# Now that Google App Engine is configured to use the correct library versions,
-# let's move on with the rest of our imports.
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
+from config import DEBUG
 import handlers
+
+
+_log = logging.getLogger(__name__)
 
 
 def main():
