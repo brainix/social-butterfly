@@ -22,10 +22,12 @@
 
 
 /*---------------------------------------------------------------------------*\
- |                                initSignUp()                               |
+ |                                    $()                                    |
 \*---------------------------------------------------------------------------*/
 
-function initSignUp() {
+$(function() {
+    // Hooray, a page has been loaded!
+
     var handle = $('#content .sign_up .register [name="handle"]');
     handle.focus(focusHandle);
     handle.blur(blurHandle);
@@ -34,7 +36,8 @@ function initSignUp() {
 
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
-}
+
+});
 
 
 /*---------------------------------------------------------------------------*\

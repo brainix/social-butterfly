@@ -21,39 +21,59 @@
 \*---------------------------------------------------------------------------*/
 
 
-/*---------------------------------------------------------------------------*\
- |                              initFlipClock()                              |
-\*---------------------------------------------------------------------------*/
+(function($) {
 
-function initFlipClock() {
-    preloadImages(
-        '/assets/images/0.png', '/assets/images/0-1.png',
-        '/assets/images/1.png', '/assets/images/1-2.png',
-        '/assets/images/2.png', '/assets/images/2-3.png',
-        '/assets/images/3.png', '/assets/images/3-4.png',
-        '/assets/images/4.png', '/assets/images/4-5.png',
-        '/assets/images/5.png', '/assets/images/5-6.png',
-        '/assets/images/6.png', '/assets/images/6-7.png',
-        '/assets/images/7.png', '/assets/images/7-8.png',
-        '/assets/images/8.png', '/assets/images/8-9.png',
-        '/assets/images/9.png', '/assets/images/9-0.png'
-    );
-}
+    var settings = {
+        urlPathToImages: '/assets/images/',
+        numDigits: 2
+    };
+
+    var methods = {
+        init: function(options) {
+            if (options) {
+                $.extend(settings, options);
+            }
+
+            for (var digit = 0; digit <= 9; digit++) {
+                var nextDigit = (digit + 1) % 10;
+                var file = digit + '.png';
+                var nextFile = digit + '-' + nextDigit + '.png';
+                var path = settings.urlPathToImages + file;
+                var nextPath = settings.urlPathToImages + nextFile;
+                preloadImages(path, nextPath);
+            }
+
+            return this;
+        }
+    };
+
+    $.fn.flipClock = function(method) {
+        if (methods[method]) {
+            method = methods[method];
+            var args = Array.prototype.slice.call(arguments, 1);
+            var retVal = method.apply(this, args);
+            return retVal;
+        } else if (typeof method === 'object' || !method) {
+            method = methods.init;
+            var retVal = method.apply(this, arguments);
+            return retVal;
+        } else {
+            $.error('$.flipClock has no method named ' + method);
+        }
+    };
 
 
-/*---------------------------------------------------------------------------*\
- |                              preloadImages()                              |
-\*---------------------------------------------------------------------------*/
+    var imageCache = [];
 
-var imageCache = [];
-
-function preloadImages() {
-    // Given arguments corresponding to URLs to images, preload those images.
-    if (document.images) {
-        for (var index = arguments.length; index--;) {
-            var cachedImage = document.createElement("img");
-            cachedImage.src = arguments[index];
-            imageCache.push(cachedImage);
+    function preloadImages() {
+        // Given URLs to images, preload those images.
+        if (document.images) {
+            for (var index = arguments.length; index--;) {
+                var cachedImage = document.createElement("img");
+                cachedImage.src = arguments[index];
+                imageCache.push(cachedImage);
+            }
         }
     }
-}
+
+})(jQuery);
