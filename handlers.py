@@ -71,6 +71,16 @@ class Home(base.WebHandler):
             _log.info('%s signed up' % handle)
 
 
+class NumActiveUsers(base.WebHandler):
+    """Request handler to return the number of active users."""
+
+    def get(self):
+        """Return the number of active users."""
+        num_active_users = self.num_active_users()
+        num_active_users = str(num_active_users)
+        self.response.out.write(num_active_users)
+
+
 class Subscribed(base.WebHandler):
     """Request handler to listen for XMPP subscription notifications."""
 
