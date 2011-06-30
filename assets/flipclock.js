@@ -24,8 +24,10 @@
 (function($) {
 
     var settings = {
-        urlPathToImages: '/assets/images/',
-        numDigits: 2
+        path: '/assets/images/',
+        digits: 2,
+        width: 10,
+        delay: 50
     };
 
     var methods = {
@@ -34,15 +36,30 @@
                 $.extend(settings, options);
             }
 
-            for (var digit = 0; digit <= 9; digit++) {
-                var nextDigit = (digit + 1) % 10;
-                var file = digit + '.png';
-                var nextFile = digit + '-' + nextDigit + '.png';
-                var path = settings.urlPathToImages + file;
-                var nextPath = settings.urlPathToImages + nextFile;
-                preloadImages(path, nextPath);
+            obj = this;
+            for (var state = 0; state < 10; state += 0.5) {
+                var path = stateToPath(state);
+                preloadImages(path);
+            }
+            for (var digit = 0; digit < settings.digits; digit++) {
+                currentState.push(0);
             }
 
+            drawClock();
+            return this;
+        },
+
+        setClock: function(num) {
+            var max = Math.pow(10, settings.digits) - 1;
+            if (num > max) {
+                var error = '$.flipclock.setClock(' + num + ');, ';
+                error += 'but max value is ' + max;
+                $.error(error);
+                num = max;
+            }
+
+            currentNum = num;
+            flipClock();
             return this;
         }
     };
@@ -58,12 +75,28 @@
             var retVal = method.apply(this, arguments);
             return retVal;
         } else {
-            $.error('$.flipClock has no method named ' + method);
+            $.error("$.flipClock." + method + "() method doesn't exist");
         }
     };
 
 
+    var obj = undefined;
     var imageCache = [];
+    var currentState = [];
+    var currentNum = 0;
+
+    function stateToPath(state) {
+        var transition = state != Math.floor(state);
+        state = Math.floor(state);
+        var file = String(state);
+        if (transition) {
+            nextState = (state + 1) % 10;
+            file += '-' + nextState;
+        }
+        file += '.png';
+        var path = settings.path + file;
+        return path;
+    }
 
     function preloadImages() {
         // Given URLs to images, preload those images.
@@ -72,6 +105,31 @@
                 var cachedImage = document.createElement("img");
                 cachedImage.src = arguments[index];
                 imageCache.push(cachedImage);
+            }
+        }
+    }
+
+    function drawClock() {
+        var html = '';
+        for (var index = 0; index < currentState.length; index++) {
+            var state = currentState[index];
+            var path = stateToPath(state);
+            var width = settings.width;
+            var imageTag = '<img src="' + path + '" width="' + width + '%" />';
+            html = imageTag + html;
+        }
+        obj.html(html);
+    }
+
+    function flipClock() {
+        for (var exponent = 0; exponent < settings.digits; exponent++) {
+            var digit = currentNum % Math.pow(10, exponent + 1);
+            digit = Math.floor(digit / Math.pow(10, exponent));
+            while (currentState[exponent] != digit) {
+                currentState[exponent] = (currentState[exponent] + 0.5) % 10;
+                drawClock();
+                var timeoutId = window.setTimeout(flipClock, settings.delay);
+                return;
             }
         }
     }
