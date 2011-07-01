@@ -45,12 +45,10 @@
             };
             this.data('flipClock', data);
 
-            /*
             for (var state = 0; state < 10; state += 0.5) {
                 var path = stateToPath(state);
-                preloadImages(path);
+                this.flipClock('preload', path);
             }
-            */
 
             data = this.data('flipClock');
             for (var digit = 0; digit < settings.digits; digit++) {
@@ -60,6 +58,30 @@
 
             this.flipClock('draw');
             return this;
+        },
+
+        preload: function(url) {
+            // Given a URL to an image, preload that image.
+            if (document.images) {
+                data = this.data('flipClock');
+                var cachedImage = document.createElement("img");
+                cachedImage.src = url;
+                data.imageCache.push(cachedImage);
+                this.data('flipClock', data);
+            }
+        },
+
+        draw: function() {
+            var data = this.data('flipClock');
+            var html = '';
+            for (var index = 0; index < data.currentState.length; index++) {
+                var state = data.currentState[index];
+                var path = stateToPath(state);
+                var width = settings.width;
+                var imageTag = '<img src="' + path + '" width="' + width + '%" />';
+                html = imageTag + html;
+            }
+            this.html(html);
         },
 
         set: function(num) {
@@ -77,32 +99,9 @@
             return this;
         },
 
-        draw: function() {
-            var data = this.data('flipClock');
-            var html = '';
-            for (var index = 0; index < data.currentState.length; index++) {
-                var state = data.currentState[index];
-                var path = stateToPath(state);
-                var width = settings.width;
-                var imageTag = '<img src="' + path + '" width="' + width + '%" />';
-                html = imageTag + html;
-            }
-            this.html(html);
-        },
-
         flip: function() {
-            var data = this.data('flipClock');
-
-            for (var exponent = 0; exponent < settings.digits; exponent++) {
-                var digit = data.currentNum % Math.pow(10, exponent + 1);
-                digit = Math.floor(digit / Math.pow(10, exponent));
-                while (data.currentState[exponent] != digit) {
-                    data.currentState[exponent] = (data.currentState[exponent] + 0.5) % 10;
-                    this.flipClock('draw');
-                    var timeoutId = window.setTimeout('this.flipClock("flipClock")', settings.delay);
-                    return;
-                }
-            }
+            flip(this);
+            return this;
         }
     };
 
@@ -136,15 +135,23 @@
         return path;
     }
 
-    function preloadImages() {
-        // Given URLs to images, preload those images.
-        if (document.images) {
-            for (var index = arguments.length; index--;) {
-                var cachedImage = document.createElement("img");
-                cachedImage.src = arguments[index];
-                imageCache.push(cachedImage);
+    function flip(obj) {
+        var data = obj.data('flipClock');
+
+        function f() {
+            for (var exponent = 0; exponent < settings.digits; exponent++) {
+                var digit = data.currentNum % Math.pow(10, exponent + 1);
+                digit = Math.floor(digit / Math.pow(10, exponent));
+                if (data.currentState[exponent] != digit) {
+                    data.currentState[exponent] = (data.currentState[exponent] + 0.5) % 10;
+                    obj.flipClock('draw');
+                    var timeoutId = window.setTimeout(f, settings.delay);
+                    return;
+                }
             }
         }
+        f();
+
     }
 
 })(jQuery);
