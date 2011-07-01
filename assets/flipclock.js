@@ -30,39 +30,82 @@
         delay: 50
     };
 
+
     var methods = {
         init: function(options) {
             if (options) {
                 $.extend(settings, options);
             }
 
-            obj = this;
+            var data = this.data('flipClock');
+            data = {
+                imageCache: [],
+                currentState: [],
+                currentNum: 0
+            };
+            this.data('flipClock', data);
+
+            /*
             for (var state = 0; state < 10; state += 0.5) {
                 var path = stateToPath(state);
                 preloadImages(path);
             }
-            for (var digit = 0; digit < settings.digits; digit++) {
-                currentState.push(0);
-            }
+            */
 
-            drawClock();
+            data = this.data('flipClock');
+            for (var digit = 0; digit < settings.digits; digit++) {
+                data.currentState.push(0);
+            }
+            this.data('flipClock', data);
+
+            this.flipClock('draw');
             return this;
         },
 
-        setClock: function(num) {
+        set: function(num) {
             var max = Math.pow(10, settings.digits) - 1;
             if (num > max) {
-                var error = '$.flipclock.setClock(' + num + ');, ';
+                var error = '$.flipclock.set(' + num + ');, ';
                 error += 'but max value is ' + max;
                 $.error(error);
-                num = max;
             }
 
-            currentNum = num;
-            flipClock();
+            var data = this.data('flipClock');
+            data.currentNum = num;
+            this.data('flipClock', data);
+            this.flipClock('flip');
             return this;
+        },
+
+        draw: function() {
+            var data = this.data('flipClock');
+            var html = '';
+            for (var index = 0; index < data.currentState.length; index++) {
+                var state = data.currentState[index];
+                var path = stateToPath(state);
+                var width = settings.width;
+                var imageTag = '<img src="' + path + '" width="' + width + '%" />';
+                html = imageTag + html;
+            }
+            this.html(html);
+        },
+
+        flip: function() {
+            var data = this.data('flipClock');
+
+            for (var exponent = 0; exponent < settings.digits; exponent++) {
+                var digit = data.currentNum % Math.pow(10, exponent + 1);
+                digit = Math.floor(digit / Math.pow(10, exponent));
+                while (data.currentState[exponent] != digit) {
+                    data.currentState[exponent] = (data.currentState[exponent] + 0.5) % 10;
+                    this.flipClock('draw');
+                    var timeoutId = window.setTimeout('this.flipClock("flipClock")', settings.delay);
+                    return;
+                }
+            }
         }
     };
+
 
     $.fn.flipClock = function(method) {
         if (methods[method]) {
@@ -79,11 +122,6 @@
         }
     };
 
-
-    var obj = undefined;
-    var imageCache = [];
-    var currentState = [];
-    var currentNum = 0;
 
     function stateToPath(state) {
         var transition = state != Math.floor(state);
@@ -105,31 +143,6 @@
                 var cachedImage = document.createElement("img");
                 cachedImage.src = arguments[index];
                 imageCache.push(cachedImage);
-            }
-        }
-    }
-
-    function drawClock() {
-        var html = '';
-        for (var index = 0; index < currentState.length; index++) {
-            var state = currentState[index];
-            var path = stateToPath(state);
-            var width = settings.width;
-            var imageTag = '<img src="' + path + '" width="' + width + '%" />';
-            html = imageTag + html;
-        }
-        obj.html(html);
-    }
-
-    function flipClock() {
-        for (var exponent = 0; exponent < settings.digits; exponent++) {
-            var digit = currentNum % Math.pow(10, exponent + 1);
-            digit = Math.floor(digit / Math.pow(10, exponent));
-            while (currentState[exponent] != digit) {
-                currentState[exponent] = (currentState[exponent] + 0.5) % 10;
-                drawClock();
-                var timeoutId = window.setTimeout(flipClock, settings.delay);
-                return;
             }
         }
     }
