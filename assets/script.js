@@ -39,6 +39,7 @@ $(function() {
 
 
     $('#available-users').flipclock();
+    updateAvailableUsers();
     window.setInterval(updateAvailableUsers, 10000);
 });
 
