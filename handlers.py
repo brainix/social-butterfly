@@ -71,6 +71,18 @@ class Home(base.WebHandler):
             _log.info('%s signed up' % handle)
 
 
+class Stats(base.WebHandler):
+    """Request handler to serve the interesting statistics page."""
+
+    def get(self):
+        """Serve the interesting statistics page."""
+        path = os.path.join(TEMPLATES, 'stats.html')
+        debug = DEBUG
+        title = 'interesting statistics'
+        html = template.render(path, locals(), debug=debug)
+        self.response.out.write(html)
+
+
 class NumActiveUsers(base.WebHandler):
     """Request handler to return the number of active users."""
 

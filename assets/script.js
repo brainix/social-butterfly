@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*\
- |  signup.js                                                                |
+ |  script.js                                                                |
  |                                                                           |
  |  Copyright (c) 2010-2011, Code A La Mode, original authors.               |
  |                                                                           |
@@ -37,6 +37,9 @@ $(function() {
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
 
+
+    $('#available-users').flipclock();
+    window.setInterval(updateAvailableUsers, 10000);
 });
 
 
@@ -114,4 +117,32 @@ function signUp() {
     }
 
     return false;
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                           updateAvailableUsers()                          |
+\*---------------------------------------------------------------------------*/
+
+function updateAvailableUsers() {
+    var obj = $('#available-users');
+    var url = '/num-active-users';
+    return flipclockAjax(obj, url);
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              flipclockAjax()                              |
+\*---------------------------------------------------------------------------*/
+
+function flipclockAjax(obj, url) {
+    $.ajax({
+        type: 'GET',
+        url: url,
+        cache: false,
+        success: function(data, textStatus, xmlHttpRequest) {
+            var num = parseInt(data);
+            obj.flipclock('set', num);
+        }
+    });
 }

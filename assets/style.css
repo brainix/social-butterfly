@@ -73,6 +73,14 @@ b {
     margin-bottom: -20px;
 }
 
+#heading h1 a {
+    color: #D1D9DC;
+}
+
+#heading h1 a:hover {
+    color: #B62F2F;
+}
+
 #heading h2, #content h3 {
     color: #959EA1;
     font-size: 35px;
@@ -120,13 +128,23 @@ b {
     width: 100%;
 }
 
-#content .signed_up {
+#content .signed-up {
     display: none;
 }
 
 #content .twitter-share-button-wrapper,
 #content .google-plus-one-button-wrapper {
     margin-top: 35px;
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                             Flip Clock Styles                             |
+\*---------------------------------------------------------------------------*/
+
+.flipclock img {
+    margin-left: -6px;
+    margin-right: 3px;
 }
 
 
