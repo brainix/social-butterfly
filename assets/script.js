@@ -38,9 +38,15 @@ $(function() {
     handle.val(defaultHandle);
 
 
-    $('#available-users').flipclock();
-    updateAvailableUsers();
-    window.setInterval(updateAvailableUsers, 10000);
+    if ($('#num-users').flipclock().length) {
+        window.setTimeout(updateUsers, 5000);
+        window.setInterval(updateUsers, 30000);
+    }
+
+    if ($('#num-active-users').flipclock().length) {
+        window.setTimeout(updateActiveUsers, 5000);
+        window.setInterval(updateActiveUsers, 30000);
+    }
 });
 
 
@@ -122,11 +128,22 @@ function signUp() {
 
 
 /*---------------------------------------------------------------------------*\
- |                           updateAvailableUsers()                          |
+ |                               updateUsers()                               |
 \*---------------------------------------------------------------------------*/
 
-function updateAvailableUsers() {
-    var obj = $('#available-users');
+function updateUsers() {
+    var obj = $('#num-users');
+    var url = '/num-users';
+    return flipclockAjax(obj, url);
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                            updateActiveUsers()                            |
+\*---------------------------------------------------------------------------*/
+
+function updateActiveUsers() {
+    var obj = $('#num-active-users');
     var url = '/num-active-users';
     return flipclockAjax(obj, url);
 }

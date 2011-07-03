@@ -83,6 +83,16 @@ class Stats(base.WebHandler):
         self.response.out.write(html)
 
 
+class NumUsers(base.WebHandler):
+    """Request handler to return the number of users."""
+
+    def get(self):
+        """Return the number of active users."""
+        num_users = self.num_users()
+        num_users = str(num_users)
+        self.response.out.write(num_users)
+
+
 class NumActiveUsers(base.WebHandler):
     """Request handler to return the number of active users."""
 

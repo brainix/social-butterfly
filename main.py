@@ -49,6 +49,7 @@ def main():
         ('/_ah/xmpp/message/chat/',             handlers.Chat),             # Chat handler.
         ('/_ah/xmpp/subscription/subscribed/',  handlers.Subscribed),       # Subscribed handler.
         ('/num-active-users',                   handlers.NumActiveUsers),   # Number of active users handler.
+        ('/num-users',                          handlers.NumUsers),         # Number of users handler.
         ('/stats',                              handlers.Stats),            # Interesting statistics handler.
         ('/',                                   handlers.Home),             # Homepage handler.
         ('(.*)',                                handlers.NotFound),         # 404: Not Found.

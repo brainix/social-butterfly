@@ -109,7 +109,11 @@
             data = obj.data('flipclock');
             var cachedImage = document.createElement("img");
             cachedImage.src = url;
-            data.cache.push(cachedImage);
+            try {
+                data.cache.push(cachedImage);
+            } catch (err) {
+                return;
+            }
             obj.data('flipclock', data);
         }
     }
@@ -117,14 +121,17 @@
     function draw(obj) {
         var data = obj.data('flipclock');
         var html = '';
-        for (var index = 0; index < data.state.length; index++) {
-            var state = data.state[index];
-            var path = stateToPath(state);
-            var width = settings.width;
-            var imageTag = '<img src="' + path + '" width="' + width + '%" />';
-            html = imageTag + html;
+        try {
+            for (var index = 0; index < data.state.length; index++) {
+                var state = data.state[index];
+                var path = stateToPath(state);
+                var width = settings.width;
+                var imageTag = '<img src="' + path + '" width="' + width + '%" />';
+                html = imageTag + html;
+            }
+            obj.html(html);
+        } catch (err) {
         }
-        obj.html(html);
     }
 
     function flip(obj) {

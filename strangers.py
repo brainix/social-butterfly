@@ -55,6 +55,12 @@ class StrangerMixin(object):
 
         return carols
 
+    def num_users(self):
+        """Return the total number of users."""
+        carols = self._get_users(started=None, available=None, chatting=None)
+        num_carols = carols.count()
+        return num_carols
+
     def num_active_users(self):
         """Return the number of started and available users."""
         carols = self._get_users(started=True, available=True, chatting=None)
