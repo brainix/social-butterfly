@@ -28,11 +28,11 @@
 $(function() {
     // Hooray, a page has been loaded!
 
-    var handle = $('#content .sign_up .register [name="handle"]');
+    var handle = $('#content .sign-up .register [name="handle"]');
     handle.focus(focusHandle);
     handle.blur(blurHandle);
 
-    $('#content .sign_up .register').submit(signUp);
+    $('#content .sign-up .register').submit(signUp);
 
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
@@ -55,7 +55,7 @@ $(function() {
 \*---------------------------------------------------------------------------*/
 
 function focusHandle() {
-    var handle = $('#content .sign_up .register [name="handle"]');
+    var handle = $('#content .sign-up .register [name="handle"]');
     var defaultHandle = handle.prop('defaultValue');
     if (handle.val() == defaultHandle) {
         handle.val('');
@@ -68,7 +68,7 @@ function focusHandle() {
 \*---------------------------------------------------------------------------*/
 
 function blurHandle() {
-    var handle = $('#content .sign_up .register [name="handle"]');
+    var handle = $('#content .sign-up .register [name="handle"]');
     if (handle.val() == '') {
         var defaultHandle = handle.prop('defaultValue');
         handle.val(defaultHandle);
@@ -89,7 +89,7 @@ function signUp() {
         alert(message);
     } else {
         signUpSubmitted = true;
-        var handle = $('#content .sign_up .register [name="handle"]').val();
+        var handle = $('#content .sign-up .register [name="handle"]').val();
 
         $.ajax({
             type: 'POST',
@@ -97,9 +97,9 @@ function signUp() {
             data: {handle: handle},
             cache: false,
             success: function(data, textStatus, xmlHttpRequest) {
-                var signUpForm = $('#content .sign_up');
+                var signUpForm = $('#content .sign-up');
                 signUpForm.fadeOut('slow', function() {
-                    var signedUpText = $('#content .signed_up');
+                    var signedUpText = $('#content .signed-up');
                     signedUpText.fadeIn('slow');
                 });
             },

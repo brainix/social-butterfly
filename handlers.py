@@ -79,6 +79,8 @@ class Stats(base.WebHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         debug = DEBUG
         title = 'interesting statistics'
+        num_users = self.num_users()
+        num_active_users = self.num_active_users()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
