@@ -133,11 +133,10 @@ function updateStats() {
         cache: false,
         success: function(data, textStatus, xmlHttpRequest) {
             data = $.parseJSON(data);
-            for (key in data) {
+            $.each(data, function(key, val) {
                 var obj = $('#' + key);
-                var val = data[key];
                 obj.flipclock('set', val);
-            }
+            });
         }
     });
 }

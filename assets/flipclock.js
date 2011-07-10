@@ -76,10 +76,6 @@
             var args = Array.prototype.slice.call(arguments, 1);
             var retVal = method.apply(this, args);
             return retVal;
-        } else if (typeof method === 'object' || !method) {
-            method = methods.init;
-            var retVal = method.apply(this, arguments);
-            return retVal;
         } else {
             $.error("$.flipclock." + method + "() method doesn't exist");
         }
@@ -124,6 +120,16 @@
         obj.html(html);
     }
 
+    function redraw(obj) {
+        var data = obj.data('flipclock');
+        var images = obj.children().get().reverse();
+        for (var index = 0; index < data.state.length; index++) {
+            var state = data.state[index];
+            var path = stateToPath(obj, state);
+            $(images[index]).attr('src', path);
+        }
+    }
+
     function flip(obj) {
         var data = obj.data('flipclock');
 
@@ -133,7 +139,7 @@
                 digit = Math.floor(digit / Math.pow(10, exponent));
                 if (data.state[exponent] != digit) {
                     data.state[exponent] = (data.state[exponent] + 0.5) % 10;
-                    draw(obj);
+                    redraw(obj);
                     var timeoutId = window.setTimeout(f, data.delay);
                     return;
                 }
