@@ -37,15 +37,10 @@ $(function() {
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
 
-
     if ($('#num-users').flipclock('init', {digits: 3}).length) {
-        window.setTimeout(updateUsers, 1500);
-        window.setInterval(updateUsers, 30000);
-    }
-
-    if ($('#num-active-users').flipclock('init').length) {
-        window.setTimeout(updateActiveUsers, 1500);
-        window.setInterval(updateActiveUsers, 30000);
+        $('#num-active-users').flipclock('init');
+        window.setTimeout(updateStats, 1500);
+        window.setInterval(updateStats, 30000);
     }
 });
 
@@ -128,39 +123,21 @@ function signUp() {
 
 
 /*---------------------------------------------------------------------------*\
- |                               updateUsers()                               |
+ |                               updateStats()                               |
 \*---------------------------------------------------------------------------*/
 
-function updateUsers() {
-    var obj = $('#num-users');
-    var url = '/num-users';
-    return flipclockAjax(obj, url);
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                            updateActiveUsers()                            |
-\*---------------------------------------------------------------------------*/
-
-function updateActiveUsers() {
-    var obj = $('#num-active-users');
-    var url = '/num-active-users';
-    return flipclockAjax(obj, url);
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                              flipclockAjax()                              |
-\*---------------------------------------------------------------------------*/
-
-function flipclockAjax(obj, url) {
+function updateStats() {
     $.ajax({
         type: 'GET',
-        url: url,
+        url: '/get-stats',
         cache: false,
         success: function(data, textStatus, xmlHttpRequest) {
-            var num = parseInt(data);
-            obj.flipclock('set', num);
+            data = $.parseJSON(data);
+            for (key in data) {
+                var obj = $('#' + key);
+                var val = data[key];
+                obj.flipclock('set', val);
+            }
         }
     });
 }

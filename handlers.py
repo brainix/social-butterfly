@@ -25,6 +25,7 @@
 import logging
 import os
 
+from django.utils import simplejson
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
 
@@ -85,31 +86,30 @@ class Stats(base.WebHandler):
         self.response.out.write(html)
 
 
-class NumUsers(base.WebHandler):
-    """Request handler to return the number of users."""
+class GetStats(base.WebHandler):
+    """Request handler to update the interesting statistics."""
 
     def get(self):
-        """Return the number of active users."""
-        num_users = self.num_users()
-        num_users = str(num_users)
-        self.response.out.write(num_users)
-
-
-class NumActiveUsers(base.WebHandler):
-    """Request handler to return the number of active users."""
-
-    def get(self):
-        """Return the number of active users."""
-        num_active_users = self.num_active_users()
-        num_active_users = str(num_active_users)
-        self.response.out.write(num_active_users)
+        """Return a JSON object containing updated interesting statistics."""
+        obj = {
+            'num-users': self.num_users(),
+            'num-active-users': self.num_active_users(),
+        }
+        json = simplejson.dumps(obj)
+        self.response.out.write(json)
 
 
 class Subscribed(base.WebHandler):
     """Request handler to listen for XMPP subscription notifications."""
 
     def post(self):
-        """ """
+        """Alice has subscribed to Social Butterfly.  Send the help text.
+
+        In order to get here, Alice must've browsed to the Social Butterfly
+        homepage, entered her email address, and accepted Social Butterfly's
+        invitation to chat.  Send Alice a message with the help text, so that
+        she can begin chatting with strangers.
+        """
         alice = self.get_account()
         _log.debug('%s subscribed' % alice)
         self.send_help(alice)
