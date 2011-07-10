@@ -38,13 +38,13 @@ $(function() {
     handle.val(defaultHandle);
 
 
-    if ($('#num-users').flipclock().length) {
-        window.setTimeout(updateUsers, 5000);
+    if ($('#num-users').flipclock('init', {digits: 3}).length) {
+        window.setTimeout(updateUsers, 1500);
         window.setInterval(updateUsers, 30000);
     }
 
-    if ($('#num-active-users').flipclock().length) {
-        window.setTimeout(updateActiveUsers, 5000);
+    if ($('#num-active-users').flipclock('init').length) {
+        window.setTimeout(updateActiveUsers, 1500);
         window.setInterval(updateActiveUsers, 30000);
     }
 });

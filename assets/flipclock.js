@@ -32,24 +32,21 @@
 
 
     var methods = {
-        init: function(options) {
-            if (options) {
-                $.extend(settings, options);
+        init: function(opts) {
+            var data = $.extend(true, {}, settings);
+            data.cache = [];
+            data.state = [];
+            data.num = 0;
+            if (opts) {
+                $.extend(data, opts);
             }
-
-            var data = this.data('flipclock');
-            data = {
-                cache: [],
-                state: [],
-                num: 0
-            };
-            for (var digit = 0; digit < settings.digits; digit++) {
+            for (var digit = 0; digit < data.digits; digit++) {
                 data.state.push(0);
             }
             this.data('flipclock', data);
 
             for (var state = 0; state < 10; state += 0.5) {
-                var path = stateToPath(state);
+                var path = stateToPath(this, state);
                 preload(this, path);
             }
 
@@ -58,16 +55,15 @@
         },
 
         set: function(num) {
-            var max = Math.pow(10, settings.digits) - 1;
+            var data = this.data('flipclock');
+            var max = Math.pow(10, data.digits) - 1;
             if (num > max) {
                 var error = '$.flipclock.set(' + num + ');, ';
                 error += 'but max value is ' + max;
                 $.error(error);
             }
 
-            var data = this.data('flipclock');
             data.num = num;
-            this.data('flipclock', data);
             flip(this);
             return this;
         }
@@ -90,7 +86,7 @@
     };
 
 
-    function stateToPath(state) {
+    function stateToPath(obj, state) {
         var transition = state != Math.floor(state);
         state = Math.floor(state);
         var file = String(state);
@@ -99,52 +95,46 @@
             file += '-' + nextState;
         }
         file += '.png';
-        var path = settings.path + file;
+
+        var data = obj.data('flipclock');
+        var path = data.path + file;
         return path;
     }
 
     function preload(obj, url) {
         // Given a URL to an image, preload that image.
         if (document.images) {
-            data = obj.data('flipclock');
+            var data = obj.data('flipclock');
             var cachedImage = document.createElement("img");
             cachedImage.src = url;
-            try {
-                data.cache.push(cachedImage);
-            } catch (err) {
-                return;
-            }
-            obj.data('flipclock', data);
+            data.cache.push(cachedImage);
         }
     }
 
     function draw(obj) {
         var data = obj.data('flipclock');
         var html = '';
-        try {
-            for (var index = 0; index < data.state.length; index++) {
-                var state = data.state[index];
-                var path = stateToPath(state);
-                var width = settings.width;
-                var imageTag = '<img src="' + path + '" width="' + width + '%" />';
-                html = imageTag + html;
-            }
-            obj.html(html);
-        } catch (err) {
+        for (var index = 0; index < data.state.length; index++) {
+            var state = data.state[index];
+            var path = stateToPath(obj, state);
+            var width = data.width;
+            var imageTag = '<img src="' + path + '" width="' + width + '%" />';
+            html = imageTag + html;
         }
+        obj.html(html);
     }
 
     function flip(obj) {
         var data = obj.data('flipclock');
 
         function f() {
-            for (var exponent = 0; exponent < settings.digits; exponent++) {
+            for (var exponent = 0; exponent < data.digits; exponent++) {
                 var digit = data.num % Math.pow(10, exponent + 1);
                 digit = Math.floor(digit / Math.pow(10, exponent));
                 if (data.state[exponent] != digit) {
                     data.state[exponent] = (data.state[exponent] + 0.5) % 10;
                     draw(obj);
-                    var timeoutId = window.setTimeout(f, settings.delay);
+                    var timeoutId = window.setTimeout(f, data.delay);
                     return;
                 }
             }
