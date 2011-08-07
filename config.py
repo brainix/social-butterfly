@@ -66,6 +66,9 @@ VALID_GMAIL_CHARS = ''.join((
 VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com',)
 
 
+ADMINS = ('brainix@gmail.com', 'rajiv.bakulesh.shah@gmail.com',)
+
+
 HTTP_CODE_TO_TITLE = {
     100: 'Continue',
     101: 'Switching Protocols',

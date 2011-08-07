@@ -160,6 +160,22 @@ class NotificationMixin(object):
         body += 'or type /next to chat with someone else.'
         return body
 
+    @_send_notification
+    def notify_unknown_command(self, alice):
+        """ """
+        body = "Unknown command"
+        return body
+
+    @_send_notification
+    def notify_who(self, alice):
+        """ """
+        bob = alice.partner
+        if bob is None or bob.partner != alice:
+            body = "You're not currently chatting with a partner."
+        else:
+            body = "You're currently chatting with: %s" % alice.partner
+        return body
+
     @_send_presence
     def send_status(self, alice, num_active_users):
         """ """

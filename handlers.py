@@ -202,6 +202,14 @@ class Chat(base.ChatHandler):
                 self.notify_chatting(carol)
 
     @base.ChatHandler.require_account
+    @base.ChatHandler.require_admin
+    def who_command(self, message=None):
+        """Alice has typed /who."""
+        alice = self.get_account(message)
+        _log.debug('%s typed /who' % alice)
+        self.notify_who(alice)
+
+    @base.ChatHandler.require_account
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to her chat partner, Bob."""
         alice = self.get_account(message)

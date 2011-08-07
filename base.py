@@ -33,7 +33,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
-from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+from config import ADMINS, DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
 import models
 import notifications
 import strangers
@@ -168,6 +168,27 @@ class ChatHandler(_BaseHandler, notifications.NotificationMixin,
                 body = "decorator requirements failed; %s hasn't registered"
                 _log.warning(body % message.sender)
                 self.notify_requires_account(message.sender)
+            else:
+                _log.debug('decorator requirements passed; calling method')
+                return method(self, message=message)
+        return wrap
+
+    @staticmethod
+    def require_admin(method):
+        """Require that the user is an admin to access the request handler.
+
+        If the user issuing the command isn't an admin, she shouldn't know that
+        the command exists.  So in this case, mimic Google App Engine's
+        xmpp_handlers.CommandHandler's "unknown command" behavior.
+        """
+        @functools.wraps(method)
+        def wrap(self, message=None):
+            _log.debug('decorated %s requires admin account' % method)
+            alice = self.get_account(message)
+            if str(alice) not in ADMINS:
+                body = "decorator requirements failed; %s isn't an admin"
+                _log.warning(body % message.sender)
+                self.notify_unknown_command(message.sender)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)
