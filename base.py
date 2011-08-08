@@ -112,8 +112,9 @@ class WebHandler(_BaseHandler, notifications.NotificationMixin,
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
+            num_users = self.num_users()
             num_active_users = self.num_active_users()
-            self.send_status(alice, num_active_users)
+            self.send_status(alice, num_users, num_active_users)
             return return_value
         return wrap
 

@@ -177,8 +177,8 @@ class NotificationMixin(object):
         return body
 
     @_send_presence
-    def send_status(self, alice, num_active_users):
+    def send_status(self, alice, num_users, num_active_users):
         """ """
-        noun = 'strangers' if num_active_users != 1 else 'stranger'
-        status = '%s %s available for chat.' % (num_active_users, noun)
+        status = '%s users total, ' % num_users
+        status += '%s available for chat.' % num_active_users
         return status
