@@ -99,6 +99,19 @@ class GetStats(base.WebHandler):
         self.response.out.write(json)
 
 
+class Album(base.WebHandler):
+    """ """
+
+    def get(self):
+        """ """
+        path = os.path.join(TEMPLATES, 'album.html')
+        debug = DEBUG
+        title = 'slideshow'
+        users = self.get_users(started=None, available=None, chatting=None)
+        html = template.render(path, locals(), debug=debug)
+        self.response.out.write(html)
+
+
 class Subscribed(base.WebHandler):
     """Request handler to listen for XMPP subscription notifications."""
 

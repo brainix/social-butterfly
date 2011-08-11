@@ -1,0 +1,38 @@
+{% comment %} ---------------------------------------------------------------*\
+ |  album.html                                                               |
+ |                                                                           |
+ |  Copyright (c) 2010-2011, Code A La Mode, original authors.               |
+ |                                                                           |
+ |      This file is part of Social Butterfly.                               |
+ |                                                                           |
+ |      Social Butterfly is free software; you can redistribute it and/or    |
+ |      modify it under the terms of the GNU General Public License as       |
+ |      published by the Free Software Foundation, either version 3 of the   |
+ |      License, or (at your option) any later version.                      |
+ |                                                                           |
+ |      Social Butterfly is distributed in the hope that it will be useful,  |
+ |      but WITHOUT ANY WARRANTY; without even the implied warranty of       |
+ |      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        |
+ |      GNU General Public License for more details.                         |
+ |                                                                           |
+ |      You should have received a copy of the GNU General Public License    |
+ |      along with Social Butterfly.  If not, see:                           |
+ |          <http://www.gnu.org/licenses/>.                                  |
+\*------------------------------------------------------------ {% endcomment %}
+
+
+{% extends "base.html" %}
+
+{% block content %}
+
+    <script>
+        var gravatars = [];
+        {% for user in users %}
+            gravatars.push('{{ user|user_to_gravatar }}');
+        {% endfor %}
+    </script>
+
+    <h3>Who uses Social Butterfly?</h3>
+    <img src="http://www.gravatar.com/avatar/00000000000000000000000000000000?size=256" alt="Social Butterfly User" />
+
+{% endblock %}

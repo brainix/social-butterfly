@@ -35,7 +35,7 @@ _log = logging.getLogger(__name__)
 class StrangerMixin(object):
     """ """
 
-    def _get_users(self, started=True, available=True, chatting=False):
+    def get_users(self, started=True, available=True, chatting=False):
         """ """
         assert started in (None, False, True)
         assert available in (None, False, True)
@@ -57,13 +57,13 @@ class StrangerMixin(object):
 
     def num_users(self):
         """Return the total number of users."""
-        carols = self._get_users(started=None, available=None, chatting=None)
+        carols = self.get_users(started=None, available=None, chatting=None)
         num_carols = carols.count()
         return num_carols
 
     def num_active_users(self):
         """Return the number of started and available users."""
-        carols = self._get_users(started=True, available=True, chatting=None)
+        carols = self.get_users(started=True, available=True, chatting=None)
         num_carols = carols.count()
         return num_carols
 
@@ -73,7 +73,7 @@ class StrangerMixin(object):
         Bob was Alice's previous chat partner (if any).  Pair Alice with
         someone different this time (if possible).
         """
-        carols = self._get_users(started=True, available=True, chatting=False)
+        carols = self.get_users(started=True, available=True, chatting=False)
         only_one = carols.count(2) == 1
 
         for carol in carols:

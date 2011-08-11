@@ -27,6 +27,7 @@ import coldstart
 import logging
 
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
 from config import DEBUG
@@ -42,12 +43,16 @@ def main():
     This is the main entry point into our webapp.  Configure our URL mapping,
     define our WSGI webapp, then run our webapp.
     """
+
+    template.register_template_library('filters')
+
     url_mapping = (
         ('/_ah/xmpp/presence/probe/',           handlers.Probe),        # Probe handler.
         ('/_ah/xmpp/presence/unavailable/',     handlers.Unavailable),  # Unavailable handler.
         ('/_ah/xmpp/presence/available/',       handlers.Available),    # Available handler.
         ('/_ah/xmpp/message/chat/',             handlers.Chat),         # Chat handler.
         ('/_ah/xmpp/subscription/subscribed/',  handlers.Subscribed),   # Subscribed handler.
+        ('/album',                              handlers.Album),        # User gallery album.
         ('/get-stats',                          handlers.GetStats),     # Interesting statistics AJAX handler.
         ('/stats',                              handlers.Stats),        # Interesting statistics handler.
         ('/',                                   handlers.Home),         # Homepage handler.
