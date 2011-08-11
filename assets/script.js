@@ -37,7 +37,8 @@ $(function() {
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
 
-    if ($('#num-users').flipclock('init', {digits: 3}).length) {
+    if ($('#num-users').length > 0) {
+        $('#num-users').flipclock('init', {digits: 3});
         $('#num-active-users').flipclock('init');
         window.setTimeout(updateStats, 1500);
         window.setInterval(updateStats, 30000);
