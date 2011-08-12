@@ -45,7 +45,7 @@ def user_to_gravatar(user, size=256):
     query = {
         'size': size,
         'default': 404,
-        'rating': 'x',
+        'rating': 'g',
     }
     query = urllib.urlencode(query)
 

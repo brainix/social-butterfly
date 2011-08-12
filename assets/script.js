@@ -31,9 +31,7 @@ $(function() {
     var handle = $('#content .sign-up .register [name="handle"]');
     handle.focus(focusHandle);
     handle.blur(blurHandle);
-
     $('#content .sign-up .register').submit(signUp);
-
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
 
@@ -42,6 +40,10 @@ $(function() {
         $('#num-active-users').flipclock('init');
         window.setTimeout(updateStats, 1500);
         window.setInterval(updateStats, 30000);
+    }
+
+    if ($('.gravatar').length > 0) {
+        slideshow();
     }
 });
 
@@ -92,16 +94,16 @@ function signUp() {
             url: '/',
             data: {handle: handle},
             cache: false,
-            success: function(data, textStatus, xmlHttpRequest) {
+            success: function(data, textStatus, jqXHR) {
                 var signUpForm = $('#content .sign-up');
                 signUpForm.fadeOut('slow', function() {
                     var signedUpText = $('#content .signed-up');
                     signedUpText.fadeIn('slow');
                 });
             },
-            error: function(xmlHttpRequest, textStatus, errorThrown) {
+            error: function(jqXHR, textStatus, errorThrown) {
                 var message = '';
-                switch (xmlHttpRequest.status) {
+                switch (jqXHR.status) {
                     case 400:
                         message = "Oops, you've entered an invalid Google ";
                         message += 'Talk address.\n\nPlease correct your ';
@@ -113,7 +115,7 @@ function signUp() {
                 }
                 alert(message);
             },
-            complete: function(xmlHttpRequest, textStatus) {
+            complete: function(jqXHR, textStatus) {
                 signUpSubmitted = false;
             }
         });
@@ -132,12 +134,36 @@ function updateStats() {
         type: 'GET',
         url: '/get-stats',
         cache: false,
-        success: function(data, textStatus, xmlHttpRequest) {
+        success: function(data, textStatus, jqXHR) {
             data = $.parseJSON(data);
             $.each(data, function(key, val) {
                 var obj = $('#' + key);
                 obj.flipclock('set', val);
             });
+        }
+    });
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                                slideshow()                                |
+\*---------------------------------------------------------------------------*/
+
+var slideshowIndex = 0;
+
+function slideshow() {
+    var url = gravatars[slideshowIndex];
+    $.ajax({
+        type: 'GET',
+        url: url,
+        success: function(data, textStatus, jqXHR) {
+            $('.gravatar').attr('src', url);
+            slideshowIndex = (slideshowIndex + 1) % gravatars.length;
+            window.setTimeout(slideshow, 5000);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            gravatars.splice(slideshowIndex, 1);
+            slideshow();
         }
     });
 }
