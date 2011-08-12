@@ -42,7 +42,7 @@ $(function() {
         window.setInterval(updateStats, 30000);
     }
 
-    if ($('.gravatar').length > 0) {
+    if ($('#gravatars').length > 0) {
         slideshow();
     }
 });
@@ -152,18 +152,21 @@ function updateStats() {
 var slideshowIndex = 0;
 
 function slideshow() {
-    var url = gravatars[slideshowIndex];
-    $.ajax({
-        type: 'GET',
-        url: url,
-        success: function(data, textStatus, jqXHR) {
-            $('.gravatar').attr('src', url);
-            slideshowIndex = (slideshowIndex + 1) % gravatars.length;
-            window.setTimeout(slideshow, 5000);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            gravatars.splice(slideshowIndex, 1);
-            slideshow();
-        }
-    });
+    if (slideshowIndex < gravatars.length) {
+        var url = gravatars[slideshowIndex];
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function(data, textStatus, jqXHR) {
+                var img = '<img src="' + url + '" style="display: none;" alt="Social Butterfly" />';
+                $('#gravatars').append(img);
+                slideshowIndex++;
+                $('#gravatars img:last-child').fadeIn('slow', slideshow);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                gravatars.splice(slideshowIndex, 1);
+                slideshow();
+            }
+        });
+    }
 }

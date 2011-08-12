@@ -35,7 +35,7 @@ _log = logging.getLogger(__name__)
 class StrangerMixin(object):
     """ """
 
-    def get_users(self, started=True, available=True, chatting=False):
+    def get_users(self, started=True, available=True, chatting=False, order=True):
         """ """
         assert started in (None, False, True)
         assert available in (None, False, True)
@@ -51,7 +51,8 @@ class StrangerMixin(object):
         elif chatting == True:
             carols = carols.filter('partner !=', None)
             carols.order('partner')
-        carols = carols.order('datetime')
+        if order is not None:
+            carols = carols.order('datetime' if order else '-datetime')
 
         return carols
 

@@ -106,8 +106,8 @@ class Album(base.WebHandler):
         """ """
         path = os.path.join(TEMPLATES, 'album.html')
         debug = DEBUG
-        title = 'slideshow'
-        users = self.get_users(started=None, available=None, chatting=None)
+        title = 'who uses social butterfly?'
+        users = self.get_users(started=None, available=None, chatting=None, order=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 

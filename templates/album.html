@@ -25,16 +25,13 @@
 
 {% block content %}
 
-    <script>
+    <script type="text/javascript">
         var gravatars = [];
         {% for user in users %}
             gravatars.push('{{ user|user_to_gravatar }}');
         {% endfor %}
     </script>
 
-    <h3>Who uses Social Butterfly?</h3>
-    <img src="http://www.gravatar.com/avatar/00000000000000000000000000000000?size=256"
-         class="gravatar"
-         alt="Social Butterfly User" />
+    <div id="gravatars"></div>
 
 {% endblock %}
