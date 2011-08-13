@@ -22,10 +22,8 @@
 """Custom Django page template filters."""
 
 
-import cgi
 import hashlib
 import logging
-import urllib
 
 from google.appengine.ext.webapp.template import create_template_register
 
@@ -35,7 +33,7 @@ register = create_template_register()
 
 
 @register.filter
-def user_to_gravatar(user, size=64):
+def gravatar_hash(user):
     """Convert a user object into a Gravatar (globally recognized avatar) URL.
 
     For more information, see:
@@ -43,14 +41,4 @@ def user_to_gravatar(user, size=64):
     """
     email = str(user)
     hash = hashlib.md5(email).hexdigest()
-    query = {
-        'size': size,
-        'default': 404,
-        'rating': 'g',
-    }
-    query = urllib.urlencode(query)
-
-    gravatar = 'http://www.gravatar.com/avatar/%s.jpg?%s'
-    gravatar %= hash, query
-    gravatar = cgi.escape(gravatar)
-    return gravatar
+    return hash

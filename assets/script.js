@@ -153,15 +153,17 @@ var slideshowIndex = 0;
 
 function slideshow() {
     if (slideshowIndex < gravatars.length) {
-        var url = gravatars[slideshowIndex];
+        var gravatar = gravatars[slideshowIndex];
         $.ajax({
             type: 'GET',
-            url: url,
+            url: gravatar.image,
             success: function(data, textStatus, jqXHR) {
-                var img = '<img src="' + url + '" style="display: none;" alt="Social Butterfly" />';
-                $('#gravatars').append(img);
+                var snippet =   '<a href="' + gravatar.profile + '">';
+                snippet +=          '<img src="' + gravatar.image + '" style="display: none;" alt="Social Butterfly" />'
+                snippet +=      '</a>';
+                $('#gravatars').append(snippet);
                 slideshowIndex++;
-                $('#gravatars img:last-child').fadeIn('slow', slideshow);
+                $('#gravatars a:last-child img').fadeIn('slow', slideshow);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 gravatars.splice(slideshowIndex, 1);

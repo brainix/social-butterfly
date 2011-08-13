@@ -28,7 +28,10 @@
     <script type="text/javascript">
         var gravatars = [];
         {% for user in users %}
-            gravatars.push('{{ user|user_to_gravatar }}');
+            var gravatar = new Object();
+            gravatar.image = 'http://www.gravatar.com/avatar/{{ user|gravatar_hash }}.jpg?size=64&default=404&rating=x';
+            gravatar.profile = 'http://www.gravatar.com/{{ user|gravatar_hash }}';
+            gravatars.push(gravatar);
         {% endfor %}
     </script>
 
