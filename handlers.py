@@ -91,12 +91,17 @@ class GetStats(base.WebHandler):
 
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
+        json = self._get_stats()
+        self.response.out.write(json)
+
+    @base.WebHandler.memoize(30)
+    def _get_stats(self):
         obj = {
             'num-users': self.num_users(),
             'num-active-users': self.num_active_users(),
         }
         json = simplejson.dumps(obj)
-        self.response.out.write(json)
+        return json
 
 
 class Album(base.WebHandler):
