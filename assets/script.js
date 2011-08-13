@@ -159,7 +159,9 @@ function slideshow() {
             url: gravatar.image,
             success: function(data, textStatus, jqXHR) {
                 var snippet =   '<a href="' + gravatar.profile + '">';
-                snippet +=          '<img src="' + gravatar.image + '" style="display: none;" alt="Social Butterfly" />'
+                snippet +=          '<img src="' + gravatar.image + '"';
+                snippet +=          '     style="display: none;"';
+                snippet +=          '     alt="Social Butterfly" />';
                 snippet +=      '</a>';
                 $('#gravatars').append(snippet);
                 slideshowIndex++;

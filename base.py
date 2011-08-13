@@ -156,17 +156,17 @@ class WebHandler(_BaseHandler, notifications.NotificationMixin,
                 _log.debug('trying to retrieve cached results for %s' % key)
                 results = memcache.get(key)
                 if results is not None:
-                    _log.debug('retrieved cached results for %s' % key)
+                    _log.info('retrieved cached results for %s' % key)
                 else:
-                    _log.debug("couldn't retrieve cached results for %s" % key)
-                    _log.debug('caching results for %s' % key)
+                    _log.info("couldn't retrieve cached results for %s" % key)
+                    _log.info('caching results for %s' % key)
                     results = method(self, *args, **kwds)
                     try:
                         success = memcache.set(key, results, time=cache_secs)
                     except MemoryError:
                         success = False
                     if success:
-                        _log.debug('cached results for %s' % key)
+                        _log.info('cached results for %s' % key)
                     else:
                         _log.error("couldn't cache results for %s" % key)
                 return results
