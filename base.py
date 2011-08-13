@@ -27,6 +27,7 @@ import logging
 import os
 import traceback
 
+from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -129,6 +130,71 @@ class WebHandler(_BaseHandler, notifications.NotificationMixin,
             _log.debug('transactionally executed %s' % method_name)
             return return_value
         return wrap
+
+    @classmethod
+    def memoize(cls, cache_secs):
+        """Decorate a method with the memcache pattern.
+
+        Technically, this memoize function isn't a decorator.  It's a function
+        that returns a decorator.  We have to jump through these hoops because
+        we want to pass an argument to the decorator - how long to cache the
+        results.  But a decorator can only accept one argument - the method to
+        be decorated.  So instead, we use a closure.  (This is a closure,
+        right?)
+
+        memoize is convenient to use on an expensive method that doesn't always
+        need to return live results.  Conceptually, we check the memcache for
+        the results of a method call.  If those results have already been
+        computed and cached, then we simply return them.  Otherwise, we call
+        the method to compute the results, cache the results (so that future
+        calls will hit the cache), then return the results.
+        """
+        def wrap1(method):
+            @functools.wraps(method)
+            def wrap2(self, *args, **kwds):
+                key = cls._compute_memcache_key(self, method, *args, **kwds)
+                _log.debug('trying to retrieve cached results for %s' % key)
+                results = memcache.get(key)
+                if results is not None:
+                    _log.debug('retrieved cached results for %s' % key)
+                else:
+                    _log.debug("couldn't retrieve cached results for %s" % key)
+                    _log.debug('caching results for %s' % key)
+                    results = method(self, *args, **kwds)
+                    try:
+                        success = memcache.set(key, results, time=cache_secs)
+                    except MemoryError:
+                        success = False
+                    if success:
+                        _log.debug('cached results for %s' % key)
+                    else:
+                        _log.error("couldn't cache results for %s" % key)
+                return results
+            return wrap2
+        return wrap1
+
+    @staticmethod
+    def _compute_memcache_key(self, method, *args, **kwds):
+        """Convert a method call into a readable str for use as a memcache key.
+
+        Take into account the module, class, and method names, positional
+        argument values, and keyword argument names and values in order to
+        eliminate the possibility of a false positive memcache hit.
+        """
+
+        def stringify(arg):
+            """ """
+            quote = "'" if isinstance(arg, str) else ''
+            s = quote + str(arg) + quote
+            return s
+
+        memcache_key = str(type(self)).split("'")[1] + '.' + method.func_name + '('
+        memcache_key += ', '.join([stringify(arg) for arg in args])
+        if args and kwds:
+            memcache_key += ', '
+        memcache_key += ', '.join([str(key) + '=' + stringify(kwds[key])
+                                   for key in kwds]) + ')'
+        return memcache_key
 
 
 class ChatHandler(_BaseHandler, notifications.NotificationMixin,

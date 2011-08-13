@@ -104,12 +104,18 @@ class Album(base.WebHandler):
 
     def get(self):
         """ """
+        html = self._render_album()
+        self.response.out.write(html)
+
+    @base.WebHandler.memoize(3600)
+    def _render_album(self):
+        """ """
         path = os.path.join(TEMPLATES, 'album.html')
         debug = DEBUG
         title = 'who uses social butterfly?'
         users = self.get_users(started=None, available=None, chatting=None, order=False)
         html = template.render(path, locals(), debug=debug)
-        self.response.out.write(html)
+        return html
 
 
 class Subscribed(base.WebHandler):
