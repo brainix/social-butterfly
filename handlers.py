@@ -54,10 +54,11 @@ class Home(base.WebHandler):
         path = os.path.join(TEMPLATES, 'home.html')
         debug = DEBUG
         title = 'chat with strangers'
+        num_users, num_active_users = self.get_stats()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
-    @base.WebHandler.run_in_transaction
+    @base.BaseHandler.run_in_transaction
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
@@ -80,8 +81,7 @@ class Stats(base.WebHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         debug = DEBUG
         title = 'interesting statistics'
-        num_users = self.num_users()
-        num_active_users = self.num_active_users()
+        num_users, num_active_users = self.get_stats()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -91,17 +91,13 @@ class GetStats(base.WebHandler):
 
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
-        json = self._get_stats()
-        self.response.out.write(json)
-
-    @base.WebHandler.memoize(30)
-    def _get_stats(self):
+        num_users, num_active_users = self.get_stats()
         obj = {
-            'num-users': self.num_users(),
-            'num-active-users': self.num_active_users(),
+            'num-users': num_users,
+            'num-active-users': num_active_users,
         }
         json = simplejson.dumps(obj)
-        return json
+        self.response.out.write(json)
 
 
 class Album(base.WebHandler):
@@ -112,13 +108,14 @@ class Album(base.WebHandler):
         html = self._render_album()
         self.response.out.write(html)
 
-    @base.WebHandler.memoize(3600)
+    @base.BaseHandler.memoize(3600)
     def _render_album(self):
         """ """
         path = os.path.join(TEMPLATES, 'album.html')
         debug = DEBUG
         title = 'who uses social butterfly?'
         users = self.get_users(started=None, available=None, chatting=None, order=False)
+        num_users, num_active_users = self.get_stats()
         html = template.render(path, locals(), debug=debug)
         return html
 

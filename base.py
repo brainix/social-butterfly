@@ -43,81 +43,12 @@ import strangers
 _log = logging.getLogger(__name__)
 
 
-class _BaseHandler(object):
-    """Methods common to all request handlers."""
-
-    def handle_exception(self, exception, debug_mode):
-        """Houston, we have a problem...  Handle an uncaught exception.
-
-        This method overrides the webapp.RequestHandler class's
-        handle_exception method.  This method gets called whenever there's an
-        uncaught exception anywhere in the Social Butterfly code.
-        """
-        # Get and log the traceback.
-        error_message = traceback.format_exc()
-        _log.critical(error_message)
-
-        # Determine the error code.
-        if isinstance(exception, CapabilityDisabledError):
-            # The only time this exception is thrown is when the datastore is
-            # in read-only mode for maintenance.  Gracefully degrade - throw a
-            # 503 error.  For more info, see:
-            #   http://code.google.com/appengine/docs/python/howto/maintenance.html
-            error_code = 503
-        else:
-            error_code = 500
-
-        # Serve the error page.
-        self.serve_error(error_code)
-
-    def serve_error(self, error_code):
-        """Houston, we have a problem...  Serve an error page."""
-        if not error_code in HTTP_CODE_TO_TITLE:
-            error_code = 500
-        self.error(error_code)
-        self._serve_error(error_code)
-
-    def _serve_error(self, error_code):
-        """ """
-        raise NotImplementedError
-
-    def get_account(self):
-        """ """
-        raise NotImplementedError
-
-
-class WebHandler(_BaseHandler, notifications.NotificationMixin,
-                 strangers.StrangerMixin, webapp.RequestHandler):
-    """Abstract base web request handler class."""
-
-    def _serve_error(self, error_code):
-        """ """
-        path = os.path.join(TEMPLATES, 'error.html')
-        debug = DEBUG
-        title = HTTP_CODE_TO_TITLE[error_code].lower()
-        error_url = self.request.url.split('//', 1)[-1]
-        html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
-
-    def get_account(self):
-        """ """
-        handle = self.request.get('from')
-        key_name = models.Account.key_name(handle)
-        alice = models.Account.get_by_key_name(key_name)
-        return alice
-
-    @staticmethod
-    def send_presence(method):
-        """ """
-        @functools.wraps(method)
-        def wrap(self, *args, **kwds):
-            return_value = method(self, *args, **kwds)
-            alice = self.get_account()
-            num_users = self.num_users()
-            num_active_users = self.num_active_users()
-            self.send_status(alice, num_users, num_active_users)
-            return return_value
-        return wrap
+class BaseHandler(object):
+    """Abstract base request handler class.
+    
+    This abstract base request handler class contains methods common to all
+    request handler classes.
+    """
 
     @staticmethod
     def run_in_transaction(method):
@@ -196,8 +127,90 @@ class WebHandler(_BaseHandler, notifications.NotificationMixin,
                                    for key in kwds]) + ')'
         return memcache_key
 
+    def handle_exception(self, exception, debug_mode):
+        """Houston, we have a problem...  Handle an uncaught exception.
 
-class ChatHandler(_BaseHandler, notifications.NotificationMixin,
+        This method overrides the webapp.RequestHandler class's
+        handle_exception method.  This method gets called whenever there's an
+        uncaught exception anywhere in the Social Butterfly code.
+        """
+        # Get and log the traceback.
+        error_message = traceback.format_exc()
+        _log.critical(error_message)
+
+        # Determine the error code.
+        if isinstance(exception, CapabilityDisabledError):
+            # The only time this exception is thrown is when the datastore is
+            # in read-only mode for maintenance.  Gracefully degrade - throw a
+            # 503 error.  For more info, see:
+            #   http://code.google.com/appengine/docs/python/howto/maintenance.html
+            error_code = 503
+        else:
+            error_code = 500
+
+        # Serve the error page.
+        self.serve_error(error_code)
+
+    def serve_error(self, error_code):
+        """Houston, we have a problem...  Serve an error page."""
+        if not error_code in HTTP_CODE_TO_TITLE:
+            error_code = 500
+        self.error(error_code)
+        self._serve_error(error_code)
+
+    def _serve_error(self, error_code):
+        """Pure virtual method."""
+        raise NotImplementedError
+
+    def get_account(self):
+        """Pure virtual method."""
+        raise NotImplementedError
+
+
+class WebHandler(BaseHandler, notifications.NotificationMixin,
+                 strangers.StrangerMixin, webapp.RequestHandler):
+    """Abstract base web request handler class."""
+
+    def _serve_error(self, error_code):
+        """ """
+        path = os.path.join(TEMPLATES, 'error.html')
+        debug = DEBUG
+        title = HTTP_CODE_TO_TITLE[error_code].lower()
+        error_url = self.request.url.split('//', 1)[-1]
+        num_users = self.num_users()
+        num_active_users = self.num_active_users()
+        html = template.render(path, locals(), debug=DEBUG)
+        self.response.out.write(html)
+
+    def get_account(self):
+        """ """
+        handle = self.request.get('from')
+        key_name = models.Account.key_name(handle)
+        alice = models.Account.get_by_key_name(key_name)
+        return alice
+
+    @BaseHandler.memoize(30)
+    def get_stats(self):
+        """ """
+        num_users = self.num_users()
+        num_active_users = self.num_active_users()
+        return num_users, num_active_users
+
+    @staticmethod
+    def send_presence(method):
+        """ """
+        @functools.wraps(method)
+        def wrap(self, *args, **kwds):
+            return_value = method(self, *args, **kwds)
+            alice = self.get_account()
+            num_users = self.num_users()
+            num_active_users = self.num_active_users()
+            self.send_status(alice, num_users, num_active_users)
+            return return_value
+        return wrap
+
+
+class ChatHandler(BaseHandler, notifications.NotificationMixin,
                   strangers.StrangerMixin, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 

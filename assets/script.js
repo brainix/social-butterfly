@@ -35,12 +35,12 @@ $(function() {
     var defaultHandle = handle.prop('defaultValue');
     handle.val(defaultHandle);
 
-    if ($('#num-users').length > 0) {
-        $('#num-users').flipclock('init', {digits: 3});
-        $('#num-active-users').flipclock('init');
+    if ($('.flipclock').length > 0) {
+        $('.flipclock.num-users').flipclock('init', {digits: 3});
+        $('.flipclock.num-active-users').flipclock('init');
         window.setTimeout(updateStats, 1500);
-        window.setInterval(updateStats, 30000);
     }
+    window.setInterval(updateStats, 30000);
 
     if ($('#gravatars').length > 0) {
         slideshow();
@@ -137,8 +137,15 @@ function updateStats() {
         success: function(data, textStatus, jqXHR) {
             data = $.parseJSON(data);
             $.each(data, function(key, val) {
-                var obj = $('#' + key);
-                obj.flipclock('set', val);
+                var obj = $('.flipclock.' + key);
+                if (obj.length) {
+                    obj.flipclock('set', val);
+                }
+
+                var obj = $('#footer .' + key);
+                if (obj.length) {
+                    obj.html(val);
+                }
             });
         }
     });
