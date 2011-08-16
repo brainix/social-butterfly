@@ -70,15 +70,18 @@ class BaseHandler(object):
         that returns a decorator.  We have to jump through these hoops because
         we want to pass an argument to the decorator - how long to cache the
         results.  But a decorator can only accept one argument - the method to
-        be decorated.  So instead, we use a closure.  (This is a closure,
-        right?)
+        be decorated.  So instead, we use a closure.  For more information on
+        closures, see:
+            http://en.wikipedia.org/wiki/Closure_(computer_science)
 
         memoize is convenient to use on an expensive method that doesn't always
         need to return live results.  Conceptually, we check the memcache for
         the results of a method call.  If those results have already been
         computed and cached, then we simply return them.  Otherwise, we call
         the method to compute the results, cache the results (so that future
-        calls will hit the cache), then return the results.
+        calls will hit the cache), then return the results.  For more
+        information on memoization, see:
+            http://en.wikipedia.org/wiki/Memoization
         """
         def wrap1(method):
             @functools.wraps(method)
@@ -177,8 +180,7 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         debug = DEBUG
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
-        num_users = self.num_users()
-        num_active_users = self.num_active_users()
+        num_users, num_active_users = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
@@ -189,7 +191,6 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
-    @BaseHandler.memoize(30)
     def get_stats(self):
         """ """
         num_users = self.num_users()
@@ -203,8 +204,7 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
-            num_users = self.num_users()
-            num_active_users = self.num_active_users()
+            num_users, num_active_users = self.get_stats()
             self.send_status(alice, num_users, num_active_users)
             return return_value
         return wrap

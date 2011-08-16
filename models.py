@@ -63,20 +63,24 @@ class Account(db.Model):
     def factory(cls, handle):
         """A user has signed up.  Create his/her Social Butterfly account."""
         handle = cls._sanitize_handle(handle)
-        _log.debug('creating account for %s' % handle)
+        _log.debug('creating account %s' % handle)
         cls._validate_handle(handle)
 
         handle = db.IM('xmpp', handle)
         key_name = cls.key_name(handle.address)
-        account = cls.get_by_key_name(key_name)
-        if account is not None:
-            body = "couldn't create account for %s: already exists" % handle
-            _log.warning(body)
-        else:
-            account = cls(key_name=key_name, handle=handle, started=False,
-                          available=False)
-            account.put()
-            _log.info('created account for %s' % handle)
+
+        def create_account():
+            account = cls.get_by_key_name(key_name)
+            if account is not None:
+                body = "couldn't create account %s: already exists" % handle
+                _log.warning(body)
+            else:
+                account = cls(key_name=key_name, handle=handle, started=False,
+                              available=False)
+                account.put()
+                _log.info('created account %s' % handle)
+
+        account = db.run_in_transaction(create_account)
         return account
 
     @staticmethod

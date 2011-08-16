@@ -40,6 +40,7 @@ $(function() {
         $('.flipclock.num-active-users').flipclock('init');
         window.setTimeout(updateStats, 1500);
     }
+
     window.setInterval(updateStats, 30000);
 
     if ($('#gravatars').length > 0) {
@@ -98,7 +99,7 @@ function signUp() {
                 var signUpForm = $('#content .sign-up');
                 signUpForm.fadeOut('slow', function() {
                     var signedUpText = $('#content .signed-up');
-                    signedUpText.fadeIn('slow');
+                    signedUpText.fadeIn('slow', updateStats);
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {

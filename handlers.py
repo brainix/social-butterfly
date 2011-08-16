@@ -58,7 +58,6 @@ class Home(base.WebHandler):
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
-    @base.BaseHandler.run_in_transaction
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
