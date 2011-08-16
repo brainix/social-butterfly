@@ -79,6 +79,7 @@ class Account(db.Model):
                               available=False)
                 account.put()
                 _log.info('created account %s' % handle)
+            return account
 
         account = db.run_in_transaction(create_account)
         return account
