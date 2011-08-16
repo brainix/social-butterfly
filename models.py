@@ -72,13 +72,13 @@ class Account(db.Model):
         def create_account():
             account = cls.get_by_key_name(key_name)
             if account is not None:
-                body = "couldn't create account %s: already exists" % handle
+                body = "couldn't create account %s: already exists" % account
                 _log.warning(body)
             else:
                 account = cls(key_name=key_name, handle=handle, started=False,
                               available=False)
                 account.put()
-                _log.info('created account %s' % handle)
+                _log.info('created account %s' % account)
             return account
 
         account = db.run_in_transaction(create_account)
@@ -101,7 +101,7 @@ class Account(db.Model):
         """A user has signed up.  Validate his/her chat handle."""
 
         def log_and_raise(body):
-            head = "couldn't create account for %s: " % handle
+            head = "couldn't create account %s: " % handle
             _log.warning(head + body)
             raise ValueError(body)
 
