@@ -40,7 +40,6 @@ $(function() {
         $('.flipclock.num-active-users').flipclock('init');
         window.setTimeout(updateStats, 1500);
     }
-
     window.setInterval(updateStats, 30000);
 
     if ($('#gravatars').length > 0) {

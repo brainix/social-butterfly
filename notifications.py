@@ -180,5 +180,5 @@ class NotificationMixin(object):
     def send_status(self, alice, num_users, num_active_users):
         """ """
         status = '%s users total, ' % num_users
-        status += '%s available for chat.' % num_active_users
+        status += '%s available for chat' % num_active_users
         return status
