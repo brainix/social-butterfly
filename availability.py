@@ -54,7 +54,7 @@ class AvailabilityHandler(base.WebHandler):
         """ """
         alice = self.get_account()
         changed = False
-        if alice is not None and alice.started and alice.available != available:
+        if alice.started and alice.available != available:
             alice.available = available
             db.put(alice)
             changed = True
@@ -62,24 +62,19 @@ class AvailabilityHandler(base.WebHandler):
 
     def _log_available(self, available, alice, changed):
         """ """
-        handle = self.get_handle()
         state = 'available' if available else 'unavailable'
-        body = handle + ' became ' + state
-
-        if alice is None:
-            _log.warning(body + ", but doesn't have an account")
+        body = str(alice) + ' became ' + state
+        if not changed:
+            if not alice.started:
+                _log.info(body + ", but hasn't /started")
+            elif alice.available == available:
+                _log.info(body + ", but was already marked " + state)
         else:
-            if not changed:
-                if not alice.started:
-                    _log.info(body + ", but hasn't /started")
-                elif alice.available == available:
-                    _log.info(body + ", but was already marked " + state)
-            else:
-                if alice.partner is not None:
-                    if available:
-                        body += ', but already had partner %s' % alice.partner
-                        _log.error(body)
-                    else:
-                        _log.debug(body + '; had partner %s' % alice.partner)
+            if alice.partner is not None:
+                if available:
+                    body += ', but already had partner %s' % alice.partner
+                    _log.error(body)
                 else:
-                    _log.debug(body + '; had no partner')
+                    _log.debug(body + '; had partner %s' % alice.partner)
+            else:
+                _log.debug(body + '; had no partner')
