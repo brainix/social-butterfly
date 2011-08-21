@@ -131,8 +131,13 @@ class Subscribed(base.WebHandler):
         she can begin chatting with strangers.
         """
         alice = self.get_account()
-        _log.debug('%s subscribed' % alice)
-        self.send_help(alice)
+        if alice is None:
+            handle = self.get_handle()
+            _log.info("%s subscribed, but hasn't registered" % handle)
+            self.notify_requires_account(handle)
+        else:
+            _log.debug('%s subscribed, and has registered' % alice)
+            self.send_help(alice)
 
 
 class Chat(base.ChatHandler):
@@ -303,5 +308,5 @@ class Probe(base.WebHandler):
     @base.WebHandler.send_presence
     def post(self):
         """ """
-        alice = self.get_account()
-        _log.debug('%s probed' % alice)
+        handle = self.get_handle()
+        _log.debug('%s probed' % handle)

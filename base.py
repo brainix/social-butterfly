@@ -165,6 +165,10 @@ class BaseHandler(object):
         """Pure virtual method."""
         raise NotImplementedError
 
+    def get_handle(self):
+        """Pure virtual method."""
+        raise NotImplementedError
+
     def get_account(self):
         """Pure virtual method."""
         raise NotImplementedError
@@ -184,10 +188,15 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
-    def get_account(self):
-        """ """
+    def get_handle(self):
+        """From a web request, find the handle (JID) that issued it."""
         handle = self.request.get('from')
         key_name = models.Account.key_name(handle)
+        return key_name
+
+    def get_account(self):
+        """From a web request, find the user account that issued it."""
+        key_name = self.get_handle()
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
@@ -203,9 +212,9 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         @functools.wraps(method)
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
-            alice = self.get_account()
+            handle = self.get_handle()
             num_users, num_active_users = self.get_stats()
-            self.send_status(alice, num_users, num_active_users)
+            self.send_status(handle, num_users, num_active_users)
             return return_value
         return wrap
 
@@ -218,9 +227,14 @@ class ChatHandler(BaseHandler, notifications.NotificationMixin,
         """ """
         pass
 
+    def get_handle(self, message):
+        """From an XMPP message, find the handle (JID) that sent it."""
+        key_name = models.Account.key_name(message.sender)
+        return key_name
+
     def get_account(self, message):
         """From an XMPP message, find the user account that sent it."""
-        key_name = models.Account.key_name(message.sender)
+        key_name = self.get_handle(message)
         alice = models.Account.get_by_key_name(key_name)
         return alice
 
@@ -246,8 +260,9 @@ class ChatHandler(BaseHandler, notifications.NotificationMixin,
             alice = self.get_account(message)
             if alice is None:
                 body = "decorator requirements failed; %s hasn't registered"
-                _log.warning(body % message.sender)
-                self.notify_requires_account(message.sender)
+                handle = self.get_handle(message)
+                _log.warning(body % handle)
+                self.notify_requires_account(handle)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)
@@ -267,8 +282,9 @@ class ChatHandler(BaseHandler, notifications.NotificationMixin,
             alice = self.get_account(message)
             if str(alice) not in ADMINS:
                 body = "decorator requirements failed; %s isn't an admin"
-                _log.warning(body % message.sender)
-                self.notify_unknown_command(message.sender)
+                handle = self.get_handle(message)
+                _log.warning(body % handle)
+                self.notify_unknown_command(handle)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)
