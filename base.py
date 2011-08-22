@@ -180,7 +180,6 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         debug = DEBUG
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
-        num_users, num_active_users = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 

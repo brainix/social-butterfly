@@ -61,7 +61,10 @@ class StrangerMixin(object):
     def _count_users(self, memcache_key, started, available, chatting):
         """ """
         num_carols = memcache.get(memcache_key)
-        if num_carols is None:
+        if num_carols is not None:
+            _log.debug('memcache hit when counting users')
+        else:
+            _log.info('memcache miss when counting users')
             carols = self.get_users(started, available, chatting, None)
             num_carols = carols.count()
             memcache.set(memcache_key, num_carols)
@@ -116,7 +119,7 @@ class StrangerMixin(object):
                 bob = None
         return alice, bob
 
-    def _start_or_stop_chat(self, alice, bob=None, start=True):
+    def _start_or_stop_chat(self, alice, bob, start):
         """Alice is looking to either start or stop chatting.
         
         When Alice is looking to start chatting, we also pass Bob in.  Bob was
@@ -134,11 +137,11 @@ class StrangerMixin(object):
 
     def start_chat(self, alice, bob):
         """ """
-        return self._start_or_stop_chat(alice, bob=bob, start=True)
+        return self._start_or_stop_chat(alice, bob, True)
 
     def stop_chat(self, alice):
         """ """
-        return self._start_or_stop_chat(alice, start=False)
+        return self._start_or_stop_chat(alice, None, False)
 
     def is_deliverable(self, alice):
         """Alice has typed an IM.  Determine if it can be delivered to Bob."""
