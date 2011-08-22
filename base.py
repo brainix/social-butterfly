@@ -208,6 +208,21 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
             return return_value
         return wrap
 
+    @staticmethod
+    def require_cron(method):
+        """ """
+        @functools.wraps(method)
+        def wrap(self, *args, **kwds):
+            _log.debug('decorated %s can only be called by cron' % method)
+            if self.request.headers.get('X-AppEngine-Cron') != 'true':
+                body = 'decorator requirements failed; %s not called by cron'
+                _log.warning(body)
+                self.serve_error(401)
+            else:
+                _log.debug('decorator requirements passed; calling method')
+                return method(self, *args, **kwds)
+        return wrap
+
 
 class ChatHandler(BaseHandler, notifications.NotificationMixin,
                   strangers.StrangerMixin, xmpp_handlers.CommandHandler):
