@@ -39,24 +39,12 @@ from config import DEFAULT_NUM_SHARDS
 _log = logging.getLogger(__name__)
 
 
-class ShardConfig(db.Model):
+class _ShardConfig(db.Model):
     """Tracks the number of shards for each named counter."""
 
     name = db.StringProperty(required=True)
-    num_shards = db.IntegerProperty(required=True, default=DEFAULT_NUM_SHARDS)
-
-    @classmethod
-    def increase_shards(cls, name, num):
-        """Increase the number of shards for a given sharded counter.
-
-        This method never decreases the number of shards.
-        """
-        config = cls.get_or_insert(name, name=name)
-        def txn():
-            if config.num_shards < num:
-                config.num_shards = num
-                config.put()
-        db.run_in_transaction(txn)
+    num_shards = db.IntegerProperty(default=DEFAULT_NUM_SHARDS, required=True)
+    datetime = db.DateTimeProperty(required=True, indexed=False, auto_now=True)
 
 
 class Shard(db.Model):
@@ -64,6 +52,38 @@ class Shard(db.Model):
 
     name = db.StringProperty(required=True)
     count = db.IntegerProperty(required=True, default=0)
+    datetime = db.DateTimeProperty(required=True, auto_now=True)
+
+    @staticmethod
+    def set_num_shards(name, num):
+        """Increase the number of shards for a given counter to the given num.
+
+        This method never decreases the number of shards.
+        """
+        config = _ShardConfig.get_or_insert(name, name=name)
+        def txn():
+            if config.num_shards < num:
+                config.num_shards = num
+                config.put()
+        db.run_in_transaction(txn)
+
+    @staticmethod
+    def get_created_time(name):
+        """ """
+        config = _ShardConfig.get(name)
+        if config is None:
+            return None
+        else:
+            return config.datetime
+
+    @classmethod
+    def get_updated_time(cls, name):
+        """ """
+        shard = cls.all().filter('name = ', name).order('-datetime').get()
+        if shard is None:
+            return None
+        else:
+            return shard.datetime
 
     @classmethod
     def get_count(cls, name):
@@ -78,9 +98,9 @@ class Shard(db.Model):
         return total
 
     @classmethod
-    def increment(cls, name):
+    def increment_count(cls, name):
         """Increment the value for a given sharded counter."""
-        config = ShardConfig.get_or_insert(name, name=name)
+        config = _ShardConfig.get_or_insert(name, name=name)
         def txn():
             index = random.randint(0, config.num_shards - 1)
             key_name = name + str(index)
@@ -91,3 +111,25 @@ class Shard(db.Model):
             shard.put()
         db.run_in_transaction(txn)
         memcache.incr(name)
+
+    @classmethod
+    def reset_count(cls, name):
+        """Reset to 0 the value for a given sharded counter.
+        
+        For more information, see:
+            http://stackoverflow.com/questions/3034327/google-app-engine-delete-until-count-0
+        """
+        config = _ShardConfig.get(name)
+        if config is not None:
+            config.delete()
+
+        shards = cls.all(keys_only=True).filter('name = ', name)
+        keys = shards.fetch(500)
+        while keys:
+            db.delete(keys)
+            cursor = shards.cursor()
+            shards = cls.all(keys_only=True).filter('name = ', name)
+            shards = shards.with_cursor(cursor)
+            keys = shards.fetch(500)
+
+        memcache.delete(name)

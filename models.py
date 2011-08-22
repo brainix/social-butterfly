@@ -36,11 +36,11 @@ _log = logging.getLogger(__name__)
 class Account(db.Model):
     """ """
 
-    handle = db.IMProperty(indexed=False, required=True)
+    handle = db.IMProperty(required=True, indexed=False)
     started = db.BooleanProperty(required=True)
     available = db.BooleanProperty(required=True)
     partner = db.SelfReferenceProperty()
-    datetime = db.DateTimeProperty(auto_now=True, required=True)
+    datetime = db.DateTimeProperty(required=True, auto_now=True)
 
     def __str__(self):
         """ """

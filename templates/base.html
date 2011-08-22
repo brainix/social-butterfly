@@ -49,7 +49,12 @@
 
         <div id="footer">
             <p>&copy; 2011 <a href="/">Social Butterfly</a></p>
-            <p><span class="num-users">{{ num_users }}</span> users total, <span class="num-active-users">{{ num_active_users }}</span> available for chat</p>
+            {% ifnotequal num_users None %}
+                <p>
+                    <span class="num-users">{{ num_users }}</span> users total,
+                    <span class="num-active-users">{{ num_active_users }}</span> available for chat
+                </p>
+            {% endifnotequal %}
         </div>
 
         <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ"></script>
