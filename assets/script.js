@@ -37,7 +37,8 @@ $(function() {
 
     if ($('.flipclock').length > 0) {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
-        $('.flipclock.num_active_users').flipclock('init');
+        $('.flipclock.num_active_users').flipclock('init', {digits: 3});
+        $('.flipclock.num_messages').flipclock('init', {digits: 3});
         window.setTimeout(updateStats, 1500);
     }
     window.setInterval(updateStats, 30000);
