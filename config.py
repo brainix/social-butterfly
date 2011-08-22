@@ -53,6 +53,7 @@ TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 DEFAULT_NUM_SHARDS = 20
 NUM_USERS_KEY = 'num_users'
 NUM_ACTIVE_USERS_KEY = 'num_active_users'
+NUM_MESSAGES_KEY = 'num_messages'
 
 
 # The local part (the part before the at (@) symbol) of Gmail addresses must be

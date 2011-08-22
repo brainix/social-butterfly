@@ -69,7 +69,11 @@ class Shard(db.Model):
 
     @staticmethod
     def get_created_time(name):
-        """ """
+        """Get the date/time when a named counter was first incremented.
+        
+        If a counter with the given name has not yet been incremented, this
+        method returns None.
+        """
         config = _ShardConfig.get(name)
         if config is None:
             return None
@@ -78,10 +82,14 @@ class Shard(db.Model):
 
     @classmethod
     def get_updated_time(cls, name):
-        """ """
+        """Get the date/time when a named counter was last incremented.
+
+        If a counter with the given name has not yet been incremented, this
+        method returns None.
+        """
         shard = cls.all().filter('name = ', name).order('-datetime').get()
         if shard is None:
-            return None
+            return cls.get_created_time(name)
         else:
             return shard.datetime
 
@@ -89,7 +97,7 @@ class Shard(db.Model):
     def get_count(cls, name):
         """Retrieve the value for a given sharded counter."""
         total = memcache.get(name)
-        if total is None:
+        if total is None and _ShardConfig.get(name).count(1) > 0:
             shards = cls.all().filter('name = ', name)
             total = 0
             for shard in shards:
@@ -114,15 +122,15 @@ class Shard(db.Model):
 
     @classmethod
     def reset_count(cls, name):
-        """Reset to 0 the value for a given sharded counter.
-        
-        For more information, see:
-            http://stackoverflow.com/questions/3034327/google-app-engine-delete-until-count-0
-        """
+        """Reset to 0 the value for a given sharded counter."""
+
+        # First, delete the sharding counter's configuration.
         config = _ShardConfig.get(name)
         if config is not None:
             config.delete()
 
+        # Next, delete the shards 500 at a time.  For more information, see:
+        #     http://stackoverflow.com/questions/3034327/google-app-engine-delete-until-count-0
         shards = cls.all(keys_only=True).filter('name = ', name)
         keys = shards.fetch(500)
         while keys:
@@ -132,4 +140,5 @@ class Shard(db.Model):
             shards = shards.with_cursor(cursor)
             keys = shards.fetch(500)
 
+        # Finally, delete the memcached count.
         memcache.delete(name)
