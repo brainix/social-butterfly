@@ -24,4 +24,5 @@
 cron:
 - description: reset interesting statistics (the number of messages relayed)
   url: /reset-stats
-  schedule: every 1 hours synchronized
+  schedule: every day 00:00
+  timezone: America/Chicago

@@ -141,7 +141,9 @@ class Shard(db.Model):
         else:
             config.delete()
 
-        # Next, delete the shards 500 at a time.  For more information, see:
+        # Next, delete all of the shards, 500 at a time.  We do 500 at a time
+        # because the datastore limits batch operations to 500 per batch.  For
+        # more information, see:
         #     http://stackoverflow.com/questions/3034327/google-app-engine-delete-until-count-0
         shards = cls.all(keys_only=True).filter('name = ', name)
         keys = shards.fetch(500)
