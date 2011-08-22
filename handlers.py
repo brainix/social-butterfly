@@ -57,7 +57,7 @@ class Home(base.WebHandler):
         path = os.path.join(TEMPLATES, 'home.html')
         debug = DEBUG
         title = 'chat with strangers'
-        num_users, num_active_users = self.get_stats()
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -85,7 +85,7 @@ class Stats(base.WebHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         debug = DEBUG
         title = 'interesting statistics'
-        num_users, num_active_users = self.get_stats()
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -95,10 +95,12 @@ class GetStats(base.WebHandler):
 
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
-        num_users, num_active_users = self.get_stats()
+        stats = self.get_stats()
         obj = {
-            'num-users': num_users,
-            'num-active-users': num_active_users,
+            'num-users': stats['num_users'],
+            'num-active-users': stats['num_active_users'],
+            'num-messages': stats['num_messages'],
+            'num-messages-since': stats['num_messages_since'],
         }
         json = simplejson.dumps(obj)
         self.response.out.write(json)
@@ -129,7 +131,7 @@ class Album(base.WebHandler):
         debug = DEBUG
         title = 'who uses social butterfly?'
         users = self.get_users(started=None, available=None, chatting=None, order=False)
-        num_users, num_active_users = self.get_stats()
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=debug)
         return html
 

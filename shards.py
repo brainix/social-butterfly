@@ -74,8 +74,9 @@ class Shard(db.Model):
         If a counter with the given name has not yet been incremented, this
         method returns None.
         """
-        config = _ShardConfig.get(name)
-        if config is None:
+        try:
+            config = _ShardConfig.get(name)
+        except db.BadKeyError:
             return None
         else:
             return config.datetime
@@ -97,12 +98,17 @@ class Shard(db.Model):
     def get_count(cls, name):
         """Retrieve the value for a given sharded counter."""
         total = memcache.get(name)
-        if total is None and _ShardConfig.get(name).count(1) > 0:
-            shards = cls.all().filter('name = ', name)
-            total = 0
-            for shard in shards:
-                total += shard.count
-            memcache.add(name, total)
+        if total is None:
+            try:
+                _ShardConfig.get(name)
+            except db.BadKeyError:
+                pass
+            else:
+                shards = cls.all().filter('name = ', name)
+                total = 0
+                for shard in shards:
+                    total += shard.count
+                memcache.add(name, total)
         return total
 
     @classmethod
@@ -125,8 +131,11 @@ class Shard(db.Model):
         """Reset to 0 the value for a given sharded counter."""
 
         # First, delete the sharding counter's configuration.
-        config = _ShardConfig.get(name)
-        if config is not None:
+        try:
+            config = _ShardConfig.get(name)
+        except db.BadKeyError:
+            pass
+        else:
             config.delete()
 
         # Next, delete the shards 500 at a time.  For more information, see:

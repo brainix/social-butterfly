@@ -35,8 +35,10 @@ from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import ADMINS, DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+from config import NUM_MESSAGES_KEY
 import models
 import notifications
+import shards
 import strangers
 
 
@@ -192,9 +194,13 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
 
     def get_stats(self):
         """ """
-        num_users = self.num_users()
-        num_active_users = self.num_active_users()
-        return num_users, num_active_users
+        stats = {
+            'num_users': self.num_users(),
+            'num_active_users': self.num_active_users(),
+            'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
+            'num_messages_since': shards.Shard.get_created_time(NUM_MESSAGES_KEY),
+        }
+        return stats
 
     @staticmethod
     def send_presence(method):
@@ -203,8 +209,8 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
-            num_users, num_active_users = self.get_stats()
-            self.send_status(alice, num_users, num_active_users)
+            stats = self.get_stats()
+            self.send_status(alice, stats)
             return return_value
         return wrap
 
