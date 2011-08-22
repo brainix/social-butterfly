@@ -26,10 +26,11 @@ import logging
 import os
 
 from django.utils import simplejson
+from google.appengine.api import memcache
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES
+from config import DEBUG, TEMPLATES, NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY
 import availability
 import base
 import models
@@ -63,13 +64,15 @@ class Home(base.WebHandler):
         handle = self.request.get('handle')
         _log.info('%s signing up' % handle)
         try:
-            account = models.Account.factory(handle)
+            account, created = models.Account.factory(handle)
         except ValueError:
             _log.warning("%s couldn't sign up" % handle)
             self.serve_error(400)
         else:
             xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
+            if created:
+                memcache.incr(NUM_USERS_KEY)
 
 
 class Stats(base.WebHandler):
@@ -269,6 +272,7 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
+            memcache.incr(NUM_ACTIVE_USERS_KEY)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -295,6 +299,7 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
+            memcache.decr(NUM_ACTIVE_USERS_KEY)
 
 
 class Probe(base.WebHandler):

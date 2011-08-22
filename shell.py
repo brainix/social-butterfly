@@ -24,7 +24,7 @@
 """Run an interactive Python shell w/ access to Social Butterfly's datastore.
 
 Some of this code was written by Nick Johnson and swiftly yoinked by Raj Shah.
-See:
+For more information, see:
     http://code.google.com/appengine/articles/remote_api.html
 """
 

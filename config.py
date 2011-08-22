@@ -50,6 +50,11 @@ _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 
 
+DEFAULT_NUM_SHARDS = 20
+NUM_USERS_KEY = 'num_users'
+NUM_ACTIVE_USERS_KEY = 'num_active_users'
+
+
 # The local part (the part before the at (@) symbol) of Gmail addresses must be
 # at least 6 characters in length...
 MIN_GMAIL_ADDR_LEN = 6

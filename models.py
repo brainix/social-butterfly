@@ -72,17 +72,19 @@ class Account(db.Model):
         def create_account():
             account = cls.get_by_key_name(key_name)
             if account is not None:
+                created = False
                 body = "couldn't create account %s: already exists" % account
                 _log.warning(body)
             else:
                 account = cls(key_name=key_name, handle=handle, started=False,
                               available=False)
                 account.put()
+                created = True
                 _log.info('created account %s' % account)
-            return account
+            return account, created
 
-        account = db.run_in_transaction(create_account)
-        return account
+        account, created = db.run_in_transaction(create_account)
+        return account, created
 
     @staticmethod
     def _sanitize_handle(handle):
