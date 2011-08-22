@@ -108,7 +108,7 @@ class Shard(db.Model):
                 total = 0
                 for shard in shards:
                     total += shard.count
-                memcache.add(name, total)
+                memcache.set(name, total)
         return total
 
     @classmethod
@@ -124,7 +124,7 @@ class Shard(db.Model):
             shard.count += 1
             shard.put()
         db.run_in_transaction(txn)
-        memcache.incr(name)
+        memcache.incr(name, initial_value=0)
 
     @classmethod
     def reset_count(cls, name):

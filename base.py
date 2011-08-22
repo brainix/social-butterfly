@@ -198,8 +198,9 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
             'num_users': self.num_users(),
             'num_active_users': self.num_active_users(),
             'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
-            'num_messages_since': shards.Shard.get_created_time(NUM_MESSAGES_KEY),
         }
+        if stats['num_messages'] is None:
+            stats['num_messages'] = 0
         return stats
 
     @staticmethod

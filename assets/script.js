@@ -36,8 +36,8 @@ $(function() {
     handle.val(defaultHandle);
 
     if ($('.flipclock').length > 0) {
-        $('.flipclock.num-users').flipclock('init', {digits: 3});
-        $('.flipclock.num-active-users').flipclock('init');
+        $('.flipclock.num_users').flipclock('init', {digits: 3});
+        $('.flipclock.num_active_users').flipclock('init');
         window.setTimeout(updateStats, 1500);
     }
     window.setInterval(updateStats, 30000);

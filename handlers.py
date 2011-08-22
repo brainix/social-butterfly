@@ -96,13 +96,7 @@ class GetStats(base.WebHandler):
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
         stats = self.get_stats()
-        obj = {
-            'num-users': stats['num_users'],
-            'num-active-users': stats['num_active_users'],
-            'num-messages': stats['num_messages'],
-            'num-messages-since': stats['num_messages_since'],
-        }
-        json = simplejson.dumps(obj)
+        json = simplejson.dumps(stats)
         self.response.out.write(json)
 
 
