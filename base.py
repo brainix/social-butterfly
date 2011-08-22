@@ -216,7 +216,7 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
             _log.debug('decorated %s can only be called by cron' % method)
             if self.request.headers.get('X-AppEngine-Cron') != 'true':
                 body = 'decorator requirements failed; %s not called by cron'
-                _log.warning(body)
+                _log.warning(body % method)
                 self.serve_error(401)
             else:
                 _log.debug('decorator requirements passed; calling method')
