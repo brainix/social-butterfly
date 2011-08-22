@@ -61,13 +61,13 @@ class StrangerMixin(object):
     def _count_users(self, memcache_key, started, available, chatting):
         """ """
         num_carols = memcache.get(memcache_key)
-        if num_carols is not None:
-            _log.debug('memcache hit when counting users')
-        else:
+        if num_carols is None:
             _log.info('memcache miss when counting users')
             carols = self.get_users(started, available, chatting, None)
             num_carols = carols.count()
             memcache.set(memcache_key, num_carols)
+        else:
+            _log.debug('memcache hit when counting users')
         return num_carols
 
     def num_users(self):
