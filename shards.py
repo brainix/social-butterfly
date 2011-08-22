@@ -98,7 +98,10 @@ class Shard(db.Model):
     def get_count(cls, name):
         """Retrieve the value for a given sharded counter."""
         total = memcache.get(name)
-        if total is None:
+        if total is not None:
+            _log.debug('memcache hit when getting count for ' + name)
+        else:
+            _log.info('memcache miss when getting count for ' + name)
             try:
                 _ShardConfig.get(name)
             except db.BadKeyError:
