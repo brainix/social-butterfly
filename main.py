@@ -53,6 +53,7 @@ def main():
         ('/_ah/xmpp/message/chat/',             handlers.Chat),         # Chat handler.
         ('/_ah/xmpp/subscription/subscribed/',  handlers.Subscribed),   # Subscribed handler.
         ('/album',                              handlers.Album),        # User gallery album.
+        ('/reset-stats',                        handlers.ResetStats),   # Reset interesting statistics cron handler.
         ('/get-stats',                          handlers.GetStats),     # Interesting statistics AJAX handler.
         ('/stats',                              handlers.Stats),        # Interesting statistics handler.
         ('/',                                   handlers.Home),         # Homepage handler.

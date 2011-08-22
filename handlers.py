@@ -30,10 +30,12 @@ from google.appengine.api import memcache
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
 
-from config import DEBUG, TEMPLATES, NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY
+from config import DEBUG, TEMPLATES
+from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
 import availability
 import base
 import models
+import shards
 
 
 _log = logging.getLogger(__name__)
@@ -100,6 +102,16 @@ class GetStats(base.WebHandler):
         }
         json = simplejson.dumps(obj)
         self.response.out.write(json)
+
+
+class ResetStats(base.WebHandler):
+    """Request handler to reset the interesting statistics."""
+
+    @base.WebHandler.require_cron
+    def get(self):
+        """ """
+        shards.Shard.reset_count(NUM_MESSAGES_KEY)
+        _log.info('cron reset num messages sharding counter')
 
 
 class Album(base.WebHandler):
@@ -247,6 +259,7 @@ class Chat(base.ChatHandler):
             if deliverable:
                 _log.info("sending %s's IM to %s" % (alice, bob))
                 self.send_message(bob, message.body)
+                shards.Shard.increment_count(NUM_MESSAGES_KEY)
                 _log.info("sent %s's IM to %s" % (alice, bob))
             else:
                 _log.info("can't send %s's IM to %s" % (alice, bob))

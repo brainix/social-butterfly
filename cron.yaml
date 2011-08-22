@@ -22,3 +22,6 @@
 
 
 cron:
+- description: reset interesting statistics (the number of messages relayed)
+  url: /reset-stats
+  schedule: every hour
