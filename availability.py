@@ -54,7 +54,7 @@ class AvailabilityHandler(base.WebHandler):
         """ """
         alice = self.get_account()
         changed = False
-        if alice.started and alice.available != available:
+        if alice is not None and alice.started and alice.available != available:
             alice.available = available
             db.put(alice)
             changed = True
@@ -63,18 +63,22 @@ class AvailabilityHandler(base.WebHandler):
     def _log_available(self, available, alice, changed):
         """ """
         state = 'available' if available else 'unavailable'
-        body = str(alice) + ' became ' + state
-        if not changed:
-            if not alice.started:
-                _log.info(body + ", but hasn't /started")
-            elif alice.available == available:
-                _log.info(body + ", but was already marked " + state)
+        if alice is None:
+            body = 'someone without an account subscribed, became %s?' % state
+            _log.info(body)
         else:
-            if alice.partner is not None:
-                if available:
-                    body += ', but already had partner %s' % alice.partner
-                    _log.error(body)
-                else:
-                    _log.debug(body + '; had partner %s' % alice.partner)
+            body = str(alice) + ' became ' + state
+            if not changed:
+                if not alice.started:
+                    _log.info(body + ", but hasn't /started")
+                elif alice.available == available:
+                    _log.info(body + ", but was already marked " + state)
             else:
-                _log.debug(body + '; had no partner')
+                if alice.partner is not None:
+                    if available:
+                        body += ', but already had partner %s' % alice.partner
+                        _log.error(body)
+                    else:
+                        _log.debug(body + '; had partner %s' % alice.partner)
+                else:
+                    _log.debug(body + '; had no partner')
