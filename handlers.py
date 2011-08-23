@@ -111,14 +111,14 @@ class Stats(base.WebHandler):
 
 
 class Album(base.WebHandler):
-    """ """
+    """Request handler to serve the user photo album page."""
 
     def get(self):
-        """ """
+        """Serve the user photo album page."""
         html = self._render_album()
         self.response.out.write(html)
 
-    @base.BaseHandler.memoize(3600)
+    @base.BaseHandler.memoize(24 * 60 * 60)
     def _render_album(self):
         """ """
         path = os.path.join(TEMPLATES, 'album.html')
@@ -135,7 +135,10 @@ class Subscribe(base.WebHandler):
 
     def post(self):
         """ """
-        pass
+        alice = self.get_account()
+        if alice is None:
+            alice = 'an unregistered user'
+        _log.debug("%s wishes to subscribe to our presence" % alice)
 
 
 class Subscribed(base.WebHandler):
@@ -150,7 +153,9 @@ class Subscribed(base.WebHandler):
         she can begin chatting with strangers.
         """
         alice = self.get_account()
-        _log.debug('%s subscribed' % alice)
+        if alice is None:
+            alice = 'an unregistered user'
+        _log.debug('%s has allowed us to receive his/her presence' % alice)
         self.send_help(alice)
 
 
@@ -159,7 +164,10 @@ class Unsubscribe(base.WebHandler):
 
     def post(self):
         """ """
-        pass
+        alice = self.get_account()
+        if alice is None:
+            alice = 'an unregistered user'
+        _log.debug('%s is unsubscribing from our presence' % alice)
 
 
 class Unsubscribed(base.WebHandler):
@@ -167,7 +175,10 @@ class Unsubscribed(base.WebHandler):
 
     def post(self):
         """ """
-        pass
+        alice = self.get_account()
+        if alice is None:
+            alice = 'an unregistered user'
+        _log.debug('%s has denied/cancelled our subscription request' % alice)
 
 
 class Chat(base.ChatHandler):
@@ -291,7 +302,10 @@ class Error(base.WebHandler):
 
     def post(self):
         """ """
-        pass
+        alice = self.get_account()
+        if alice is None:
+            alice = 'an unregistered user'
+        _log.debug('%s errored' % alice)
 
 
 class Available(availability.AvailabilityHandler):
@@ -346,8 +360,9 @@ class Unavailable(availability.AvailabilityHandler):
 class Probe(base.WebHandler):
     """Request handler to listen for when users probe for chat status."""
 
-    @base.WebHandler.send_presence
     def post(self):
         """ """
         alice = self.get_account()
+        if alice is None:
+            alice = 'an unregistered user'
         _log.debug('%s probed' % alice)
