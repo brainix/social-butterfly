@@ -130,6 +130,14 @@ class Album(base.WebHandler):
         return html
 
 
+class Subscribe(base.WebHandler):
+    """ """
+
+    def post(self):
+        """ """
+        pass
+
+
 class Subscribed(base.WebHandler):
     """Request handler to listen for XMPP subscription notifications."""
 
