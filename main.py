@@ -47,18 +47,21 @@ def main():
     template.register_template_library('filters')
 
     url_mapping = (
-        ('/_ah/xmpp/presence/probe/',           handlers.Probe),        # Probe handler.
-        ('/_ah/xmpp/presence/unavailable/',     handlers.Unavailable),  # Unavailable handler.
-        ('/_ah/xmpp/presence/available/',       handlers.Available),    # Available handler.
-        ('/_ah/xmpp/message/chat/',             handlers.Chat),         # Chat handler.
-        ('/_ah/xmpp/subscription/subscribed/',  handlers.Subscribed),   # Subscribed handler.
-        ('/_ah/xmpp/subscription/subscribe/',   handlers.Subscribe),    # Subscribe handler.
-        ('/album',                              handlers.Album),        # User gallery album.
-        ('/reset-stats',                        handlers.ResetStats),   # Reset interesting statistics cron handler.
-        ('/get-stats',                          handlers.GetStats),     # Interesting statistics AJAX handler.
-        ('/stats',                              handlers.Stats),        # Interesting statistics handler.
-        ('/',                                   handlers.Home),         # Homepage handler.
-        ('(.*)',                                handlers.NotFound),     # 404: Not Found.
+        ('/_ah/xmpp/presence/probe/',               handlers.Probe),        # Probe handler.
+        ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),  # Unavailable handler.
+        ('/_ah/xmpp/presence/available/',           handlers.Available),    # Available handler.
+        ('/_ah/xmpp/message/error/',                handlers.Error),        # Chat handler.
+        ('/_ah/xmpp/message/chat/',                 handlers.Chat),         # Chat handler.
+        ('/_ah/xmpp/subscription/unsubscribed/',    handlers.Unsubscribed), # Unsubscribed handler.
+        ('/_ah/xmpp/subscription/unsubscribe/',     handlers.Unsubscribe),  # Unsubscribe handler.
+        ('/_ah/xmpp/subscription/subscribed/',      handlers.Subscribed),   # Subscribed handler.
+        ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),    # Subscribe handler.
+        ('/album',                                  handlers.Album),        # User gallery album.
+        ('/stats',                                  handlers.Stats),        # Interesting statistics handler.
+        ('/reset-stats',                            handlers.ResetStats),   # Reset interesting statistics cron handler.
+        ('/get-stats',                              handlers.GetStats),     # Interesting statistics AJAX handler.
+        ('/',                                       handlers.Home),         # Homepage handler.
+        ('(.*)',                                    handlers.NotFound),     # 404: Not Found.
     )
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)

@@ -77,19 +77,6 @@ class Home(base.WebHandler):
                 memcache.incr(NUM_USERS_KEY)
 
 
-class Stats(base.WebHandler):
-    """Request handler to serve the interesting statistics page."""
-
-    def get(self):
-        """Serve the interesting statistics page."""
-        path = os.path.join(TEMPLATES, 'stats.html')
-        debug = DEBUG
-        title = 'interesting statistics'
-        stats = self.get_stats()
-        html = template.render(path, locals(), debug=debug)
-        self.response.out.write(html)
-
-
 class GetStats(base.WebHandler):
     """Request handler to update the interesting statistics."""
 
@@ -108,6 +95,19 @@ class ResetStats(base.WebHandler):
         """ """
         shards.Shard.reset_count(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
+
+
+class Stats(base.WebHandler):
+    """Request handler to serve the interesting statistics page."""
+
+    def get(self):
+        """Serve the interesting statistics page."""
+        path = os.path.join(TEMPLATES, 'stats.html')
+        debug = DEBUG
+        title = 'interesting statistics'
+        stats = self.get_stats()
+        html = template.render(path, locals(), debug=debug)
+        self.response.out.write(html)
 
 
 class Album(base.WebHandler):
@@ -152,6 +152,22 @@ class Subscribed(base.WebHandler):
         alice = self.get_account()
         _log.debug('%s subscribed' % alice)
         self.send_help(alice)
+
+
+class Unsubscribe(base.WebHandler):
+    """ """
+
+    def post(self):
+        """ """
+        pass
+
+
+class Unsubscribed(base.WebHandler):
+    """ """
+
+    def post(self):
+        """ """
+        pass
 
 
 class Chat(base.ChatHandler):
@@ -268,6 +284,14 @@ class Chat(base.ChatHandler):
             else:
                 _log.info("can't send %s's IM to %s" % (alice, bob))
                 self.notify_undeliverable(alice)
+
+
+class Error(base.WebHandler):
+    """ """
+
+    def post(self):
+        """ """
+        pass
 
 
 class Available(availability.AvailabilityHandler):
