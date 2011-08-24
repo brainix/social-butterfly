@@ -360,9 +360,10 @@ class Unavailable(availability.AvailabilityHandler):
 class Probe(base.WebHandler):
     """Request handler to listen for when users probe for chat status."""
 
+    @base.WebHandler.send_presence
     def post(self):
         """ """
         alice = self.get_account()
         if alice is None:
             alice = 'an unregistered user'
-        _log.debug('%s probed' % alice)
+        _log.debug('%s is probing for our current presence' % alice)
