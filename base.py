@@ -223,9 +223,10 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         @functools.wraps(method)
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
-            alice = self.get_account()
-            stats = self.get_stats()
-            self.send_status(alice, stats)
+            if return_value:
+                alice = self.get_account()
+                stats = self.get_stats()
+                self.send_status(alice, stats)
             return return_value
         return wrap
 

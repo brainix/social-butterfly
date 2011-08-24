@@ -328,6 +328,7 @@ class Available(availability.AvailabilityHandler):
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
             memcache.incr(NUM_ACTIVE_USERS_KEY)
+        return made_available
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -367,3 +368,4 @@ class Probe(base.WebHandler):
         if handle is None:
             handle = 'an unregistered user'
         _log.debug('%s is probing for our current presence' % handle)
+        return True
