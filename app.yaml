@@ -34,9 +34,9 @@ builtins:
 
 handlers:
 
-- url: /robots\.txt
+- url: /robots.txt
   static_files: assets/robots.txt
-  upload: assets/robots\.txt
+  upload: assets/robots.txt
 
 - url: /favicon.ico
   static_files: assets/favicon.ico
