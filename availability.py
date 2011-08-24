@@ -35,15 +35,7 @@ _log = logging.getLogger(__name__)
 class AvailabilityHandler(base.WebHandler):
     """ """
 
-    def make_available(self):
-        """ """
-        return self._make_available(True)
-
-    def make_unavailable(self):
-        """ """
-        return self._make_available(False)
-
-    def _make_available(self, available):
+    def make_available(self, available):
         """ """
         alice, changed = self._change_available(available)
         self._log_available(available, alice, changed)

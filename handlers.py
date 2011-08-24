@@ -317,7 +317,7 @@ class Available(availability.AvailabilityHandler):
         
         Mark her available, and if possible, pair her with a chat partner, Bob.
         """
-        alice, made_available = self.make_available()
+        alice, made_available = self.make_available(True)
         if made_available:
             alice, bob = self.start_chat(alice, None)
             if bob is None:
@@ -339,7 +339,7 @@ class Unavailable(availability.AvailabilityHandler):
         Mark her unavailable.  If she had a chat partner, Bob, pair him with a
         new partner, Carol.
         """
-        alice, made_unavailable = self.make_unavailable()
+        alice, made_unavailable = self.make_available(False)
         if made_unavailable:
             alice, bob = self.stop_chat(alice)
             if bob is None:
