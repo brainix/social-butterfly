@@ -187,9 +187,13 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
 
     def get_account(self):
         """ """
-        handle = self.request.get('from')
-        key_name = models.Account.key_name(handle)
-        alice = models.Account.get_by_key_name(key_name)
+        try:
+            alice = self.request.alice
+        except AttributeError:
+            handle = self.request.get('from')
+            key_name = models.Account.key_name(handle)
+            alice = models.Account.get_by_key_name(key_name)
+            self.request.alice = alice
         return alice
 
     def get_stats(self):
@@ -241,8 +245,12 @@ class ChatHandler(BaseHandler, notifications.NotificationMixin,
 
     def get_account(self, message):
         """From an XMPP message, find the user account that sent it."""
-        key_name = models.Account.key_name(message.sender)
-        alice = models.Account.get_by_key_name(key_name)
+        try:
+            alice = self.request.alice
+        except AttributeError:
+            key_name = models.Account.key_name(message.sender)
+            alice = models.Account.get_by_key_name(key_name)
+            self.request.alice = alice
         return alice
 
     @staticmethod
