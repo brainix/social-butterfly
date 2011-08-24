@@ -167,6 +167,10 @@ class BaseHandler(object):
         """Pure virtual method."""
         raise NotImplementedError
 
+    def get_handle(self):
+        """Pure virtual method."""
+        raise NotImplementedError
+
     def get_account(self):
         """Pure virtual method."""
         raise NotImplementedError
@@ -184,6 +188,12 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         error_url = self.request.url.split('//', 1)[-1]
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
+
+    def get_handle(self):
+        """ """
+        handle = self.request.get('from', '')
+        handle = handle.split('/', 1)[0].lower()
+        return handle
 
     def get_account(self):
         """ """
@@ -242,6 +252,12 @@ class ChatHandler(BaseHandler, notifications.NotificationMixin,
     def _serve_error(self, error_code):
         """ """
         pass
+
+    def get_handle(self, message):
+        """ """
+        handle = message.sender
+        handle = handle.split('/', 1)[0].lower()
+        return handle
 
     def get_account(self, message):
         """From an XMPP message, find the user account that sent it."""

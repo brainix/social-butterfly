@@ -135,10 +135,10 @@ class Subscribe(base.WebHandler):
 
     def post(self):
         """ """
-        alice = self.get_account()
-        if alice is None:
-            alice = 'an unregistered user'
-        _log.debug("%s wishes to subscribe to our presence" % alice)
+        handle = self.get_handle()
+        if not handle:
+            handle = 'an unregistered user'
+        _log.debug("%s wishes to subscribe to our presence" % handle)
 
 
 class Subscribed(base.WebHandler):
@@ -152,11 +152,11 @@ class Subscribed(base.WebHandler):
         invitation to chat.  Send Alice a message with the help text, so that
         she can begin chatting with strangers.
         """
-        alice = self.get_account()
-        if alice is None:
-            alice = 'an unregistered user'
-        _log.debug('%s has allowed us to receive his/her presence' % alice)
-        self.send_help(alice)
+        handle = self.get_handle()
+        if not handle:
+            handle = 'an unregistered user'
+        _log.debug('%s has allowed us to receive his/her presence' % handle)
+        self.send_help(handle)
 
 
 class Unsubscribe(base.WebHandler):
@@ -164,10 +164,10 @@ class Unsubscribe(base.WebHandler):
 
     def post(self):
         """ """
-        alice = self.get_account()
-        if alice is None:
-            alice = 'an unregistered user'
-        _log.debug('%s is unsubscribing from our presence' % alice)
+        handle = self.get_handle()
+        if not handle:
+            handle = 'an unregistered user'
+        _log.debug('%s is unsubscribing from our presence' % handle)
 
 
 class Unsubscribed(base.WebHandler):
@@ -175,10 +175,10 @@ class Unsubscribed(base.WebHandler):
 
     def post(self):
         """ """
-        alice = self.get_account()
-        if alice is None:
-            alice = 'an unregistered user'
-        _log.debug('%s has denied/cancelled our subscription request' % alice)
+        handle = self.get_handle()
+        if not handle:
+            handle = 'an unregistered user'
+        _log.debug('%s has denied/cancelled our subscription request' % handle)
 
 
 class Chat(base.ChatHandler):
@@ -302,10 +302,10 @@ class Error(base.WebHandler):
 
     def post(self):
         """ """
-        alice = self.get_account()
-        if alice is None:
-            alice = 'an unregistered user'
-        _log.debug('%s errored' % alice)
+        handle = self.get_handle()
+        if not handle:
+            handle = 'an unregistered user'
+        _log.debug('%s errored' % handle)
 
 
 class Available(availability.AvailabilityHandler):
@@ -363,7 +363,7 @@ class Probe(base.WebHandler):
     @base.WebHandler.send_presence
     def post(self):
         """ """
-        alice = self.get_account()
-        if alice is None:
-            alice = 'an unregistered user'
-        _log.debug('%s is probing for our current presence' % alice)
+        handle = self.get_handle()
+        if handle is None:
+            handle = 'an unregistered user'
+        _log.debug('%s is probing for our current presence' % handle)

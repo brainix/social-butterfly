@@ -38,7 +38,7 @@ class NotificationMixin(object):
         """ """
         @functools.wraps(method)
         def wrap(self, alice, *args, **kwds):
-            if alice is not None:
+            if alice:
                 body = method(self, alice, *args, **kwds)
                 status = xmpp.send_message(str(alice), body)
                 assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
@@ -50,7 +50,7 @@ class NotificationMixin(object):
         """ """
         @functools.wraps(method)
         def wrap(self, alice, *args, **kwds):
-            if alice is not None:
+            if alice:
                 status = method(self, alice, *args, **kwds)
                 xmpp.send_presence(str(alice), status=status)
                 return status
