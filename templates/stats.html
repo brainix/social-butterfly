@@ -21,7 +21,10 @@
 \*------------------------------------------------------------ {% endcomment %}
 
 
+
 {% extends "base.html" %}
+
+
 
 {% block content %}
 
@@ -33,5 +36,13 @@
 
     <h3>How many messages so far today?</h3>
     <div class="flipclock num_messages"></div>
+
+{% endblock %}
+
+
+
+{% block javascript %}
+
+    <script type="text/javascript" src="/assets/flipclock.js"></script>
 
 {% endblock %}
