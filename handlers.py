@@ -25,7 +25,6 @@
 import logging
 import os
 
-from django.utils import simplejson
 from google.appengine.api import memcache
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
@@ -57,7 +56,7 @@ class Home(base.WebHandler):
         path = os.path.join(TEMPLATES, 'home.html')
         debug = DEBUG
         title = 'chat with strangers'
-        stats = self.get_stats()
+        stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -82,8 +81,7 @@ class GetStats(base.WebHandler):
 
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
-        stats = self.get_stats()
-        json = simplejson.dumps(stats)
+        json = self.get_stats(json=True)
         self.response.out.write(json)
 
 
@@ -105,7 +103,7 @@ class Stats(base.WebHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         debug = DEBUG
         title = 'interesting statistics'
-        stats = self.get_stats()
+        stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -125,7 +123,7 @@ class Album(base.WebHandler):
         debug = DEBUG
         title = 'who uses social butterfly?'
         users = self.get_users(started=None, available=None, chatting=None, order=False)
-        stats = self.get_stats()
+        stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         return html
 

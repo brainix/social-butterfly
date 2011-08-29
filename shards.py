@@ -102,13 +102,13 @@ class Shard(db.Model):
             _log.debug('memcache hit when getting count for ' + name)
         else:
             _log.info('memcache miss when getting count for ' + name)
+            total = 0
             try:
                 _ShardConfig.get(name)
             except db.BadKeyError:
                 pass
             else:
                 shards = cls.all().filter('name = ', name)
-                total = 0
                 for shard in shards:
                     total += shard.count
                 memcache.set(name, total)

@@ -27,6 +27,7 @@ import logging
 import os
 import traceback
 
+from django.utils import simplejson
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -91,9 +92,7 @@ class BaseHandler(object):
                 key = cls._compute_memcache_key(self, method, *args, **kwds)
                 _log.debug('trying to retrieve cached results for %s' % key)
                 results = memcache.get(key)
-                if results is not None:
-                    _log.info('retrieved cached results for %s' % key)
-                else:
+                if results is None:
                     _log.info("couldn't retrieve cached results for %s" % key)
                     _log.info('caching results for %s' % key)
                     results = method(self, *args, **kwds)
@@ -101,10 +100,12 @@ class BaseHandler(object):
                         success = memcache.set(key, results, time=cache_secs)
                     except MemoryError:
                         success = False
-                    if success:
-                        _log.info('cached results for %s' % key)
-                    else:
+                    if not success:
                         _log.error("couldn't cache results for %s" % key)
+                    else:
+                        _log.info('cached results for %s' % key)
+                else:
+                    _log.info('retrieved cached results for %s' % key)
                 return results
             return wrap2
         return wrap1
@@ -176,8 +177,24 @@ class BaseHandler(object):
         raise NotImplementedError
 
 
-class WebHandler(BaseHandler, notifications.NotificationMixin,
-                 strangers.StrangerMixin, webapp.RequestHandler):
+class _SocialButterflyHandler(BaseHandler, notifications.NotificationMixin,
+                              strangers.StrangerMixin):
+    """Abstract base web request handler class."""
+
+    def get_stats(self, json=False):
+        """ """
+        stats = {
+            'num_users': self.num_users(),
+            'num_active_users': self.num_active_users(),
+            'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
+        }
+
+        if json:
+            stats = simplejson.dumps(stats)
+        return stats
+
+
+class WebHandler(_SocialButterflyHandler, webapp.RequestHandler):
     """Abstract base web request handler class."""
 
     def _serve_error(self, error_code):
@@ -206,17 +223,6 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
             self.request.alice = alice
         return alice
 
-    def get_stats(self):
-        """ """
-        stats = {
-            'num_users': self.num_users(),
-            'num_active_users': self.num_active_users(),
-            'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
-        }
-        if stats['num_messages'] is None:
-            stats['num_messages'] = 0
-        return stats
-
     @staticmethod
     def send_presence(method):
         """ """
@@ -224,7 +230,7 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
-            stats = self.get_stats()
+            stats = self.get_stats(json=False)
             self.send_status(alice, stats)
             return return_value
         return wrap
@@ -245,8 +251,7 @@ class WebHandler(BaseHandler, notifications.NotificationMixin,
         return wrap
 
 
-class ChatHandler(BaseHandler, notifications.NotificationMixin,
-                  strangers.StrangerMixin, xmpp_handlers.CommandHandler):
+class ChatHandler(_SocialButterflyHandler, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
     def _serve_error(self, error_code):
