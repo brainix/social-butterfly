@@ -177,9 +177,9 @@ class BaseHandler(object):
         raise NotImplementedError
 
 
-class _SocialButterflyHandler(BaseHandler, notifications.NotificationMixin,
-                              strangers.StrangerMixin):
-    """Abstract base web request handler class."""
+class _CommonHandler(BaseHandler, notifications.NotificationMixin,
+                     strangers.StrangerMixin):
+    """Abstract base request handler class."""
 
     def get_stats(self, json=False):
         """ """
@@ -194,7 +194,7 @@ class _SocialButterflyHandler(BaseHandler, notifications.NotificationMixin,
         return stats
 
 
-class WebHandler(_SocialButterflyHandler, webapp.RequestHandler):
+class WebHandler(_CommonHandler, webapp.RequestHandler):
     """Abstract base web request handler class."""
 
     def _serve_error(self, error_code):
@@ -251,7 +251,7 @@ class WebHandler(_SocialButterflyHandler, webapp.RequestHandler):
         return wrap
 
 
-class ChatHandler(_SocialButterflyHandler, xmpp_handlers.CommandHandler):
+class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
     """Abstract base chat request handler class."""
 
     def _serve_error(self, error_code):
