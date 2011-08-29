@@ -42,6 +42,7 @@ class StrangerMixin(object):
         assert started in (None, False, True)
         assert available in (None, False, True)
         assert chatting in (None, False, True)
+        assert order in (None, False, True)
 
         carols = models.Account.all()
         if started is not None:
@@ -85,16 +86,13 @@ class StrangerMixin(object):
         someone different this time (if possible).
         """
         carols = self.get_users(started=True, available=True, chatting=False)
-        only_one = carols.count(2) == 1
-
+        # only_one = carols.count(2) == 1
         for carol in carols:
-            # Make sure to not pair Alice with herself.
-            if carol != alice:
-                # Try to pair Alice with someone other than Bob this time,
-                # unless Bob is the only other user available for chat.
-                if carol != bob or only_one:
-                    # Hooray, we've found Alice a chat partner!
-                    return carol
+            # Make sure to not pair Alice with herself, and pair Alice with
+            # someone other than Bob this time.
+            if carol != alice and carol != bob:
+                # Hooray, we've found Alice a chat partner!
+                return carol
 
         # Drat.  We couldn't find Alice a chat partner.  Either no one else is
         # available for chat, or everyone else available for chat already has a
