@@ -39,9 +39,9 @@ $(function() {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
         $('.flipclock.num_active_users').flipclock('init', {digits: 3});
         $('.flipclock.num_messages').flipclock('init', {digits: 3});
-        // window.setTimeout(updateStats, 1500);
+        // window.setTimeout(updateStats, 1.5 * 1000);
     }
-    // window.setInterval(updateStats, 30000);
+    // window.setInterval(updateStats, 30 * 1000);
 
     if ($('#gravatars').length > 0) {
         slideshow();
@@ -206,15 +206,30 @@ function slideshow() {
 function openSocket() {
     try {
         socket.close();
-    } catch (err) {
+        $.ajax({
+            type: 'GET',
+            url: '/get-token',
+            cache: false,
+            success: function(data, textStatus, jqXHR) {
+                token = data;
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                token = '';
+            }
+        });
+    } catch (e) {
     }
 
-    var channel = new goog.appengine.Channel(token);
-    socket = channel.open();
-    socket.onopen = socketOpened;
-    socket.onmessage = socketMessaged;
-    socket.onerror = socketErrored;
-    socket.onclose = socketClosed;
+    if (token) {
+        var channel = new goog.appengine.Channel(token);
+        socket = channel.open();
+        socket.onopen = socketOpened;
+        socket.onmessage = socketMessaged;
+        socket.onerror = socketErrored;
+        socket.onclose = socketClosed;
+
+        window.setInterval(openSocket, 2 * 60 * 60 * 1000);
+    }
 }
 
 
