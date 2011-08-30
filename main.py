@@ -62,6 +62,7 @@ def main():
         ('/stats',                                  handlers.Stats),        # Web interesting statistics handler.
         ('/reset-stats',                            handlers.ResetStats),   # Web reset interesting statistics cron handler.
         ('/get-stats',                              handlers.GetStats),     # Web interesting statistics AJAX handler.
+        ('/get-token',                              handlers.GetToken),     # Web channel token AJAX handler.
         ('/',                                       handlers.Home),         # Web homepage handler.
         ('(.*)',                                    handlers.NotFound),     # Web 404: Not Found.
     )

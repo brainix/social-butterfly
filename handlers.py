@@ -80,6 +80,15 @@ class Home(base.WebHandler):
                 channels.Channel.broadcast(json)
 
 
+class GetToken(base.WebHandler):
+    """ """
+
+    def get(self):
+        """ """
+        token = channels.Channel.create()
+        self.response.out.write(token)
+
+
 class GetStats(base.WebHandler):
     """Request handler to update the interesting statistics."""
 
