@@ -39,9 +39,8 @@ $(function() {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
         $('.flipclock.num_active_users').flipclock('init', {digits: 3});
         $('.flipclock.num_messages').flipclock('init', {digits: 3});
-        // window.setTimeout(updateStats, 1.5 * 1000);
+        window.setTimeout(updateStats, 1.5 * 1000);
     }
-    // window.setInterval(updateStats, 30 * 1000);
 
     if ($('#gravatars').length > 0) {
         slideshow();
@@ -49,6 +48,7 @@ $(function() {
 
     if (typeof(token) != 'undefined') {
         openSocket(token);
+        window.setInterval(openSocket, 2 * 60 * 60 * 1000);
     }
 });
 
@@ -103,7 +103,6 @@ function signUp() {
                 var signUpForm = $('#content .sign-up');
                 signUpForm.fadeOut('slow', function() {
                     var signedUpText = $('#content .signed-up');
-                    // signedUpText.fadeIn('slow', updateStats);
                     signedUpText.fadeIn('slow');
                 });
             },
@@ -227,8 +226,6 @@ function openSocket() {
         socket.onmessage = socketMessaged;
         socket.onerror = socketErrored;
         socket.onclose = socketClosed;
-
-        window.setInterval(openSocket, 2 * 60 * 60 * 1000);
     }
 }
 
