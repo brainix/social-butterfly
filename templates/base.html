@@ -63,8 +63,6 @@
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
         <script type="text/javascript" src='/_ah/channel/jsapi'></script>
         {% block javascript %}{% endblock %}
-        <script type="text/javascript" src="/assets/script.js"></script>
-
         <script type="text/javascript">
             var _gaq = _gaq || [];
             _gaq.push(['_setAccount', 'UA-2153971-5']);
@@ -82,7 +80,9 @@
 
             {% if token %}
                 var token = '{{ token }}';
+                var socket;
             {% endif %}
         </script>
+        <script type="text/javascript" src="/assets/script.js"></script>
     </body>
 </html>

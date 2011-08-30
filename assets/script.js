@@ -48,12 +48,7 @@ $(function() {
     }
 
     if (typeof(token) != 'undefined') {
-        var channel = new goog.appengine.Channel(token);
-        var socket = channel.open();
-        socket.onopen = socketOpened;
-        socket.onmessage = socketMessaged;
-        socket.onerror = socketErrored;
-        socket.onclose = socketClosed;
+        openSocket(token);
     }
 });
 
@@ -201,6 +196,25 @@ function slideshow() {
             }
         });
     }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                                openSocket()                               |
+\*---------------------------------------------------------------------------*/
+
+function openSocket() {
+    try {
+        socket.close();
+    } catch (err) {
+    }
+
+    var channel = new goog.appengine.Channel(token);
+    socket = channel.open();
+    socket.onopen = socketOpened;
+    socket.onmessage = socketMessaged;
+    socket.onerror = socketErrored;
+    socket.onclose = socketClosed;
 }
 
 
