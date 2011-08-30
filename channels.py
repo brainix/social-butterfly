@@ -26,7 +26,6 @@ import logging
 import random
 
 from google.appengine.api import channel
-from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import deferred
 
@@ -62,16 +61,6 @@ class Channel(db.Model):
             token = channel.create_channel(client_id)
             deferred.defer(cls.destroy, client_id, _countdown=2*60*60)
             _log.info('created channel %s, token %s' % (client_id, token))
-
-            _log.info('adding channel %s to memcache' % client_id)
-            client_ids = memcache.get(CLIENT_IDS_KEY)
-            if client_ids is None:
-                body = "couldn't add channel %s to memcache; no memcache"
-                _log.info(body % client_id)
-            else:
-                client_ids.append(client_id)
-                _log.info('added channel %s to memcache' % client_id)
-
             return token
 
     @classmethod
@@ -86,17 +75,6 @@ class Channel(db.Model):
             chan.delete()
             _log.info('destroyed channel %s' % client_id)
 
-        _log.info('removing channel %s from memcache' % client_id)
-        client_ids = memcache.get(CLIENT_IDS_KEY)
-        if client_ids is None:
-            _log.info("couldn't remove channel %s from memcache; no memcache")
-        elif client_id not in client_ids:
-            body = "couldn't remove channel %s from memcache; already removed"
-            _log.info(body % client_id)
-        else:
-            client_ids.remove(client_id)
-            _log.info('removed channel %s from memcache' % client_id)
-
     @classmethod
     def broadcast(cls, json):
         """ """
@@ -105,11 +83,7 @@ class Channel(db.Model):
     @classmethod
     def _deferred_broadcast(cls, json):
         """ """
-        client_ids = memcache.get(CLIENT_IDS_KEY)
-        if client_ids is None:
-            keys = cls.all(keys_only=True)
-            client_ids = [key.name() for key in keys]
-            memcache.set(CLIENT_IDS_KEY, client_ids)
-
+        keys = cls.all(keys_only=True)
+        client_ids = [key.name() for key in keys]
         for client_id in client_ids:
             channel.send_message(client_id, json)
