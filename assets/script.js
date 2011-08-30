@@ -39,7 +39,7 @@ $(function() {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
         $('.flipclock.num_active_users').flipclock('init', {digits: 3});
         $('.flipclock.num_messages').flipclock('init', {digits: 3});
-        window.setTimeout(updateStats, 1.5 * 1000);
+        window.setTimeout(updateStats, 3 * 1000);
     }
 
     if ($('#gravatars').length > 0) {
