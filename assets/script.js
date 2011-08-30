@@ -46,6 +46,15 @@ $(function() {
     if ($('#gravatars').length > 0) {
         slideshow();
     }
+
+    if (typeof(token) != 'undefined') {
+        var channel = new goog.appengine.Channel(token);
+        var socket = channel.open();
+        socket.onopen = socketOpened;
+        socket.onmessage = socketMessaged;
+        socket.onerror = socketErrored;
+        socket.onclose = socketClosed;
+    }
 });
 
 

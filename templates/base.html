@@ -81,12 +81,7 @@
             })();
 
             {% if token %}
-                channel = new goog.appengine.Channel('{{ token }}');
-                socket = channel.open();
-                socket.onopen = socketOpened;
-                socket.onmessage = socketMessaged;
-                socket.onerror = socketErrored;
-                socket.onclose = socketClosed;
+                var token = '{{ token }}';
             {% endif %}
         </script>
     </body>
