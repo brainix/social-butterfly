@@ -33,6 +33,7 @@ from config import DEBUG, TEMPLATES
 from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
 import availability
 import base
+import channels
 import models
 import shards
 
@@ -57,6 +58,7 @@ class Home(base.WebHandler):
         debug = DEBUG
         title = 'chat with strangers'
         stats = self.get_stats(json=False)
+        token = channels.Channel.create()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -74,6 +76,8 @@ class Home(base.WebHandler):
             _log.info('%s signed up' % handle)
             if created:
                 memcache.incr(NUM_USERS_KEY)
+                json = self.get_stats(json=True)
+                channels.Channel.broadcast(json)
 
 
 class GetStats(base.WebHandler):
@@ -104,6 +108,7 @@ class Stats(base.WebHandler):
         debug = DEBUG
         title = 'interesting statistics'
         stats = self.get_stats(json=False)
+        token = channels.Channel.create()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -126,6 +131,25 @@ class Album(base.WebHandler):
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         return html
+
+
+class Connected(base.WebHandler):
+    """Request handler to deal with channels that have connected."""
+
+    def post(self):
+        """A channel has connected and can receive messages."""
+        client_id = self.request.get('from')
+        _log.debug('channel %s has connected' % client_id)
+
+
+class Disconnected(base.WebHandler):
+    """Request handler to deal with channels that have disconnected."""
+
+    def post(self):
+        """A channel has disconnected and can no longer receive messages."""
+        client_id = self.request.get('from')
+        _log.debug('channel %s has disconnected' % client_id)
+        channels.Channel.destroy(client_id)
 
 
 class Subscribe(base.WebHandler):
@@ -205,6 +229,10 @@ class Chat(base.ChatHandler):
             self.notify_started(alice)
             self.notify_chatting(bob)
 
+            memcache.incr(NUM_ACTIVE_USERS_KEY)
+            json = self.get_stats(json=True)
+            channels.Channel.broadcast(json)
+
     @base.ChatHandler.require_account
     def next_command(self, message=None):
         """Alice has typed /next."""
@@ -265,6 +293,10 @@ class Chat(base.ChatHandler):
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
 
+            memcache.decr(NUM_ACTIVE_USERS_KEY)
+            json = self.get_stats(json=True)
+            channels.Channel.broadcast(json)
+
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
     def who_command(self, message=None):
@@ -293,6 +325,9 @@ class Chat(base.ChatHandler):
             else:
                 _log.info("can't send %s's IM to %s" % (alice, bob))
                 self.notify_undeliverable(alice)
+
+            json = self.get_stats(json=True)
+            channels.Channel.broadcast(json)
 
 
 class Error(base.WebHandler):
@@ -326,6 +361,8 @@ class Available(availability.AvailabilityHandler):
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
             memcache.incr(NUM_ACTIVE_USERS_KEY)
+            json = self.get_stats(json=True)
+            channels.Channel.broadcast(json)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -353,6 +390,8 @@ class Unavailable(availability.AvailabilityHandler):
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
             memcache.decr(NUM_ACTIVE_USERS_KEY)
+            json = self.get_stats(json=True)
+            channels.Channel.broadcast(json)
 
 
 class Probe(base.WebHandler):

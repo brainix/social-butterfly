@@ -39,9 +39,9 @@ $(function() {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
         $('.flipclock.num_active_users').flipclock('init', {digits: 3});
         $('.flipclock.num_messages').flipclock('init', {digits: 3});
-        window.setTimeout(updateStats, 1500);
+        // window.setTimeout(updateStats, 1500);
     }
-    window.setInterval(updateStats, 30000);
+    // window.setInterval(updateStats, 30000);
 
     if ($('#gravatars').length > 0) {
         slideshow();
@@ -99,7 +99,8 @@ function signUp() {
                 var signUpForm = $('#content .sign-up');
                 signUpForm.fadeOut('slow', function() {
                     var signedUpText = $('#content .signed-up');
-                    signedUpText.fadeIn('slow', updateStats);
+                    // signedUpText.fadeIn('slow', updateStats);
+                    signedUpText.fadeIn('slow');
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -136,19 +137,28 @@ function updateStats() {
         url: '/get-stats',
         cache: false,
         success: function(data, textStatus, jqXHR) {
-            data = $.parseJSON(data);
-            $.each(data, function(key, val) {
-                var obj = $('.flipclock.' + key);
-                if (obj.length) {
-                    obj.flipclock('set', val);
-                }
+            setStats(data);
+        }
+    });
+}
 
-                var obj = $('#footer .' + key);
-                if (obj.length && obj.html() != val) {
-                    obj.html(val);
-                    obj.effect('highlight', {color: '#D1D9DC'}, 1000);
-                }
-            });
+
+/*---------------------------------------------------------------------------*\
+ |                                 setStats()                                |
+\*---------------------------------------------------------------------------*/
+
+function setStats(json) {
+    json = $.parseJSON(json);
+    $.each(json, function(key, val) {
+        var obj = $('.flipclock.' + key);
+        if (obj.length) {
+            obj.flipclock('set', val);
+        }
+
+        var obj = $('#footer .' + key);
+        if (obj.length && obj.html() != val) {
+            obj.html(val);
+            obj.effect('highlight', {color: '#D1D9DC'}, 1000);
         }
     });
 }
@@ -182,4 +192,37 @@ function slideshow() {
             }
         });
     }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                               socketOpened()                              |
+\*---------------------------------------------------------------------------*/
+
+function socketOpened() {
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              socketMessaged()                             |
+\*---------------------------------------------------------------------------*/
+
+function socketMessaged(message) {
+    setStats(message.data);
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              socketErrored()                              |
+\*---------------------------------------------------------------------------*/
+
+function socketErrored(error) {
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                               socketClosed()                              |
+\*---------------------------------------------------------------------------*/
+
+function socketClosed() {
 }

@@ -30,6 +30,7 @@ builtins:
 - remote_api: on
 - appstats: on
 - datastore_admin: on
+- deferred: on
 
 
 handlers:
@@ -50,6 +51,7 @@ handlers:
 
 
 inbound_services:
+- channel_presence
 - xmpp_message
 - xmpp_presence
 - xmpp_subscribe
