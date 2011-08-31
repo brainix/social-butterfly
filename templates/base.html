@@ -78,9 +78,9 @@
                 s.parentNode.insertBefore(ga, s);
             })();
 
-            {% if token %}
-                var token = '{{ token }}';
-                var socket;
+            {% if stats %}
+                var token = null;
+                var socket = null;
             {% endif %}
         </script>
         <script type="text/javascript" src="/assets/script.js"></script>

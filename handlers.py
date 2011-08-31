@@ -58,7 +58,6 @@ class Home(base.WebHandler):
         debug = DEBUG
         title = 'chat with strangers'
         stats = self.get_stats(json=False)
-        token = channels.Channel.create()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -126,7 +125,6 @@ class Stats(base.WebHandler):
         debug = DEBUG
         title = 'interesting statistics'
         stats = self.get_stats(json=False)
-        token = channels.Channel.create()
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 

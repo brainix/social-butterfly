@@ -46,7 +46,7 @@ $(function() {
         slideshow();
     }
 
-    if (typeof(token) != 'undefined') {
+    if (typeof(token) != 'undefined' && typeof(socket) != 'undefined') {
         openSocket(token);
         window.setInterval(openSocket, 2 * 60 * 60 * 1000);
     }
@@ -203,21 +203,22 @@ function slideshow() {
 \*---------------------------------------------------------------------------*/
 
 function openSocket() {
-    try {
+    if (socket) {
         socket.close();
-        $.ajax({
-            type: 'GET',
-            url: '/get-token',
-            cache: false,
-            success: function(data, textStatus, jqXHR) {
-                token = data;
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                token = '';
-            }
-        });
-    } catch (e) {
+        socket = null;
     }
+
+    $.ajax({
+        type: 'GET',
+        url: '/get-token',
+        cache: false,
+        success: function(data, textStatus, jqXHR) {
+            token = data;
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            token = null;
+        }
+    });
 
     if (token) {
         var channel = new goog.appengine.Channel(token);
