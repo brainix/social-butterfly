@@ -46,7 +46,7 @@ $(function() {
         slideshow();
     }
 
-    if (typeof(token) != 'undefined' && typeof(socket) != 'undefined') {
+    if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
         openSocket();
         window.setInterval(openSocket, 2 * 60 * 60 * 1000);
     }
@@ -86,46 +86,47 @@ function blurHandle() {
 var signUpSubmitted = false;
 
 function signUp() {
-    if (signUpSubmitted) {
-        var message = "You've already submitted a request to sign up.\n";
-        message += "Please wait for this request to complete.";
-        alert(message);
-    } else {
-        signUpSubmitted = true;
-        var handle = $('#content .sign-up .register [name="handle"]').val();
-
-        $.ajax({
-            type: 'POST',
-            url: '/',
-            data: {handle: handle},
-            cache: false,
-            success: function(data, textStatus, jqXHR) {
-                var signUpForm = $('#content .sign-up');
-                signUpForm.fadeOut('slow', function() {
-                    var signedUpText = $('#content .signed-up');
-                    signedUpText.fadeIn('slow');
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                var message = '';
-                switch (jqXHR.status) {
-                    case 400:
-                        message = "Oops, you've entered an invalid Google ";
-                        message += 'Talk address.\n\nPlease correct your ';
-                        message += 'Google Talk address and sign up again.';
-                        break;
-                    default:
-                        message = 'Oops, something has gone wrong.\n\nPlease ';
-                        message += 'try to sign up again.';
-                }
+    var handle = $('#content .sign-up .register [name="handle"]').val();
+    $.ajax({
+        type: 'POST',
+        url: '/',
+        data: {handle: handle},
+        cache: false,
+        beforeSend: function(jqXHR, settings) {
+            if (signUpSubmitted) {
+                var message = "You've already submitted a request to sign up.\n";
+                message += "Please wait for this request to complete.";
                 alert(message);
-            },
-            complete: function(jqXHR, textStatus) {
-                signUpSubmitted = false;
+                return false;
+            } else {
+                signUpSubmitted = true;
             }
-        });
-    }
-
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            var message = '';
+            switch (jqXHR.status) {
+                case 400:
+                    message = "Oops, you've entered an invalid Google Talk ";
+                    message += 'address.\n\nPlease correct your Google Talk ';
+                    message += 'address and sign up again.';
+                    break;
+                default:
+                    message = 'Oops, something has gone wrong.\n\nPlease try ';
+                    message += 'to sign up again.';
+            }
+            alert(message);
+        },
+        success: function(data, textStatus, jqXHR) {
+            var signUpForm = $('#content .sign-up');
+            signUpForm.fadeOut('slow', function() {
+                var signedUpText = $('#content .signed-up');
+                signedUpText.fadeIn('slow');
+            });
+        },
+        complete: function(jqXHR, textStatus) {
+            signUpSubmitted = false;
+        }
+    });
     return false;
 }
 
@@ -161,7 +162,7 @@ function setStats(json) {
         var obj = $('#footer .' + key);
         if (obj.length && obj.html() != val) {
             obj.html(val);
-            obj.effect('highlight', {color: '#D1D9DC'}, 1000);
+            obj.stop().effect('highlight', {color: '#D1D9DC'}, 1000);
         }
     });
 }
@@ -179,6 +180,10 @@ function slideshow() {
         $.ajax({
             type: 'GET',
             url: gravatar.image,
+            error: function(jqXHR, textStatus, errorThrown) {
+                gravatars.splice(slideshowIndex, 1);
+                slideshow();
+            },
             success: function(data, textStatus, jqXHR) {
                 var snippet =   '<a href="' + gravatar.profile + '">';
                 snippet +=          '<img src="' + gravatar.image + '"';
@@ -188,10 +193,6 @@ function slideshow() {
                 $('#gravatars').append(snippet);
                 slideshowIndex++;
                 $('#gravatars a:last-child img').fadeIn('slow', slideshow);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                gravatars.splice(slideshowIndex, 1);
-                slideshow();
             }
         });
     }
@@ -203,30 +204,27 @@ function slideshow() {
 \*---------------------------------------------------------------------------*/
 
 function openSocket() {
-    if (socket) {
-        socket.close();
-        socket = null;
-    }
-
     $.ajax({
         type: 'GET',
         url: '/get-token',
         cache: false,
-        success: function(data, textStatus, jqXHR) {
-            token = data;
+        beforeSend: function(jqXHR, settings) {
+            if (socket) {
+                socket.close();
+            }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             token = null;
+            socket = null;
         },
-        complete: function(jqXHR, textStatus) {
-            if (token) {
-                var channel = new goog.appengine.Channel(token);
-                socket = channel.open();
-                socket.onopen = socketOpened;
-                socket.onmessage = socketMessaged;
-                socket.onerror = socketErrored;
-                socket.onclose = socketClosed;
-            }
+        success: function(data, textStatus, jqXHR) {
+            token = data;
+            var channel = new goog.appengine.Channel(token);
+            socket = channel.open();
+            socket.onopen = socketOpened;
+            socket.onmessage = socketMessaged;
+            socket.onerror = socketErrored;
+            socket.onclose = socketClosed;
         }
     });
 }
