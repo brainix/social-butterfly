@@ -47,7 +47,7 @@ $(function() {
     }
 
     if (typeof(token) != 'undefined' && typeof(socket) != 'undefined') {
-        openSocket(token);
+        openSocket();
         window.setInterval(openSocket, 2 * 60 * 60 * 1000);
     }
 });
@@ -217,17 +217,18 @@ function openSocket() {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             token = null;
+        },
+        complete: function(jqXHR, textStatus) {
+            if (token) {
+                var channel = new goog.appengine.Channel(token);
+                socket = channel.open();
+                socket.onopen = socketOpened;
+                socket.onmessage = socketMessaged;
+                socket.onerror = socketErrored;
+                socket.onclose = socketClosed;
+            }
         }
     });
-
-    if (token) {
-        var channel = new goog.appengine.Channel(token);
-        socket = channel.open();
-        socket.onopen = socketOpened;
-        socket.onmessage = socketMessaged;
-        socket.onerror = socketErrored;
-        socket.onclose = socketClosed;
-    }
 }
 
 
