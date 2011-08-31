@@ -22,7 +22,13 @@
 
 
 cron:
+
 - description: reset interesting statistics (the number of messages relayed)
   url: /reset-stats
   schedule: every day 00:00
+  timezone: America/Chicago
+
+- description: flush stale channels (older than 2 hours)
+  url: /flush-channels
+  schedule: every day 02:00
   timezone: America/Chicago

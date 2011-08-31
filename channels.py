@@ -22,6 +22,7 @@
 """ """
 
 
+import datetime
 import logging
 import random
 
@@ -87,3 +88,12 @@ class Channel(db.Model):
         client_ids = [key.name() for key in keys]
         for client_id in client_ids:
             channel.send_message(client_id, json)
+
+    @classmethod
+    def flush(cls):
+        """ """
+        now = datetime.datetime.now()
+        timeout = datetime.timedelta(hours=2)
+        expired = now - timeout
+        keys = cls.all(keys_only=True).filter('datetime <=', expired)
+        db.delete(keys)

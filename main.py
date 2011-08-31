@@ -47,24 +47,25 @@ def main():
     template.register_template_library('filters')
 
     url_mapping = (
-        ('/_ah/xmpp/presence/probe/',               handlers.Probe),        # XMPP probe handler.
-        ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),  # XMPP unavailable handler.
-        ('/_ah/xmpp/presence/available/',           handlers.Available),    # XMPP available handler.
-        ('/_ah/xmpp/message/error/',                handlers.Error),        # XMPP error handler.
-        ('/_ah/xmpp/message/chat/',                 handlers.Chat),         # XMPP chat handler.
-        ('/_ah/xmpp/subscription/unsubscribed/',    handlers.Unsubscribed), # XMPP unsubscribed handler.
-        ('/_ah/xmpp/subscription/unsubscribe/',     handlers.Unsubscribe),  # XMPP unsubscribe handler.
-        ('/_ah/xmpp/subscription/subscribed/',      handlers.Subscribed),   # XMPP subscribed handler.
-        ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),    # XMPP subscribe handler.
-        ('/_ah/channel/disconnected/',              handlers.Disconnected), # Channel disconnected handler.
-        ('/_ah/channel/connected/',                 handlers.Connected),    # Channel connected handler.
-        ('/album',                                  handlers.Album),        # Web user gallery album.
-        ('/stats',                                  handlers.Stats),        # Web interesting statistics handler.
-        ('/reset-stats',                            handlers.ResetStats),   # Web reset interesting statistics cron handler.
-        ('/get-stats',                              handlers.GetStats),     # Web interesting statistics AJAX handler.
-        ('/get-token',                              handlers.GetToken),     # Web channel token AJAX handler.
-        ('/',                                       handlers.Home),         # Web homepage handler.
-        ('(.*)',                                    handlers.NotFound),     # Web 404: Not Found.
+        ('/_ah/xmpp/presence/probe/',               handlers.Probe),            # XMPP probe handler.
+        ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),      # XMPP unavailable handler.
+        ('/_ah/xmpp/presence/available/',           handlers.Available),        # XMPP available handler.
+        ('/_ah/xmpp/message/error/',                handlers.Error),            # XMPP error handler.
+        ('/_ah/xmpp/message/chat/',                 handlers.Chat),             # XMPP chat handler.
+        ('/_ah/xmpp/subscription/unsubscribed/',    handlers.Unsubscribed),     # XMPP unsubscribed handler.
+        ('/_ah/xmpp/subscription/unsubscribe/',     handlers.Unsubscribe),      # XMPP unsubscribe handler.
+        ('/_ah/xmpp/subscription/subscribed/',      handlers.Subscribed),       # XMPP subscribed handler.
+        ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),        # XMPP subscribe handler.
+        ('/_ah/channel/disconnected/',              handlers.Disconnected),     # Channel disconnected handler.
+        ('/_ah/channel/connected/',                 handlers.Connected),        # Channel connected handler.
+        ('/album',                                  handlers.Album),            # Web user gallery album.
+        ('/stats',                                  handlers.Stats),            # Web interesting statistics handler.
+        ('/flush-channels',                         handlers.FlushChannels),    # Web flush stale channels cron handler.
+        ('/reset-stats',                            handlers.ResetStats),       # Web reset interesting statistics cron handler.
+        ('/get-stats',                              handlers.GetStats),         # Web interesting statistics AJAX handler.
+        ('/get-token',                              handlers.GetToken),         # Web channel token AJAX handler.
+        ('/',                                       handlers.Home),             # Web homepage handler.
+        ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found.
     )
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)

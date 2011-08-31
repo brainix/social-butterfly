@@ -108,6 +108,15 @@ class ResetStats(base.WebHandler):
         _log.info('cron reset num messages sharding counter')
 
 
+class FlushChannels(base.WebHandler):
+    """Request handler to flush stale channels."""
+
+    @base.WebHandler.require_cron
+    def get(self):
+        """ """
+        channels.Channel.flush()
+
+
 class Stats(base.WebHandler):
     """Request handler to serve the interesting statistics page."""
 
