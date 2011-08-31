@@ -162,7 +162,7 @@ function setStats(json) {
         var obj = $('#footer .' + key);
         if (obj.length && obj.html() != val) {
             obj.html(val);
-            obj.stop().effect('highlight', {color: '#D1D9DC'}, 1000);
+            obj.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
         }
     });
 }
