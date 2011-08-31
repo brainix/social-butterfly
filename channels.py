@@ -39,7 +39,7 @@ _log = logging.getLogger(__name__)
 class Channel(db.Model):
     """ """
 
-    datetime = db.DateTimeProperty(required=True, indexed=False, auto_now=True)
+    datetime = db.DateTimeProperty(required=True, auto_now=True)
 
     @classmethod
     def create(cls):
