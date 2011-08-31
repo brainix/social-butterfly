@@ -43,7 +43,7 @@ class Channel(db.Model):
 
     @classmethod
     def create(cls):
-        """ """
+        """Create a channel."""
         _log.info('creating channel')
 
         def txn():
@@ -66,7 +66,7 @@ class Channel(db.Model):
 
     @classmethod
     def destroy(cls, client_id):
-        """ """
+        """Destroy the specified channel."""
         _log.info('destroying channel %s' % client_id)
         chan = cls.get_by_key_name(client_id)
         if chan is None:
@@ -78,12 +78,12 @@ class Channel(db.Model):
 
     @classmethod
     def broadcast(cls, json):
-        """ """
+        """Schedule broadcasting the specified JSON string to all channels."""
         deferred.defer(cls._deferred_broadcast, json)
 
     @classmethod
     def _deferred_broadcast(cls, json):
-        """ """
+        """Broadcast the specified JSON string to all channels."""
         keys = cls.all(keys_only=True)
         client_ids = [key.name() for key in keys]
         for client_id in client_ids:
@@ -91,9 +91,9 @@ class Channel(db.Model):
 
     @classmethod
     def flush(cls):
-        """ """
+        """Destroy all channels created over two hours ago."""
         now = datetime.datetime.now()
         timeout = datetime.timedelta(hours=2)
-        expired = now - timeout
-        keys = cls.all(keys_only=True).filter('datetime <=', expired)
+        expiry = now - timeout
+        keys = cls.all(keys_only=True).filter('datetime <=', expiry)
         db.delete(keys)
