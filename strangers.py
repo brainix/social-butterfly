@@ -57,7 +57,6 @@ class StrangerMixin(object):
             carols.order('partner')
         if order is not None:
             carols = carols.order('datetime' if order else '-datetime')
-
         return carols
 
     def _count_users(self, memcache_key, started, available, chatting):
