@@ -25,7 +25,6 @@
 import logging
 import os
 
-from google.appengine.api import memcache
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
 
