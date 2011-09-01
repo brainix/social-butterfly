@@ -29,13 +29,13 @@
 {% block content %}
 
     <h3>How many users total?</h3>
-    <div class="flipclock num_users"></div>
+    <div class="flipclock num_users">{{ stats.num_users }}</div>
 
     <h3>How many users available for chat?</h3>
-    <div class="flipclock num_active_users"></div>
+    <div class="flipclock num_active_users">{{ stats.num_active_users }}</div>
 
     <h3>How many messages so far today?</h3>
-    <div class="flipclock num_messages"></div>
+    <div class="flipclock num_messages">{{ stats.num_messages }}</div>
 
 {% endblock %}
 

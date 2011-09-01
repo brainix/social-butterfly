@@ -139,7 +139,7 @@ class Shard(db.Model):
         except db.BadKeyError:
             pass
         else:
-            config.delete()
+            db.delete_async(config)
 
         # Next, delete all of the shards, 500 at a time.  We do 500 at a time
         # because the datastore limits batch operations to 500 per batch.  For
@@ -148,7 +148,7 @@ class Shard(db.Model):
         shards = cls.all(keys_only=True).filter('name = ', name)
         keys = shards.fetch(500)
         while keys:
-            db.delete(keys)
+            db.delete_async(keys)
             cursor = shards.cursor()
             shards = cls.all(keys_only=True).filter('name = ', name)
             shards = shards.with_cursor(cursor)

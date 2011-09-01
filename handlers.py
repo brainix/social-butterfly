@@ -237,7 +237,7 @@ class Chat(base.ChatHandler):
         else:
             alice.started = True
             alice.available = True
-            alice, bob = self.start_chat(alice, None)
+            alice, bob, async = self.start_chat(alice, None)
 
             # Notify Alice and Bob.
             self.notify_started(alice)
@@ -260,8 +260,8 @@ class Chat(base.ChatHandler):
             # partner in order to type /next to chat with a different partner.
             self.notify_not_chatting(alice)
         else:
-            alice, bob = self.stop_chat(alice)
-            alice, carol = self.start_chat(alice, bob)
+            alice, bob, async = self.stop_chat(alice)
+            alice, carol, async = self.start_chat(alice, bob)
             if bob is None:
                 bob, dave = None, None
             elif bob == alice:
@@ -271,7 +271,8 @@ class Chat(base.ChatHandler):
             elif bob == carol:
                 bob, dave = carol, alice
             else:
-                bob, dave = self.start_chat(bob, alice)
+                async.get_result()
+                bob, dave, async = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, Carol, and Dave.
             self.notify_nexted(alice)
@@ -291,11 +292,11 @@ class Chat(base.ChatHandler):
             self.notify_already_stopped(alice)
         else:
             alice.started = False
-            alice, bob = self.stop_chat(alice)
+            alice, bob, async = self.stop_chat(alice)
             if bob is None:
                 carol = None
             else:
-                bob, carol = self.start_chat(bob, alice)
+                bob, carol, async = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, and Carol.
             self.notify_stopped(alice)
@@ -358,7 +359,7 @@ class Available(availability.AvailabilityHandler):
         """
         alice, made_available = self.make_available(True)
         if made_available:
-            alice, bob = self.start_chat(alice, None)
+            alice, bob, async = self.start_chat(alice, None)
             if bob is None:
                 _log.info('%s became available; looking for partner' % alice)
             else:
@@ -380,13 +381,13 @@ class Unavailable(availability.AvailabilityHandler):
         """
         alice, made_unavailable = self.make_available(False)
         if made_unavailable:
-            alice, bob = self.stop_chat(alice)
+            alice, bob, async = self.stop_chat(alice)
             if bob is None:
                 _log.info('%s became unavailable; had no partner' % alice)
             else:
                 body = '%s became unavailable; had partner %s' % (alice, bob)
                 _log.info(body)
-                bob, carol = self.start_chat(bob, alice)
+                bob, carol, async = self.start_chat(bob, alice)
                 if carol is None:
                     _log.info('looking for new partner for %s' % bob)
                 else:

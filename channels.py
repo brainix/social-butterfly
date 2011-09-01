@@ -73,7 +73,7 @@ class Channel(db.Model):
             body = "couldn't destroy channel %s; already destroyed" % client_id
             _log.info(body)
         else:
-            chan.delete()
+            db.delete_async(chan)
             _log.info('destroyed channel %s' % client_id)
 
     @classmethod
@@ -85,8 +85,8 @@ class Channel(db.Model):
     def _deferred_broadcast(cls, json):
         """Broadcast the specified JSON string to all channels."""
         keys = cls.all(keys_only=True)
-        client_ids = [key.name() for key in keys]
-        for client_id in client_ids:
+        for key in keys:
+            client_id = key.name()
             channel.send_message(client_id, json)
 
     @classmethod
@@ -96,4 +96,4 @@ class Channel(db.Model):
         timeout = datetime.timedelta(hours=2)
         expiry = now - timeout
         keys = cls.all(keys_only=True).filter('datetime <=', expiry)
-        db.delete(keys)
+        db.delete_async(keys)

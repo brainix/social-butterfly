@@ -37,7 +37,8 @@ _log = logging.getLogger(__name__)
 class StrangerMixin(object):
     """ """
 
-    def get_users(self, started=True, available=True, chatting=False, order=True):
+    def get_users(self, started=True, available=True, chatting=False,
+                  order=True):
         """ """
         assert started in (None, False, True)
         assert available in (None, False, True)
@@ -90,7 +91,7 @@ class StrangerMixin(object):
         for carol in carols:
             # Make sure to not pair Alice with herself, and pair Alice with
             # someone other than Bob this time.
-            if carol != alice and carol != bob:
+            if carol not in (alice, bob):
                 # Hooray, we've found Alice a chat partner!
                 return carol
 
@@ -130,8 +131,8 @@ class StrangerMixin(object):
             alice, carol = self._unlink_partners(alice)
         accounts = [account for account in (alice, carol)
                     if account is not None]
-        db.put(accounts)
-        return alice, carol
+        async = db.put_async(accounts)
+        return alice, carol, async
 
     def start_chat(self, alice, bob):
         """ """

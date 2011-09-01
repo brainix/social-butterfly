@@ -29,11 +29,13 @@ $(function() {
     // Hooray, a page has been loaded!
 
     var handle = $('#content .sign-up .register [name="handle"]');
-    handle.focus(focusHandle);
-    handle.blur(blurHandle);
-    $('#content .sign-up .register').submit(signUp);
-    var defaultHandle = handle.prop('defaultValue');
-    handle.val(defaultHandle);
+    if (handle.length > 0) {
+        handle.focus(focusHandle);
+        handle.blur(blurHandle);
+        $('#content .sign-up .register').submit(signUp);
+        var defaultHandle = handle.prop('defaultValue');
+        handle.val(defaultHandle);
+    }
 
     if ($('.flipclock').length > 0) {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
