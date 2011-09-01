@@ -74,9 +74,7 @@ class Home(base.WebHandler):
             xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
             if created:
-                memcache.incr(NUM_USERS_KEY)
-                json = self.get_stats(json=True)
-                channels.Channel.broadcast(json)
+                self.memcache_and_broadcast(NUM_USERS_KEY, 1)
 
 
 class GetToken(base.WebHandler):
@@ -245,10 +243,7 @@ class Chat(base.ChatHandler):
             # Notify Alice and Bob.
             self.notify_started(alice)
             self.notify_chatting(bob)
-
-            memcache.incr(NUM_ACTIVE_USERS_KEY)
-            json = self.get_stats(json=True)
-            channels.Channel.broadcast(json)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1)
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
@@ -309,10 +304,7 @@ class Chat(base.ChatHandler):
                 self.notify_been_nexted(bob)
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
-
-            memcache.decr(NUM_ACTIVE_USERS_KEY)
-            json = self.get_stats(json=True)
-            channels.Channel.broadcast(json)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1)
 
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
@@ -342,9 +334,7 @@ class Chat(base.ChatHandler):
             else:
                 _log.info("can't send %s's IM to %s" % (alice, bob))
                 self.notify_undeliverable(alice)
-
-            json = self.get_stats(json=True)
-            channels.Channel.broadcast(json)
+            self.memcache_and_broadcast(None, None)
 
 
 class Error(base.WebHandler):
@@ -377,9 +367,7 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
-            memcache.incr(NUM_ACTIVE_USERS_KEY)
-            json = self.get_stats(json=True)
-            channels.Channel.broadcast(json)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -406,9 +394,7 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
-            memcache.decr(NUM_ACTIVE_USERS_KEY)
-            json = self.get_stats(json=True)
-            channels.Channel.broadcast(json)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1)
 
 
 class Probe(base.WebHandler):

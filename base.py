@@ -37,6 +37,7 @@ from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import ADMINS, DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
 from config import NUM_MESSAGES_KEY
+import channels
 import models
 import notifications
 import shards
@@ -192,6 +193,14 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         if json:
             stats = simplejson.dumps(stats)
         return stats
+
+    def memcache_and_broadcast(self, memcache_key, change):
+        """ """
+        if memcache_key:
+            assert change in (1, -1)
+            getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
+        json = self.get_stats(json=True)
+        channels.Channel.broadcast(json)
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
