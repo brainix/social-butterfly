@@ -29,7 +29,7 @@ $(function() {
     // Hooray, a page has been loaded!
 
     var handle = $('#content .sign-up .register [name="handle"]');
-    if (handle.length > 0) {
+    if (handle.length) {
         handle.focus(focusHandle);
         handle.blur(blurHandle);
         $('#content .sign-up .register').submit(signUp);
@@ -37,14 +37,14 @@ $(function() {
         handle.val(defaultHandle);
     }
 
-    if ($('.flipclock').length > 0) {
+    if ($('.flipclock').length) {
         $('.flipclock.num_users').flipclock('init', {digits: 3});
         $('.flipclock.num_active_users').flipclock('init', {digits: 3});
         $('.flipclock.num_messages').flipclock('init', {digits: 3});
         window.setTimeout(updateStats, 3 * 1000);
     }
 
-    if ($('#gravatars').length > 0) {
+    if ($('#gravatars').length) {
         slideshow();
     }
 
