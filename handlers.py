@@ -326,15 +326,15 @@ class Chat(base.ChatHandler):
         else:
             bob = alice.partner
             deliverable = self.is_deliverable(alice)
-            if deliverable:
+            if not deliverable:
+                _log.info("can't send %s's IM to %s" % (alice, bob))
+                self.notify_undeliverable(alice)
+            else:
                 _log.info("sending %s's IM to %s" % (alice, bob))
                 self.send_message(bob, message.body)
                 shards.Shard.increment_count(NUM_MESSAGES_KEY)
+                self.memcache_and_broadcast(None, None)
                 _log.info("sent %s's IM to %s" % (alice, bob))
-            else:
-                _log.info("can't send %s's IM to %s" % (alice, bob))
-                self.notify_undeliverable(alice)
-            self.memcache_and_broadcast(None, None)
 
 
 class Error(base.WebHandler):
