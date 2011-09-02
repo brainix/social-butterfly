@@ -69,7 +69,7 @@ class Account(db.Model):
         handle = db.IM('xmpp', handle)
         key_name = cls.key_name(handle.address)
 
-        def create_account():
+        def txn():
             account = cls.get_by_key_name(key_name)
             if account is not None:
                 created = False
@@ -78,12 +78,12 @@ class Account(db.Model):
             else:
                 account = cls(key_name=key_name, handle=handle, started=False,
                               available=False)
-                account.put()
+                db.put_async(account)
                 created = True
                 _log.info('created account %s' % account)
             return account, created
 
-        account, created = db.run_in_transaction(create_account)
+        account, created = db.run_in_transaction(txn)
         return account, created
 
     @staticmethod

@@ -102,8 +102,8 @@ class Shard(db.Model):
 
         This method never decreases the number of shards.
         """
-        config = _ShardConfig.memcache_get_or_insert(name)
         def txn():
+            config = _ShardConfig.memcache_get_or_insert(name)
             if config.num_shards < num:
                 config.num_shards = num
                 config.memcache_put()
