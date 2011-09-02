@@ -46,6 +46,48 @@ class _ShardConfig(db.Model):
     num_shards = db.IntegerProperty(default=DEFAULT_NUM_SHARDS, required=True)
     datetime = db.DateTimeProperty(required=True, indexed=False, auto_now=True)
 
+    @classmethod
+    def memcache_get_or_insert(cls, name):
+        """ """
+        key_name = name + '_config'
+        config = memcache.get(key_name)
+        if config is None:
+            config = cls.get_or_insert(name, name=name)
+            memcache.set(key_name, config)
+        return config
+
+    @classmethod
+    def memcache_get(cls, name):
+        """ """
+        key_name = name + '_config'
+        config = memcache.get(key_name)
+        if config is None:
+            try:
+                config = cls.get(name)
+            except db.BadKeyError:
+                config = None
+            else:
+                memcache.set(key_name, config)
+        return config
+
+    def memcache_put(self):
+        """ """
+        key_name = self.name + '_config'
+        memcache.set(key_name, self)
+        db.put_async(self)
+
+    @classmethod
+    def memcache_delete(cls, name):
+        """ """
+        key_name = name + '_config'
+        memcache.delete(key_name)
+        try:
+            config = cls.get(name)
+        except db.BadKeyError:
+            pass
+        else:
+            db.delete_async(config)
+
 
 class Shard(db.Model):
     """Shards for each named counter."""
@@ -60,11 +102,11 @@ class Shard(db.Model):
 
         This method never decreases the number of shards.
         """
-        config = _ShardConfig.get_or_insert(name, name=name)
+        config = _ShardConfig.memcache_get_or_insert(name)
         def txn():
             if config.num_shards < num:
                 config.num_shards = num
-                config.put()
+                config.memcache_put()
         db.run_in_transaction(txn)
 
     @staticmethod
@@ -74,11 +116,8 @@ class Shard(db.Model):
         If a counter with the given name has not yet been incremented, this
         method returns None.
         """
-        try:
-            config = _ShardConfig.get(name)
-        except db.BadKeyError:
-            return None
-        else:
+        config = _ShardConfig.memcache_get(name)
+        if config is not None:
             return config.datetime
 
     @classmethod
@@ -103,11 +142,8 @@ class Shard(db.Model):
         else:
             _log.info('memcache miss when getting count for ' + name)
             total = 0
-            try:
-                _ShardConfig.get(name)
-            except db.BadKeyError:
-                pass
-            else:
+            config = _ShardConfig.memcache_get(name)
+            if config is not None:
                 shards = cls.all().filter('name = ', name)
                 for shard in shards:
                     total += shard.count
@@ -117,7 +153,7 @@ class Shard(db.Model):
     @classmethod
     def increment_count(cls, name):
         """Increment the value for a given sharded counter."""
-        config = _ShardConfig.get_or_insert(name, name=name)
+        config = _ShardConfig.memcache_get_or_insert(name)
         def txn():
             index = random.randint(0, config.num_shards - 1)
             key_name = name + str(index)
@@ -134,12 +170,7 @@ class Shard(db.Model):
         """Reset to 0 the value for a given sharded counter."""
 
         # First, delete the sharding counter's configuration.
-        try:
-            config = _ShardConfig.get(name)
-        except db.BadKeyError:
-            pass
-        else:
-            db.delete_async(config)
+        _ShardConfig.memcache_delete(name)
 
         # Next, delete all of the shards, 500 at a time.  We do 500 at a time
         # because the datastore limits batch operations to 500 per batch.  For
