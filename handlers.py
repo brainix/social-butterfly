@@ -229,7 +229,7 @@ class Chat(base.ChatHandler):
 
     @base.ChatHandler.require_account
     def start_command(self, message=None):
-        """Alice has typed /start."""
+        """Alice has typed /start.  Make her available for chat."""
         alice = self.get_account(message)
         _log.debug('%s typed /start' % alice)
         if alice.started:
@@ -246,7 +246,7 @@ class Chat(base.ChatHandler):
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
-        """Alice has typed /next."""
+        """Alice has typed /next.  Pair her with a different partner."""
         alice = self.get_account(message)
         _log.debug('%s typed /next' % alice)
         if not alice.started:
@@ -285,7 +285,7 @@ class Chat(base.ChatHandler):
 
     @base.ChatHandler.require_account
     def stop_command(self, message=None):
-        """Alice has typed /stop."""
+        """Alice has typed /stop.  Make her unavailable for chat."""
         alice = self.get_account(message)
         _log.debug('%s typed /stop' % alice)
         if not alice.started:
@@ -309,13 +309,13 @@ class Chat(base.ChatHandler):
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
     def who_command(self, message=None):
-        """Alice has typed /who."""
+        """Alice has typed /who.  Tell her who she's chatting with."""
         alice = self.get_account(message)
         _log.debug('%s typed /who' % alice)
         self.notify_who(alice)
 
     def me_command(self, message=None):
-        """Alice has typed /me."""
+        """Alice has typed /me.  Relay her /me action to her chat partner."""
         self._common_message(message=message, me=True)
 
     def text_message(self, message=None):
@@ -324,7 +324,7 @@ class Chat(base.ChatHandler):
 
     @base.ChatHandler.require_account
     def _common_message(self, message=None, me=True):
-        """Alice has typed a /me command or typed a message to her partner.
+        """Alice has typed a /me command or a message to her partner.
         
         Relay Alice's /me command or message to her chat partner, Bob.
         """

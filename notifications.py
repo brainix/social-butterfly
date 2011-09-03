@@ -150,7 +150,7 @@ class NotificationMixin(object):
     @_send_notification
     def send_me(self, alice, body):
         """ """
-        body = string.replace(body, '/me', '', 1)
+        body = string.replace(body, '/me ', '', 1)
         body = 'Your partner ' + body
         return body
 
