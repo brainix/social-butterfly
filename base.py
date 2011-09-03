@@ -300,7 +300,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
         to sign up.
         """
         @functools.wraps(method)
-        def wrap(self, message=None):
+        def wrap(self, message=None, **kwds):
             _log.debug('decorated %s requires registered account' % method)
             alice = self.get_account(message)
             if alice is None:
@@ -309,7 +309,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
                 self.notify_requires_account(message.sender)
             else:
                 _log.debug('decorator requirements passed; calling method')
-                return method(self, message=message)
+                return method(self, message=message, **kwds)
         return wrap
 
     @staticmethod

@@ -24,6 +24,7 @@
 
 import functools
 import logging
+import string
 
 from google.appengine.api import xmpp
 
@@ -144,6 +145,13 @@ class NotificationMixin(object):
     def notify_stopped(self, alice):
         """Notify Alice that she's made herself unavailable for chat."""
         body = "You've made yourself unavailable for chat."
+        return body
+
+    @_send_notification
+    def send_me(self, alice, body):
+        """ """
+        body = string.replace(body, '/me', '', 1)
+        body = 'Your partner ' + body
         return body
 
     @_send_notification

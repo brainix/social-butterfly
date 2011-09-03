@@ -314,11 +314,23 @@ class Chat(base.ChatHandler):
         _log.debug('%s typed /who' % alice)
         self.notify_who(alice)
 
-    @base.ChatHandler.require_account
+    def me_command(self, message=None):
+        """Alice has typed /me."""
+        self._common_message(message=message, me=True)
+
     def text_message(self, message=None):
         """Alice has typed a message.  Relay it to her chat partner, Bob."""
+        self._common_message(message=message, me=False)
+
+    @base.ChatHandler.require_account
+    def _common_message(self, message=None, me=True):
+        """Alice has typed a /me command or typed a message to her partner.
+        
+        Relay Alice's /me command or message to her chat partner, Bob.
+        """
         alice = self.get_account(message)
-        _log.debug('%s typed IM' % alice)
+        verb = '/me' if me else 'IM'
+        _log.debug('%s typed %s' % (alice, verb))
         if not alice.started:
             self.notify_not_started(alice)
         elif alice.partner is None:
@@ -327,14 +339,16 @@ class Chat(base.ChatHandler):
             bob = alice.partner
             deliverable = self.is_deliverable(alice)
             if not deliverable:
-                _log.info("can't send %s's IM to %s" % (alice, bob))
+                _log.info("can't send %s's %s to %s" % (alice, verb, bob))
                 self.notify_undeliverable(alice)
             else:
-                _log.info("sending %s's IM to %s" % (alice, bob))
-                self.send_message(bob, message.body)
+                _log.info("sending %s's %s to %s" % (alice, verb, bob))
+                method_name = 'send_me' if me else 'send_message'
+                method = getattr(self, method_name)
+                method(bob, message.body)
                 shards.Shard.increment_count(NUM_MESSAGES_KEY)
                 self.memcache_and_broadcast(None, None)
-                _log.info("sent %s's IM to %s" % (alice, bob))
+                _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
 class Error(base.WebHandler):
