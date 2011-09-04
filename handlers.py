@@ -333,22 +333,23 @@ class Chat(base.ChatHandler):
         _log.debug('%s typed %s' % (alice, verb))
         if not alice.started:
             self.notify_not_started(alice)
-        elif alice.partner is None:
-            self.notify_not_chatting(alice)
         else:
             bob = alice.partner
-            deliverable = self.is_deliverable(alice)
-            if not deliverable:
-                _log.info("can't send %s's %s to %s" % (alice, verb, bob))
-                self.notify_undeliverable(alice)
+            if bob is None:
+                self.notify_not_chatting(alice)
             else:
-                _log.info("sending %s's %s to %s" % (alice, verb, bob))
-                method_name = 'send_me' if me else 'send_message'
-                method = getattr(self, method_name)
-                method(bob, message.body)
-                shards.Shard.increment_count(NUM_MESSAGES_KEY)
-                self.memcache_and_broadcast(None, None)
-                _log.info("sent %s's %s to %s" % (alice, verb, bob))
+                deliverable = self.is_deliverable(alice)
+                if not deliverable:
+                    _log.info("can't send %s's %s to %s" % (alice, verb, bob))
+                    self.notify_undeliverable(alice)
+                else:
+                    _log.info("sending %s's %s to %s" % (alice, verb, bob))
+                    method_name = 'send_me' if me else 'send_message'
+                    method = getattr(self, method_name)
+                    method(bob, message.body)
+                    shards.Shard.increment_count(NUM_MESSAGES_KEY)
+                    self.memcache_and_broadcast(None, None)
+                    _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
 class Error(base.WebHandler):
