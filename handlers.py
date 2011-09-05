@@ -81,8 +81,14 @@ class GetToken(base.WebHandler):
 
     def get(self):
         """ """
-        token = channels.Channel.create()
-        self.response.out.write(token)
+        _log.debug('someone has requested token to open channel')
+        if DEBUG:
+            _log.info('running on SDK; not opening channel (too much CPU)')
+            return self.serve_error(503)
+        else:
+            _log.info('running on cloud; opening channel, returning token')
+            token = channels.Channel.create()
+            self.response.out.write(token)
 
 
 class GetStats(base.WebHandler):
