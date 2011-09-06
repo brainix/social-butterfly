@@ -181,19 +181,15 @@ class Shard(db.Model):
     def reset_count(cls, name):
         """Reset to 0 the value for a given sharded counter."""
 
-        # First, delete the memcached shards.
+        # First, delete the sharding counter's memcached/datastored
+        # configuration.
         config = _ShardConfig.memcache_get(name)
-        if config:
-            for index in range(config.num_shards):
-                key_name = name + str(index)
-                memcache.delete(key_name)
-
-        # Next, delete the sharding counter's configuration.
+        num_shards = 0 if config is None else config.num_shards
         _ShardConfig.memcache_delete(name)
 
-        # Next, delete all of the shards, 500 at a time.  We do 500 at a time
-        # because the datastore limits batch operations to 500 per batch.  For
-        # more information, see:
+        # Next, delete all of the datastored shards, 500 at a time.  We do 500
+        # at a time because the datastore limits batch operations to 500 per
+        # batch.  For more information, see:
         #     http://stackoverflow.com/questions/3034327/google-app-engine-delete-until-count-0
         shards = cls.all(keys_only=True).filter('name = ', name)
         keys = shards.fetch(500)
@@ -203,6 +199,11 @@ class Shard(db.Model):
             shards = cls.all(keys_only=True).filter('name = ', name)
             shards = shards.with_cursor(cursor)
             keys = shards.fetch(500)
+
+        # Next, delete all of the memcached shards.
+        for index in range(num_shards):
+            key_name = name + str(index)
+            memcache.delete(key_name)
 
         # Finally, delete the memcached count.
         memcache.delete(name)
