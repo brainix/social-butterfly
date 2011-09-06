@@ -33,7 +33,7 @@ import random
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from config import DEFAULT_NUM_SHARDS
+from config import DEFAULT_NUM_SHARDS, NUM_RETRIES
 
 
 _log = logging.getLogger(__name__)
@@ -151,23 +151,44 @@ class Shard(db.Model):
     @classmethod
     def increment_count(cls, name):
         """Increment the value for a given sharded counter."""
+        client = memcache.Client()
         config = _ShardConfig.memcache_get_or_insert(name)
+        index = random.randint(0, config.num_shards-1)
+        key_name = name + str(index)
+
         def txn():
-            index = random.randint(0, config.num_shards - 1)
-            key_name = name + str(index)
-            shard = cls.get_by_key_name(key_name)
-            if shard is None:
-                shard = cls(key_name=key_name, name=name)
-            shard.count += 1
-            shard.put()
-        db.run_in_transaction(txn)
+            for retry in range(NUM_RETRIES):
+                shard = client.gets(key_name)
+                if shard is None:
+                    shard = cls.get_by_key_name(key_name)
+                    if shard is None:
+                        shard = cls(key_name=key_name, name=name)
+                    shard.count += 1
+                    client.add(key_name, shard)
+                    shard.put()
+                    return True
+                else:
+                    shard.count += 1
+                    if client.cas(key_name, shard):
+                        shard.put()
+                        return True
+            return False
+
+        success = db.run_in_transaction(txn)
         memcache.incr(name, initial_value=0)
 
     @classmethod
     def reset_count(cls, name):
         """Reset to 0 the value for a given sharded counter."""
 
-        # First, delete the sharding counter's configuration.
+        # First, delete the memcached shards.
+        config = _ShardConfig.memcache_get(name)
+        if config:
+            for index in range(config.num_shards):
+                key_name = name + str(index)
+                memcache.delete(key_name)
+
+        # Next, delete the sharding counter's configuration.
         _ShardConfig.memcache_delete(name)
 
         # Next, delete all of the shards, 500 at a time.  We do 500 at a time
