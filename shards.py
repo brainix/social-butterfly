@@ -44,7 +44,7 @@ class _ShardConfig(db.Model):
 
     name = db.StringProperty(required=True)
     num_shards = db.IntegerProperty(default=DEFAULT_NUM_SHARDS, required=True)
-    datetime = db.DateTimeProperty(required=True, indexed=False, auto_now=True)
+    datetime = db.DateTimeProperty(required=True, indexed=False, auto_now_add=True)
 
     @classmethod
     def memcache_get_or_insert(cls, name):
@@ -128,9 +128,7 @@ class Shard(db.Model):
         method returns None.
         """
         shard = cls.all().filter('name = ', name).order('-datetime').get()
-        if shard is None:
-            return cls.get_created_time(name)
-        else:
+        if shard is not None:
             return shard.datetime
 
     @classmethod
