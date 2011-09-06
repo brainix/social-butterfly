@@ -44,7 +44,7 @@ class Channel(db.Model):
     @classmethod
     def create(cls):
         """Create a channel."""
-        _log.info('creating channel')
+        _log.debug('creating channel')
 
         def txn():
             for retry in range(NUM_RETRIES):
@@ -61,39 +61,45 @@ class Channel(db.Model):
         else:
             token = channel.create_channel(client_id)
             deferred.defer(cls.destroy, client_id, _countdown=2*60*60)
-            _log.info('created channel %s, token %s' % (client_id, token))
+            _log.debug('created channel %s, token %s' % (client_id, token))
             return token
 
     @classmethod
     def destroy(cls, client_id):
         """Destroy the specified channel."""
-        _log.info('destroying channel %s' % client_id)
+        _log.debug('destroying channel %s' % client_id)
         chan = cls.get_by_key_name(client_id)
         if chan is None:
             body = "couldn't destroy channel %s; already destroyed" % client_id
-            _log.info(body)
+            _log.debug(body)
         else:
             db.delete_async(chan)
-            _log.info('destroyed channel %s' % client_id)
+            _log.debug('destroyed channel %s' % client_id)
 
     @classmethod
     def broadcast(cls, json):
         """Schedule broadcasting the specified JSON string to all channels."""
+        _log.debug('deferring broadcasting JSON to all channels')
         deferred.defer(cls._deferred_broadcast, json)
+        _log.debug('deferred broadcasting JSON to all channels')
 
     @classmethod
     def _deferred_broadcast(cls, json):
         """Broadcast the specified JSON string to all channels."""
+        _log.debug('broadcasting JSON to all channels')
         keys = cls.all(keys_only=True)
         for key in keys:
             client_id = key.name()
             channel.send_message(client_id, json)
+        _log.debug('broadcasted JSON to all channels')
 
     @classmethod
     def flush(cls):
         """Destroy all channels created over two hours ago."""
+        _log.debug('destroying all channels over two hours old')
         now = datetime.datetime.now()
         timeout = datetime.timedelta(hours=2)
         expiry = now - timeout
         keys = cls.all(keys_only=True).filter('datetime <=', expiry)
         db.delete_async(keys)
+        _log.debug('destroyed all channels over two hours old')
