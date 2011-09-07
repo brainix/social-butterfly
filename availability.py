@@ -24,8 +24,6 @@
 
 import logging
 
-from google.appengine.ext import db
-
 import base
 
 
@@ -48,7 +46,16 @@ class AvailabilityHandler(base.WebHandler):
         changed = False
         if alice is not None and alice.started and alice.available != available:
             alice.available = available
-            db.put(alice)
+
+            # The following datastore put isn't necessary.  As it is, the
+            # following datastore put only gets called whenever Alice's
+            # availability changes.  But, whenever Alice's availability
+            # changes, we try to either start her chatting or stop her
+            # chatting, and either way, we do a datastore put for her account.
+            # I'm leaving the following datastore put here, though, and
+            # commented out, because this is subtle and implicit.
+            # db.put(alice)
+
             changed = True
         return alice, changed
 

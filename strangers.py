@@ -158,8 +158,6 @@ class StrangerMixin(object):
             # check for this case every time anyone types a message.
             body = "%s typed IM, but %s's partner is %s and %s's partner is %s"
             _log.error(body % (alice, alice, bob, bob, bob.partner))
-            _log.error("bob's partner's key is: %s" % bob_partner_key)
-            _log.error("alice's key is: %s" % alice_key)
             return False
 
         # Nothing else can go wrong.  Alice's message must be deliverable to
