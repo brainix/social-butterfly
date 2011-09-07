@@ -147,18 +147,22 @@ class StrangerMixin(object):
         if bob is None:
             # Oops.  Alice doesn't have a chat partner.
             _log.warning('%s typed IM, but has no chat partner' % alice)
-            deliverable = False
-        elif bob.partner != alice:
+            return False
+
+        bob_partner_key = models.Account.partner.get_value_for_datastore(bob)
+        alice_key = alice.key()
+        if bob_partner_key != alice_key:
             # Oops.  Alice thinks that her chat partner is Bob, but Bob doesn't
             # think that his chat partner is Alice.  This can happen because we
             # don't link/unlink chat partners transactionally, so we have to
             # check for this case every time anyone types a message.
             body = "%s typed IM, but %s's partner is %s and %s's partner is %s"
             _log.error(body % (alice, alice, bob, bob, bob.partner))
-            deliverable = False
-        else:
-            # Nothing else can go wrong.  Alice's message must be deliverable
-            # to Bob.
-            _log.debug('%s typed IM, OK to deliver to %s' % (alice, bob))
-            deliverable = True
-        return deliverable
+            _log.error("bob's partner's key is: %s" % bob_partner_key)
+            _log.error("alice's key is: %s" % alice_key)
+            return False
+
+        # Nothing else can go wrong.  Alice's message must be deliverable to
+        # Bob.
+        _log.debug('%s typed IM, OK to deliver to %s' % (alice, bob))
+        return True
