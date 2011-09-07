@@ -353,7 +353,7 @@ class Chat(base.ChatHandler):
                     method_name = 'send_me' if me else 'send_message'
                     method = getattr(self, method_name)
                     method(bob, message.body)
-                    shards.Shard.increment_count(NUM_MESSAGES_KEY)
+                    shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
                     self.memcache_and_broadcast(None, None)
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))
 

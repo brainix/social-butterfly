@@ -32,6 +32,7 @@ import random
 
 from google.appengine.api import memcache
 from google.appengine.ext import db
+from google.appengine.ext import deferred
 
 from config import DEFAULT_NUM_SHARDS, NUM_RETRIES
 
@@ -149,13 +150,23 @@ class Shard(db.Model):
         return total
 
     @classmethod
-    def increment_count(cls, name):
-        """Increment the value for a given sharded counter."""
+    def increment_count(cls, name, defer=False):
+        """Increment the memcached total value for a given sharded counter."""
+        if memcache.incr(name) is None:
+            cls.get_count(name)
+            memcache.incr(name)
+        if defer:
+            deferred.defer(cls._deferred_increment_count, name)
+        else:
+            cls._deferred_increment_count(name)
+
+    @classmethod
+    def _deferred_increment_count(cls, name):
+        """Increment the memcached and datastored values for a shard."""
         client = memcache.Client()
         config = _ShardConfig.memcache_get_or_insert(name)
         index = random.randint(0, config.num_shards-1)
         key_name = name + str(index)
-
         def txn():
             for retry in range(NUM_RETRIES):
                 shard = client.gets(key_name)
@@ -173,9 +184,7 @@ class Shard(db.Model):
                         shard.put()
                         return True
             return False
-
         success = db.run_in_transaction(txn)
-        memcache.incr(name, initial_value=0)
 
     @classmethod
     def reset_count(cls, name):
