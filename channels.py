@@ -29,6 +29,7 @@ import random
 from google.appengine.api import channel
 from google.appengine.ext import db
 from google.appengine.ext import deferred
+from google.appengine.runtime import DeadlineExceededError
 
 from config import CLIENT_IDS_KEY, NUM_RETRIES
 
@@ -80,17 +81,23 @@ class Channel(db.Model):
     def broadcast(cls, json):
         """Schedule broadcasting the specified JSON string to all channels."""
         _log.debug('deferring broadcasting JSON to all channels')
-        deferred.defer(cls._deferred_broadcast, json)
+        deferred.defer(cls._deferred_broadcast, json, None)
         _log.debug('deferred broadcasting JSON to all channels')
 
     @classmethod
-    def _deferred_broadcast(cls, json):
+    def _deferred_broadcast(cls, json, cursor):
         """Broadcast the specified JSON string to all channels."""
         _log.debug('broadcasting JSON to all channels')
         keys = cls.all(keys_only=True)
-        for key in keys:
-            client_id = key.name()
-            channel.send_message(client_id, json)
+        if cursor is not None:
+            keys = keys.with_cursor(cursor)
+        try:
+            for key in keys:
+                client_id = key.name()
+                channel.send_message(client_id, json)
+                cursor = keys.cursor()
+        except DeadlineExceededError:
+            deferred.defer(cls._deferred_broadcast, json, cursor)
         _log.debug('broadcasted JSON to all channels')
 
     @classmethod
