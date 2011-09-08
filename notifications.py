@@ -28,6 +28,8 @@ import string
 
 from google.appengine.api import xmpp
 
+import models
+
 
 _log = logging.getLogger(__name__)
 
@@ -78,7 +80,8 @@ class NotificationMixin(object):
     def notify_already_started(self, alice):
         """ """
         body = "You'd already made yourself available for chat.\n\n"
-        if alice.partner is None:
+        alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
+        if alice_partner_key is None:
             body += 'Looking for a chat partner...'
         else:
             body += "And you're already chatting with a partner!"
@@ -88,7 +91,8 @@ class NotificationMixin(object):
     def notify_started(self, alice):
         """Notify Alice that she's made herself available for chat."""
         body = "You've made yourself available for chat.\n\n"
-        if alice.partner is None:
+        alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
+        if alice_partner_key is None:
             body += 'Looking for a chat partner...'
         else:
             body += 'Now chatting with a partner.  Say hello!'
@@ -119,7 +123,8 @@ class NotificationMixin(object):
     def notify_nexted(self, alice):
         """Notify Alice that she's /nexted her partner."""
         body = "You've disconnected from your current chat partner.\n\n"
-        if alice.partner is None:
+        alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
+        if alice_partner_key is None:
             body += 'Looking for a new chat partner...'
         else:
             body += 'Now chatting with a new partner.  Say hello!'
@@ -129,7 +134,8 @@ class NotificationMixin(object):
     def notify_been_nexted(self, alice):
         """Notify Alice that her partner has /nexted her."""
         body = 'Your current chat partner has disconnected.\n\n'
-        if alice.partner is None:
+        alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
+        if alice_partner_key is None:
             body += 'Looking for a new chat partner...'
         else:
             body += 'Now chatting with a new partner.  Say hello!'
@@ -178,10 +184,16 @@ class NotificationMixin(object):
     def notify_who(self, alice):
         """ """
         bob = alice.partner
-        if bob is None or bob.partner != alice:
+        try:
+            bob_partner_key = models.Account.partner.get_value_for_datastore(bob)
+        except AttributeError:
+            bob_partner_key = None
+        alice_key = alice.key()
+
+        if bob is None or bob_partner_key != alice_key:
             body = "You're not currently chatting with a partner."
         else:
-            body = "You're currently chatting with: %s" % alice.partner
+            body = "You're currently chatting with: %s" % bob
         return body
 
     @_send_presence
