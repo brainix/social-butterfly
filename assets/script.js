@@ -187,14 +187,21 @@ function slideshow() {
                 slideshow();
             },
             success: function(data, textStatus, jqXHR) {
-                var snippet =   '<a href="' + gravatar.profile + '">';
-                snippet +=          '<img src="' + gravatar.image + '"';
-                snippet +=          '     style="display: none;"';
-                snippet +=          '     alt="Social Butterfly" />';
-                snippet +=      '</a>';
+
+                // var snippet =   '<a href="' + gravatar.profile + '">';
+                // snippet +=          '<img src="' + gravatar.image + '"';
+                // snippet +=          '     style="display: none;"';
+                // snippet +=          '     alt="Social Butterfly" />';
+                // snippet +=      '</a>';
+                snippet =          '<img src="' + gravatar.image + '"';
+                snippet +=         '     style="display: none;"';
+                snippet +=         '     alt="Social Butterfly" />';
+
                 $('#gravatars').append(snippet);
                 slideshowIndex++;
-                $('#gravatars a:last-child img').fadeIn('slow', slideshow);
+
+                // $('#gravatars a:last-child img').fadeIn('slow', slideshow);
+                $('#gravatars img:last-child').fadeIn('slow', slideshow);
             }
         });
     }

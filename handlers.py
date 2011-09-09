@@ -126,7 +126,7 @@ class Stats(base.WebHandler):
         """Serve the interesting statistics page."""
         path = os.path.join(TEMPLATES, 'stats.html')
         debug = DEBUG
-        title = 'interesting statistics'
+        title = 'stats'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
@@ -145,7 +145,7 @@ class Album(base.WebHandler):
         """ """
         path = os.path.join(TEMPLATES, 'album.html')
         debug = DEBUG
-        title = 'who uses social butterfly?'
+        title = 'album'
         users = self.get_users(started=None, available=None, chatting=None,
                                order=False)
         stats = self.get_stats(json=False)
