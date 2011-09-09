@@ -58,14 +58,15 @@ def main():
         ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),        # XMPP subscribe handler.
         ('/_ah/channel/disconnected/',              handlers.Disconnected),     # Channel disconnected handler.
         ('/_ah/channel/connected/',                 handlers.Connected),        # Channel connected handler.
-        ('/album',                                  handlers.Album),            # Web user gallery album.
-        ('/stats',                                  handlers.Stats),            # Web interesting statistics handler.
         ('/flush-channels',                         handlers.FlushChannels),    # Web flush stale channels cron handler.
-        ('/reset-stats',                            handlers.ResetStats),       # Web reset interesting statistics cron handler.
-        ('/get-stats',                              handlers.GetStats),         # Web interesting statistics AJAX handler.
+        ('/reset-stats',                            handlers.ResetStats),       # Web reset stats cron handler.
+        ('/get-stats',                              handlers.GetStats),         # Web stats AJAX handler.
         ('/get-token',                              handlers.GetToken),         # Web channel token AJAX handler.
+        ('/about',                                  handlers.About),            # Web about page handler.
+        ('/album',                                  handlers.Album),            # Web album page handler.
+        ('/stats',                                  handlers.Stats),            # Web stats page handler.
         ('/',                                       handlers.Home),             # Web homepage handler.
-        ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found.
+        ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found handler.
     )
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)

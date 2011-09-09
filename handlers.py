@@ -76,6 +76,53 @@ class Home(base.WebHandler):
                 self.memcache_and_broadcast(NUM_USERS_KEY, 1)
 
 
+class Stats(base.WebHandler):
+    """Request handler to serve the stats page."""
+
+    def get(self):
+        """Serve the stats page."""
+        path = os.path.join(TEMPLATES, 'stats.html')
+        debug = DEBUG
+        title = 'stats'
+        stats = self.get_stats(json=False)
+        html = template.render(path, locals(), debug=debug)
+        self.response.out.write(html)
+
+
+class Album(base.WebHandler):
+    """Request handler to serve the album page."""
+
+    def get(self):
+        """Serve the album page."""
+        html = self._render_album()
+        self.response.out.write(html)
+
+    @base.BaseHandler.memoize(24 * 60 * 60)
+    def _render_album(self):
+        """ """
+        path = os.path.join(TEMPLATES, 'album.html')
+        debug = DEBUG
+        title = 'album'
+        users = self.get_users(started=None, available=None, chatting=None,
+                               order=False)
+        stats = self.get_stats(json=False)
+        html = template.render(path, locals(), debug=debug)
+        return html
+
+
+class About(base.WebHandler):
+    """Request handler to serve the about page."""
+
+    def get(self):
+        """Serve the about page."""
+        path = os.path.join(TEMPLATES, 'about.html')
+        debug = DEBUG
+        title = 'about'
+        stats = self.get_stats(json=False)
+        html = template.render(path, locals(), debug=debug)
+        self.response.out.write(html)
+
+
 class GetToken(base.WebHandler):
     """ """
 
@@ -117,40 +164,6 @@ class FlushChannels(base.WebHandler):
     def get(self):
         """ """
         channels.Channel.flush()
-
-
-class Stats(base.WebHandler):
-    """Request handler to serve the interesting statistics page."""
-
-    def get(self):
-        """Serve the interesting statistics page."""
-        path = os.path.join(TEMPLATES, 'stats.html')
-        debug = DEBUG
-        title = 'stats'
-        stats = self.get_stats(json=False)
-        html = template.render(path, locals(), debug=debug)
-        self.response.out.write(html)
-
-
-class Album(base.WebHandler):
-    """Request handler to serve the user photo album page."""
-
-    def get(self):
-        """Serve the user photo album page."""
-        html = self._render_album()
-        self.response.out.write(html)
-
-    @base.BaseHandler.memoize(24 * 60 * 60)
-    def _render_album(self):
-        """ """
-        path = os.path.join(TEMPLATES, 'album.html')
-        debug = DEBUG
-        title = 'album'
-        users = self.get_users(started=None, available=None, chatting=None,
-                               order=False)
-        stats = self.get_stats(json=False)
-        html = template.render(path, locals(), debug=debug)
-        return html
 
 
 class Connected(base.WebHandler):
