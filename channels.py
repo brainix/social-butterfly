@@ -40,10 +40,11 @@ _log = logging.getLogger(__name__)
 class Channel(db.Model):
     """ """
 
+    name = db.StringProperty()
     datetime = db.DateTimeProperty(required=True, auto_now=True)
 
     @classmethod
-    def create(cls):
+    def create(cls, name=None):
         """Create a channel."""
         _log.debug('creating channel')
 
@@ -52,7 +53,7 @@ class Channel(db.Model):
                 client_id = 'client' + str(random.randint(0, 10 ** 8 - 1))
                 chan = cls.get_by_key_name(client_id)
                 if chan is None:
-                    chan = cls(key_name=client_id)
+                    chan = cls(key_name=client_id, name=name)
                     chan.put()
                     return client_id
 
@@ -78,17 +79,19 @@ class Channel(db.Model):
             _log.debug('destroyed channel %s' % client_id)
 
     @classmethod
-    def broadcast(cls, json):
+    def broadcast(cls, json, name=None):
         """Schedule broadcasting the specified JSON string to all channels."""
         _log.debug('deferring broadcasting JSON to all channels')
-        deferred.defer(cls._deferred_broadcast, json, None)
+        deferred.defer(cls._deferred_broadcast, json, name=name, cursor=None)
         _log.debug('deferred broadcasting JSON to all channels')
 
     @classmethod
-    def _deferred_broadcast(cls, json, cursor):
+    def _deferred_broadcast(cls, json, name=None, cursor=None):
         """Broadcast the specified JSON string to all channels."""
         _log.debug('broadcasting JSON to all channels')
         keys = cls.all(keys_only=True)
+        if name is not None:
+            keys = keys.filter('name = ', name)
         if cursor is not None:
             keys = keys.with_cursor(cursor)
         try:
@@ -97,7 +100,8 @@ class Channel(db.Model):
                 channel.send_message(client_id, json)
                 cursor = keys.cursor()
         except DeadlineExceededError:
-            deferred.defer(cls._deferred_broadcast, json, cursor)
+            deferred.defer(cls._deferred_broadcast, json, name=name,
+                           cursor=cursor)
         _log.debug('broadcasted JSON to all channels')
 
     @classmethod
