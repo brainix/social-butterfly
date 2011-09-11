@@ -56,6 +56,7 @@ class Home(base.WebHandler):
         path = os.path.join(TEMPLATES, 'home.html')
         debug = DEBUG
         title = 'chat with strangers'
+        active_tab = 'home'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
@@ -84,6 +85,7 @@ class Stats(base.WebHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         debug = DEBUG
         title = 'stats'
+        active_tab = 'stats'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
@@ -105,6 +107,7 @@ class Album(base.WebHandler):
         title = 'album'
         users = self.get_users(started=None, available=None, chatting=None,
                                order=False)
+        active_tab = 'album'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         return html
@@ -118,6 +121,7 @@ class About(base.WebHandler):
         path = os.path.join(TEMPLATES, 'about.html')
         debug = DEBUG
         title = 'about'
+        active_tab = 'about'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
