@@ -128,22 +128,23 @@ class About(base.WebHandler):
 
 
 class GetToken(base.WebHandler):
-    """ """
+    """Request handler to create a channel and return its token."""
 
     def get(self):
-        """ """
+        """Create a channel and return its token."""
         _log.debug('someone has requested token to open channel')
         if DEBUG:
             _log.info('running on SDK; not opening channel (too much CPU)')
             return self.serve_error(503)
         else:
-            _log.info('running on cloud; opening channel, returning token')
+            _log.info('running on cloud; creating channel, returning token')
             token = channels.Channel.create()
             self.response.out.write(token)
+            _log.info('created channel, returned token')
 
 
 class GetStats(base.WebHandler):
-    """Request handler to update the interesting statistics."""
+    """Request handler to get the interesting statistics."""
 
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
@@ -157,6 +158,7 @@ class ResetStats(base.WebHandler):
     @base.WebHandler.require_cron
     def get(self):
         """ """
+        _log.info('cron resetting num messages sharding counter')
         shards.Shard.reset_count(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
 
@@ -167,7 +169,9 @@ class FlushChannels(base.WebHandler):
     @base.WebHandler.require_cron
     def get(self):
         """ """
+        _log.info('cron flushing stale channels')
         channels.Channel.flush()
+        _log.info('cron flushed stale channels')
 
 
 class Connected(base.WebHandler):
