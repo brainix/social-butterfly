@@ -156,15 +156,15 @@ function updateStats() {
 function setStats(json) {
     json = $.parseJSON(json);
     $.each(json, function(key, val) {
-        var obj = $('.flipclock.' + key);
-        if (obj.length) {
-            obj.flipclock('set', val);
+        var objs = $('.flipclock.' + key);
+        if (objs.length) {
+            objs.flipclock('set', val);
         }
 
-        var obj = $('#footer .' + key);
-        if (obj.length && obj.html() != val) {
-            obj.html(val);
-            obj.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
+        var objs = $('.' + key).not('.flipclock');
+        if (objs.length && objs.html() != val) {
+            objs.html(val);
+            objs.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
         }
     });
 }

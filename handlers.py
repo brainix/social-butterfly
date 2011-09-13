@@ -200,7 +200,7 @@ class Subscribe(base.WebHandler):
         """ """
         handle = self.get_handle()
         if not handle:
-            handle = 'an unregistered user'
+            handle = 'an unknown user'
         _log.debug("%s wishes to subscribe to our presence" % handle)
 
 
@@ -217,7 +217,7 @@ class Subscribed(base.WebHandler):
         """
         handle = self.get_handle()
         if not handle:
-            handle = 'an unregistered user'
+            handle = 'an unknown user'
         _log.debug('%s has allowed us to receive his/her presence' % handle)
         self.send_help(handle)
 
@@ -229,7 +229,7 @@ class Unsubscribe(base.WebHandler):
         """ """
         handle = self.get_handle()
         if not handle:
-            handle = 'an unregistered user'
+            handle = 'an unknown user'
         _log.debug('%s is unsubscribing from our presence' % handle)
 
 
@@ -240,7 +240,7 @@ class Unsubscribed(base.WebHandler):
         """ """
         handle = self.get_handle()
         if not handle:
-            handle = 'an unregistered user'
+            handle = 'an unknown user'
         _log.debug('%s has denied/cancelled our subscription request' % handle)
 
 
@@ -386,7 +386,7 @@ class Error(base.WebHandler):
         """ """
         handle = self.get_handle()
         if not handle:
-            handle = 'an unregistered user'
+            handle = 'an unknown user'
         _log.debug('%s errored' % handle)
 
 
@@ -447,5 +447,5 @@ class Probe(base.WebHandler):
         """ """
         handle = self.get_handle()
         if handle is None:
-            handle = 'an unregistered user'
+            handle = 'an unknown user'
         _log.debug('%s is probing for our current presence' % handle)

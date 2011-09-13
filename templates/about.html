@@ -35,20 +35,25 @@
     <h3>Open Source</h3>
     <p>
         Social Butterfly is written in Python for Google&rsquo;s App Engine
-        cloud.  You can view Social Butterfly&rsquo;s clean, object-oriented <a
-        href="http://code.google.com/p/social-butterfly/source/browse/#svn%2Ftrunk">source code</a>.
+        cloud.  You can view Social Butterfly&rsquo;s clean, object-oriented
+        <a href="http://code.google.com/p/social-butterfly/source/browse/#svn%2Ftrunk">source code</a>.
     </p>
 
     <h3>Scalable</h3>
     <p>
-        Social Butterfly uses techniques like memcache, sharding counters, and
-        deferred task queues to scale to millions of users.
+        Social Butterfly uses techniques like memcache,
+        <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/shards.py">sharding counters</a>,
+        and deferred task queues to scale to
+        <span class="num_users">{{ stats.num_users }}</span> users and
+        counting.
     </p>
 
     <h3>Real-Time</h3>
     <p>
-        Social Butterfly uses channels (similar to WebSockets) for real-time
-        communication.  The footer on every page is live yet scalable.
+        Social Butterfly uses
+        <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/channels.py">channels</a>
+        (similar to WebSockets) for real-time communication.  The footer on
+        every page is live yet scalable.
     </p>
 
 {% endblock %}
