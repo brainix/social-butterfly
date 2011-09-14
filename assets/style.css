@@ -81,7 +81,8 @@ b {
     color: #B62F2F;
 }
 
-#heading h2, #content h3 {
+#heading h2,
+#content h3 {
     color: #959EA1;
     font-size: 35px;
     font-weight: 300;
@@ -153,6 +154,24 @@ b {
  |                               Footer Styles                               |
 \*---------------------------------------------------------------------------*/
 
+#footer ul,
+#footer ul li {
+    display: inline;
+}
+
+#footer ul li {
+    border-left: 1px solid #959EA1;
+    margin-left: 0.75em;
+    padding-left: 0.75em;
+}
+
+#footer ul li.first {
+    border-left: 0;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+#footer ul li,
 #footer p {
     color: #959EA1;
     font-size: 13px;

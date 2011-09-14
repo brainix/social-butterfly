@@ -48,12 +48,12 @@
         </div>
 
         <div id="footer">
-            <p>
-                {% ifnotequal active_tab 'home' %}<a href="/">{% endifnotequal %}Social Butterfly{% ifnotequal active_tab 'home' %}</a>{% endifnotequal %} &nbsp; | &nbsp;
-                {% ifnotequal active_tab 'stats' %}<a href="/stats">{% endifnotequal %}Stats{% ifnotequal active_tab 'stats' %}</a>{% endifnotequal %} &nbsp; | &nbsp;
-                {% ifnotequal active_tab 'album' %}<a href="/album">{% endifnotequal %}Album{% ifnotequal active_tab 'album' %}</a>{% endifnotequal %} &nbsp; | &nbsp;
-                {% ifnotequal active_tab 'tech' %}<a href="/tech">{% endifnotequal %}Tech{% ifnotequal active_tab 'tech' %}</a>{% endifnotequal %}
-            </p>
+            <ul>
+                <li class="first">{% ifnotequal active_tab 'home' %}<a href="/">{% endifnotequal %}Social Butterfly{% ifnotequal active_tab 'home' %}</a>{% endifnotequal %}</li>
+                <li>{% ifnotequal active_tab 'stats' %}<a href="/stats">{% endifnotequal %}Stats{% ifnotequal active_tab 'stats' %}</a>{% endifnotequal %}</li>
+                <li>{% ifnotequal active_tab 'album' %}<a href="/album">{% endifnotequal %}Album{% ifnotequal active_tab 'album' %}</a>{% endifnotequal %}</li>
+                <li>{% ifnotequal active_tab 'tech' %}<a href="/tech">{% endifnotequal %}Tech{% ifnotequal active_tab 'tech' %}</a>{% endifnotequal %}</li>
+            </ul>
             {% if stats %}
                 <p>
                     <span class="num_users">{{ stats.num_users }}</span> users total,
