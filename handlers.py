@@ -54,10 +54,10 @@ class Home(base.WebHandler):
     def get(self):
         """Serve the homepage."""
         path = os.path.join(TEMPLATES, 'home.html')
-        debug = DEBUG
         title = 'chat with strangers'
         active_tab = 'home'
         stats = self.get_stats(json=False)
+        debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -83,10 +83,10 @@ class Stats(base.WebHandler):
     def get(self):
         """Serve the stats page."""
         path = os.path.join(TEMPLATES, 'stats.html')
-        debug = DEBUG
         title = 'stats'
         active_tab = 'stats'
         stats = self.get_stats(json=False)
+        debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
@@ -103,12 +103,12 @@ class Album(base.WebHandler):
     def _render_album(self):
         """ """
         path = os.path.join(TEMPLATES, 'album.html')
-        debug = DEBUG
         title = 'album'
         users = self.get_users(started=None, available=None, chatting=None,
                                order=False)
         active_tab = 'album'
         stats = self.get_stats(json=False)
+        debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         return html
 
@@ -119,10 +119,10 @@ class Tech(base.WebHandler):
     def get(self):
         """Serve the tech page."""
         path = os.path.join(TEMPLATES, 'tech.html')
-        debug = DEBUG
         title = 'tech'
         active_tab = 'tech'
         stats = self.get_stats(json=False)
+        debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
 
