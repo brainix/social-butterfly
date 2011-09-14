@@ -52,7 +52,7 @@
                 {% ifnotequal active_tab 'home' %}<a href="/">{% endifnotequal %}Social Butterfly{% ifnotequal active_tab 'home' %}</a>{% endifnotequal %} &nbsp; | &nbsp;
                 {% ifnotequal active_tab 'stats' %}<a href="/stats">{% endifnotequal %}Stats{% ifnotequal active_tab 'stats' %}</a>{% endifnotequal %} &nbsp; | &nbsp;
                 {% ifnotequal active_tab 'album' %}<a href="/album">{% endifnotequal %}Album{% ifnotequal active_tab 'album' %}</a>{% endifnotequal %} &nbsp; | &nbsp;
-                {% ifnotequal active_tab 'about' %}<a href="/about">{% endifnotequal %}About{% ifnotequal active_tab 'about' %}</a>{% endifnotequal %}
+                {% ifnotequal active_tab 'tech' %}<a href="/tech">{% endifnotequal %}Tech{% ifnotequal active_tab 'tech' %}</a>{% endifnotequal %}
             </p>
             {% if stats %}
                 <p>
@@ -64,7 +64,7 @@
         </div>
 
         <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
         <script type="text/javascript" src='/_ah/channel/jsapi'></script>
         {% block javascript %}{% endblock %}

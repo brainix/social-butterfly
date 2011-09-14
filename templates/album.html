@@ -25,19 +25,26 @@
 
 {% block content %}
 
+    <h3>What is this photo album?</h3>
+    <p>
+        This photo album is a mashup of
+        <a href="http://gravatar.com/">Gravatar</a>
+        and Social Butterfly.  These photos are all of the Gravatars of Social
+        Butterfly&rsquo;s users.
+    </p>
+
+    <h3>Who uses Social Butterfly?</h3>
+    <div id="gravatars"></div>
+
     <script type="text/javascript">
         /* <![CDATA[ */
             var gravatars = [];
             {% for user in users %}
                 var gravatar = new Object();
                 gravatar.image = 'http://www.gravatar.com/avatar/{{ user|gravatar_hash }}.jpg?size=64&default=404&rating=x';
-                gravatar.profile = 'http://www.gravatar.com/{{ user|gravatar_hash }}';
                 gravatars.push(gravatar);
             {% endfor %}
         /* ]]> */
     </script>
-
-    <h3>Who uses Social Butterfly?</h3>
-    <div id="gravatars"></div>
 
 {% endblock %}

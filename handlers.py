@@ -113,15 +113,15 @@ class Album(base.WebHandler):
         return html
 
 
-class About(base.WebHandler):
-    """Request handler to serve the about page."""
+class Tech(base.WebHandler):
+    """Request handler to serve the tech page."""
 
     def get(self):
-        """Serve the about page."""
-        path = os.path.join(TEMPLATES, 'about.html')
+        """Serve the tech page."""
+        path = os.path.join(TEMPLATES, 'tech.html')
         debug = DEBUG
-        title = 'about'
-        active_tab = 'about'
+        title = 'tech'
+        active_tab = 'tech'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)

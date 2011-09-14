@@ -62,7 +62,7 @@ def main():
         ('/reset-stats',                            handlers.ResetStats),       # Web reset stats cron handler.
         ('/get-stats',                              handlers.GetStats),         # Web stats AJAX handler.
         ('/get-token',                              handlers.GetToken),         # Web channel token AJAX handler.
-        ('/about',                                  handlers.About),            # Web about page handler.
+        ('/tech',                                   handlers.Tech),             # Web tech page handler.
         ('/album',                                  handlers.Album),            # Web album page handler.
         ('/stats',                                  handlers.Stats),            # Web stats page handler.
         ('/',                                       handlers.Home),             # Web homepage handler.
