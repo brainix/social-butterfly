@@ -38,9 +38,9 @@ $(function() {
     }
 
     if ($('.flipclock').length) {
-        $('.flipclock.num_users').flipclock('init', {digits: 3});
-        $('.flipclock.num_active_users').flipclock('init', {digits: 3});
-        $('.flipclock.num_messages').flipclock('init', {digits: 3});
+        $('.flipclock.num_users').flipclock('init', {digits: 4});
+        $('.flipclock.num_active_users').flipclock('init', {digits: 4});
+        $('.flipclock.num_messages').flipclock('init', {digits: 4});
         window.setTimeout(updateStats, 3 * 1000);
     }
 
