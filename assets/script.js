@@ -166,6 +166,26 @@ function setStats(json) {
             objs.html(val);
             objs.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
         }
+
+        var growl = '';
+        switch (key) {
+            case 'homepage_event':      growl = 'someone is viewing the homepage';          break;
+            case 'sign_up_event':       growl = 'a new user has signed up';                 break;
+            case 'stats_page_event':    growl = 'someone is viewing the stats page';        break;
+            case 'album_page_event':    growl = 'someone is viewing the album page';        break;
+            case 'tech_page_event':     growl = 'someone is viewing the tech page';         break;
+            case 'help_event':          growl = 'a user has typed /help';                   break;
+            case 'start_event':         growl = 'a user has typed /start';                  break;
+            case 'next_event':          growl = 'a user has typed /next';                   break;
+            case 'stop_event':          growl = 'a user has typed /stop';                   break;
+            case 'me_event':            growl = 'a user has typed a /me command';           break;
+            case 'text_message_event':  growl = 'a user has sent a text message';           break;
+            case 'available_event':     growl = 'a user has become available for chat';     break;
+            case 'unavailable_event':   growl = 'a user has become unavailable for chat';   break;
+        }
+        if (growl) {
+            $.jGrowl(growl);
+        }
     });
 }
 

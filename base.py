@@ -182,24 +182,25 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
                      strangers.StrangerMixin):
     """Abstract base request handler class."""
 
-    def get_stats(self, json=False):
+    def get_stats(self, json=False, event=None):
         """ """
         stats = {
             'num_users': self.num_users(),
             'num_active_users': self.num_active_users(),
             'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
         }
-
+        if event is not None:
+            stats[event] = 1;
         if json:
             stats = simplejson.dumps(stats)
         return stats
 
-    def memcache_and_broadcast(self, memcache_key, change):
+    def memcache_and_broadcast(self, memcache_key, change, event=None):
         """ """
         if memcache_key:
             assert change in (1, -1)
             getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
-        json = self.get_stats(json=True)
+        json = self.get_stats(json=True, event=event)
         channels.Channel.broadcast(json)
 
 

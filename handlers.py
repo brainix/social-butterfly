@@ -30,6 +30,10 @@ from google.appengine.ext.webapp import template
 
 from config import DEBUG, TEMPLATES
 from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
+from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT
+from config import ALBUM_PAGE_EVENT, TECH_PAGE_EVENT, HELP_EVENT, START_EVENT
+from config import NEXT_EVENT, STOP_EVENT, ME_EVENT, TEXT_MESSAGE_EVENT
+from config import AVAILABLE_EVENT, UNAVAILABLE_EVENT
 import availability
 import base
 import channels
@@ -60,6 +64,7 @@ class Home(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
+        self.memcache_and_broadcast(None, None, event=HOMEPAGE_EVENT)
 
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
@@ -74,7 +79,7 @@ class Home(base.WebHandler):
             xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
             if created:
-                self.memcache_and_broadcast(NUM_USERS_KEY, 1)
+                self.memcache_and_broadcast(NUM_USERS_KEY, 1, event=SIGN_UP_EVENT)
 
 
 class Stats(base.WebHandler):
@@ -89,6 +94,7 @@ class Stats(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
+        self.memcache_and_broadcast(None, None, event=STATS_PAGE_EVENT)
 
 
 class Album(base.WebHandler):
@@ -98,6 +104,7 @@ class Album(base.WebHandler):
         """Serve the album page."""
         html = self._render_album()
         self.response.out.write(html)
+        self.memcache_and_broadcast(None, None, event=ALBUM_PAGE_EVENT)
 
     @base.BaseHandler.memoize(24 * 60 * 60)
     def _render_album(self):
@@ -125,6 +132,7 @@ class Tech(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
+        self.memcache_and_broadcast(None, None, event=TECH_PAGE_EVENT)
 
 
 class GetToken(base.WebHandler):
@@ -253,6 +261,7 @@ class Chat(base.ChatHandler):
         alice = self.get_account(message)
         _log.debug('%s typed /help' % alice)
         self.send_help(alice)
+        self.memcache_and_broadcast(None, None, event=HELP_EVENT)
 
     @base.ChatHandler.require_account
     def start_command(self, message=None):
@@ -269,7 +278,7 @@ class Chat(base.ChatHandler):
             # Notify Alice and Bob.
             self.notify_started(alice)
             self.notify_chatting(bob)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1, event=START_EVENT)
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
@@ -309,6 +318,7 @@ class Chat(base.ChatHandler):
                 self.notify_chatting(carol)
             if dave not in (alice, bob, carol):
                 self.notify_chatting(dave)
+            self.memcache_and_broadcast(None, None, event=NEXT_EVENT)
 
     @base.ChatHandler.require_account
     def stop_command(self, message=None):
@@ -331,7 +341,7 @@ class Chat(base.ChatHandler):
                 self.notify_been_nexted(bob)
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1, event=STOP_EVENT)
 
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
@@ -375,7 +385,8 @@ class Chat(base.ChatHandler):
                     method = getattr(self, method_name)
                     method(bob, message.body)
                     shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
-                    self.memcache_and_broadcast(None, None)
+                    event = ME_EVENT if me else TEXT_MESSAGE_EVENT
+                    self.memcache_and_broadcast(None, None, event=event)
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
@@ -409,7 +420,7 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1, event=AVAILABLE_EVENT)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -436,7 +447,7 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1)
+            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1, event=UNAVAILABLE_EVENT)
 
 
 class Probe(base.WebHandler):
