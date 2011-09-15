@@ -28,13 +28,20 @@
 
 {% block content %}
 
-    <h3>How many users total?</h3>
+    <h3>What is this stats page?</h3>
+    <p>
+        This stats page shows off Social Butterfly&rsquo;s real-time
+        capabilities.  To display the real-time data, we made a
+        <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/assets/flipclock.js">jQuery flip clock plugin</a>.
+    </p>
+
+    <h3>Total Users</h3>
     <div class="flipclock num_users">{{ stats.num_users }}</div>
 
-    <h3>How many users available for chat?</h3>
+    <h3>Users Available for Chat</h3>
     <div class="flipclock num_active_users">{{ stats.num_active_users }}</div>
 
-    <h3>How many messages so far today?</h3>
+    <h3>Messages Sent so far Today</h3>
     <div class="flipclock num_messages">{{ stats.num_messages }}</div>
 
 {% endblock %}
