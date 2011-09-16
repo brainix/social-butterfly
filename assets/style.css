@@ -142,6 +142,17 @@ b {
     display: none;
 }
 
+div.sticky-queue {
+    width: 300px;
+}
+
+div.sticky-note p img {
+    max-width: 32px;
+    max-height: 32px;
+    padding-right: 8px;
+    vertical-align: middle;
+}
+
 
 /*---------------------------------------------------------------------------*\
  |                             Flip Clock Styles                             |
