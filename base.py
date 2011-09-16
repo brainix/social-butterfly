@@ -31,11 +31,12 @@ from django.utils import simplejson
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import mail_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
-from config import ADMINS, DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+from config import ADMIN_EMAILS, DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
 from config import NUM_MESSAGES_KEY
 import channels
 import models
@@ -182,6 +183,18 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
                      strangers.StrangerMixin):
     """Abstract base request handler class."""
 
+    def _serve_error(self, error_code):
+        """Pure virtual method."""
+        raise NotImplementedError
+
+    def get_handle(self):
+        """Pure virtual method."""
+        raise NotImplementedError
+
+    def get_account(self):
+        """Pure virtual method."""
+        raise NotImplementedError
+
     def get_stats(self, json=False, event=None):
         """ """
         stats = {
@@ -325,7 +338,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
         def wrap(self, message=None):
             _log.debug('decorated %s requires admin account' % method)
             alice = self.get_account(message)
-            if str(alice) not in ADMINS:
+            if str(alice) not in ADMIN_EMAILS:
                 body = "decorator requirements failed; %s isn't an admin"
                 _log.warning(body % message.sender)
                 self.notify_unknown_command(message.sender)
@@ -333,3 +346,19 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)
         return wrap
+
+
+class MailHandler(_CommonHandler, mail_handlers.InboundMailHandler):
+    """Abstract base chat request handler class."""
+
+    def _serve_error(self, error_code):
+        """ """
+        pass
+
+    def get_handle(self):
+        """ """
+        raise NotImplementedError
+
+    def get_account(self):
+        """ """
+        raise NotImplementedError

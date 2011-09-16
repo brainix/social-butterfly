@@ -47,6 +47,7 @@ def main():
     template.register_template_library('filters')
 
     url_mapping = (
+        handlers.Mail.mapping(),                                                # Email handler.
         ('/_ah/xmpp/presence/probe/',               handlers.Probe),            # XMPP probe handler.
         ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),      # XMPP unavailable handler.
         ('/_ah/xmpp/presence/available/',           handlers.Available),        # XMPP available handler.

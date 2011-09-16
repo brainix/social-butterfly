@@ -460,3 +460,11 @@ class Probe(base.WebHandler):
         if handle is None:
             handle = 'an unknown user'
         _log.debug('%s is probing for our current presence' % handle)
+
+
+class Mail(base.MailHandler):
+    """Request handler to receive incoming emails."""
+
+    def receive(self, email_message):
+        """Someone has sent us an email message."""
+        _log.info('%s has sent us an email message' % email_message.sender)

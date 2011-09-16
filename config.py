@@ -89,7 +89,8 @@ VALID_GMAIL_CHARS = ''.join((
 VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com',)
 
 
-ADMINS = ('brainix@gmail.com', 'rajiv.bakulesh.shah@gmail.com',)
+ADMIN_EMAILS = ('brainix@gmail.com', 'rajiv.bakulesh.shah@gmail.com',)
+ADMIN_MOBILE = '7137258220@mms.att.net'
 
 
 HTTP_CODE_TO_TITLE = {

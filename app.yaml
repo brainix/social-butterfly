@@ -46,6 +46,10 @@ handlers:
 - url: /assets
   static_dir: assets
 
+- url: /_ah/mail/.+
+  script: main.py
+  login: admin
+
 - url: /.*
   script: main.py
 
@@ -55,6 +59,7 @@ inbound_services:
 - xmpp_message
 - xmpp_presence
 - xmpp_subscribe
+- mail
 
 
 skip_files:
