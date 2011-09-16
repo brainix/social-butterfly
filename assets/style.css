@@ -138,6 +138,10 @@ b {
     margin-top: 35px;
 }
 
+.notification {
+    display: none;
+}
+
 
 /*---------------------------------------------------------------------------*\
  |                             Flip Clock Styles                             |
