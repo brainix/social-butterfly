@@ -126,9 +126,14 @@ b {
     color: #B62F2F;
     display: block;
     font: 16px "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, arial, sans-serif;
-    line-height: 175%;
+    line-height: 150%;
     margin-top: 0.75em;
+    padding-left: 0.2em;
     width: 75%;
+}
+
+#content form textarea {
+    padding-left: 0.5em;
 }
 
 #content .signed-up {
@@ -157,7 +162,8 @@ div.sticky-note p img {
 
 #content .chars-remaining {
     font-size: 13px;
-    padding-left: 16em;
+    padding-right: 10em;
+    text-align: right;
 }
 
 
