@@ -1,5 +1,5 @@
 {% comment %} ---------------------------------------------------------------*\
- |  home.html                                                                |
+ |  feedback.html                                                            |
  |                                                                           |
  |  Copyright (c) 2010-2011, Code A La Mode, original authors.               |
  |                                                                           |
@@ -26,35 +26,13 @@
 
 {% block content %}
 
-    <h3>What is Social Butterfly?</h3>
-    <p>
-        Social Butterfly allows you to anonymously chat with random strangers
-        through <a href="http://www.google.com/talk/">Google Talk</a>.  If you
-        use Gmail, you already have Google Talk.
-    </p>
-
-    <div class="sign-up">
-        <h3>How do I sign up?</h3>
-        <form action="/" method="post" autocomplete="off" class="register">
-            <input type="text" name="handle"
-                   value="Enter your Gmail address here." />
-        </form>
-    </div>
-
-    <div class="signed-up">
-        <h3>You&rsquo;ve successfully signed up.</h3>
-        <p>
-            Social Butterfly has sent you a chat invitation.  Please accept the
-            invitation, then Social Butterfly will add itself to your buddy
-            list.
-        </p>
-
-        <h3>What&rsquo;s next?</h3>
-        <p>
-            Once Social Butterfly is on your buddy list, send it a message with
-            only the text &ldquo;/help&rdquo; (without the quotes).  Chat with
-            strangers!
-        </p>
-    </div>
+    <h3>We&rsquo;d love to hear from you.</h3>
+    <form action="/feedback" method="post" autocomplete="off" class="feedback">
+        <textarea cols="70" rows="2" name="feedback">Type your comments here.</textarea>
+        <div class="chars-remaining">
+            <span class="char-countdown">140</span>
+            characters remaining
+        </div>
+    </form>
 
 {% endblock %}

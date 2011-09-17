@@ -54,6 +54,7 @@
                 <li>{% ifnotequal active_tab 'stats' %}<a href="/stats">{% endifnotequal %}Stats{% ifnotequal active_tab 'stats' %}</a>{% endifnotequal %}</li>
                 <li>{% ifnotequal active_tab 'album' %}<a href="/album">{% endifnotequal %}Album{% ifnotequal active_tab 'album' %}</a>{% endifnotequal %}</li>
                 <li>{% ifnotequal active_tab 'tech' %}<a href="/tech">{% endifnotequal %}Tech{% ifnotequal active_tab 'tech' %}</a>{% endifnotequal %}</li>
+                <li>{% ifnotequal active_tab 'feedback' %}<a href="/feedback">{% endifnotequal %}Feedback{% ifnotequal active_tab 'feedback' %}</a>{% endifnotequal %}</li>
             </ul>
             {% if stats %}
                 <p>
@@ -70,6 +71,7 @@
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
         <script type="text/javascript" src='/_ah/channel/jsapi'></script>
+        <script type="text/javascript" src="/assets/sticky.min.js"></script>
         {% block javascript %}{% endblock %}
         <script type="text/javascript">
             var _gaq = _gaq || [];
@@ -91,7 +93,6 @@
                 var socket = null;
             {% endif %}
         </script>
-        <script type="text/javascript" src="/assets/sticky.min.js"></script>
         <script type="text/javascript" src="/assets/script.js"></script>
     </body>
 </html>

@@ -31,9 +31,9 @@ from google.appengine.ext.webapp import template
 from config import DEBUG, TEMPLATES
 from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
 from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT
-from config import ALBUM_PAGE_EVENT, TECH_PAGE_EVENT, HELP_EVENT, START_EVENT
-from config import NEXT_EVENT, STOP_EVENT, ME_EVENT, TEXT_MESSAGE_EVENT
-from config import AVAILABLE_EVENT, UNAVAILABLE_EVENT
+from config import ALBUM_PAGE_EVENT, TECH_PAGE_EVENT, FEEDBACK_PAGE_EVENT
+from config import HELP_EVENT, START_EVENT, NEXT_EVENT, STOP_EVENT, ME_EVENT
+from config import TEXT_MESSAGE_EVENT, AVAILABLE_EVENT, UNAVAILABLE_EVENT
 import availability
 import base
 import channels
@@ -128,6 +128,21 @@ class Tech(base.WebHandler):
         path = os.path.join(TEMPLATES, 'tech.html')
         title = 'tech'
         active_tab = 'tech'
+        stats = self.get_stats(json=False)
+        debug = DEBUG
+        html = template.render(path, locals(), debug=debug)
+        self.response.out.write(html)
+        self.memcache_and_broadcast(None, None, event=TECH_PAGE_EVENT)
+
+
+class Feedback(base.WebHandler):
+    """Request handler to serve the feedback page."""
+
+    def get(self):
+        """Serve the feedback page."""
+        path = os.path.join(TEMPLATES, 'feedback.html')
+        title = 'feedback'
+        active_tab = 'feedback'
         stats = self.get_stats(json=False)
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)

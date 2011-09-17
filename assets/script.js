@@ -21,6 +21,9 @@
 \*---------------------------------------------------------------------------*/
 
 
+ENTER_KEYCODE = 13;
+
+
 /*---------------------------------------------------------------------------*\
  |                                    $()                                    |
 \*---------------------------------------------------------------------------*/
@@ -35,6 +38,20 @@ $(function() {
         $('#content .sign-up .register').submit(signUp);
         var defaultHandle = handle.prop('defaultValue');
         handle.val(defaultHandle);
+    }
+
+    var feedback = $('#content .feedback [name="feedback"]');
+    if (feedback.length) {
+        feedback.focus(focusFeedback);
+        feedback.blur(blurFeedback);
+        feedback.keydown(keydownFeedback);
+        feedback.keyup(changeFeedback);
+        feedback.change(changeFeedback);
+        feedback.bind('input cut', function(event) {changeFeedback();});
+        feedback.bind('input paste', function(event) {changeFeedback();});
+        $('#content .feedback').submit(submitFeedback);
+        var defaultFeedback = feedback.prop('defaultValue');
+        feedback.val(defaultFeedback);
     }
 
     if ($('.flipclock').length) {
@@ -56,15 +73,37 @@ $(function() {
 
 
 /*---------------------------------------------------------------------------*\
+ |                                  focus()                                  |
+\*---------------------------------------------------------------------------*/
+
+function focus(selector) {
+    var element = $(selector);
+    var defaultValue = element.prop('defaultValue');
+    if (element.val() == defaultValue) {
+        element.val('');
+    }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                                   blur()
+\*---------------------------------------------------------------------------*/
+
+function blur(selector) {
+    var element = $(selector);
+    if (element.val() == '') {
+        var defaultHandle = element.prop('defaultValue');
+        element.val(defaultHandle);
+    }
+}
+
+
+/*---------------------------------------------------------------------------*\
  |                               focusHandle()                               |
 \*---------------------------------------------------------------------------*/
 
 function focusHandle() {
-    var handle = $('#content .sign-up .register [name="handle"]');
-    var defaultHandle = handle.prop('defaultValue');
-    if (handle.val() == defaultHandle) {
-        handle.val('');
-    }
+    focus('#content .sign-up .register [name="handle"]');
 }
 
 
@@ -73,11 +112,7 @@ function focusHandle() {
 \*---------------------------------------------------------------------------*/
 
 function blurHandle() {
-    var handle = $('#content .sign-up .register [name="handle"]');
-    if (handle.val() == '') {
-        var defaultHandle = handle.prop('defaultValue');
-        handle.val(defaultHandle);
-    }
+    blur('#content .sign-up .register [name="handle"]');
 }
 
 
@@ -129,6 +164,72 @@ function signUp() {
             signUpSubmitted = false;
         }
     });
+    return false;
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              focusFeedback()                              |
+\*---------------------------------------------------------------------------*/
+
+function focusFeedback() {
+    focus('#content .feedback [name="feedback"]');
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                               blurFeedback()                              |
+\*---------------------------------------------------------------------------*/
+
+function blurFeedback() {
+    blur('#content .feedback [name="feedback"]');
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                             keydownFeedback()                             |
+\*---------------------------------------------------------------------------*/
+
+function keydownFeedback(e) {
+    var keyCode = e.keyCode;
+    if (keyCode == ENTER_KEYCODE) {
+        var countdown = $('#content .feedback .chars-remaining .char-countdown');
+        var num_left = parseInt(countdown.html());
+        if (num_left >= 0) {
+            var feedback = $('#content .feedback');
+            feedback.submit();
+        }
+        return false;
+    }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              changeFeedback()                             |
+\*---------------------------------------------------------------------------*/
+
+function changeFeedback() {
+    var feedback = $('#content .feedback [name="feedback"]');
+    var comment = feedback.val();
+    var num = comment.length;
+    var num_left = 140 - num;
+    num_left = num_left.toString();
+
+    var countdown = $('#content .feedback .chars-remaining .char-countdown');
+    if (countdown.html() != num_left) {
+        countdown.html(num_left);
+        countdown.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
+    }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              submitFeedback()                             |
+\*---------------------------------------------------------------------------*/
+
+function submitFeedback() {
+    var feedback = $('#content .feedback [name="feedback"]');
+    feedback.val('');
     return false;
 }
 
