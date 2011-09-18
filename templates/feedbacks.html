@@ -1,5 +1,5 @@
 {% comment %} ---------------------------------------------------------------*\
- |  feedback.html                                                            |
+ |  feedbacks.html                                                           |
  |                                                                           |
  |  Copyright (c) 2010-2011, Code A La Mode, original authors.               |
  |                                                                           |
@@ -21,22 +21,8 @@
 \*------------------------------------------------------------ {% endcomment %}
 
 
-{% extends "base.html" %}
-
-
-{% block content %}
-
-    <h3>We&rsquo;d love to hear from you.</h3>
-    <form action="/feedback" method="post" autocomplete="off" class="feedback-form">
-        <textarea cols="70" rows="3" name="feedback">Type your comment here.</textarea>
-        <div class="chars-remaining">
-            <span class="char-countdown">140</span>
-            characters
-        </div>
-    </form>
-
-    <div id="feedback-comments">
-        {% include "feedbacks.html" %}
+{% for feedback in feedbacks %}
+    <div class="feedback-comment">
+        <p>{{ feedback.comment }}</p>
     </div>
-
-{% endblock %}
+{% endfor %}

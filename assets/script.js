@@ -40,7 +40,7 @@ $(function() {
         handle.val(defaultHandle);
     }
 
-    var feedback = $('#content .feedback [name="feedback"]');
+    var feedback = $('#content .feedback-form [name="feedback"]');
     if (feedback.length) {
         feedback.focus(focusFeedback);
         feedback.blur(blurFeedback);
@@ -49,7 +49,7 @@ $(function() {
         feedback.change(changeFeedback);
         feedback.bind('input cut', function(event) {changeFeedback();});
         feedback.bind('input paste', function(event) {changeFeedback();});
-        $('#content .feedback').submit(submitFeedback);
+        $('#content .feedback-form').submit(submitFeedback);
         var defaultFeedback = feedback.prop('defaultValue');
         feedback.val(defaultFeedback);
     }
@@ -173,7 +173,7 @@ function signUp() {
 \*---------------------------------------------------------------------------*/
 
 function focusFeedback() {
-    focus('#content .feedback [name="feedback"]');
+    focus('#content .feedback-form [name="feedback"]');
 }
 
 
@@ -182,7 +182,7 @@ function focusFeedback() {
 \*---------------------------------------------------------------------------*/
 
 function blurFeedback() {
-    blur('#content .feedback [name="feedback"]');
+    blur('#content .feedback-form [name="feedback"]');
 }
 
 
@@ -192,10 +192,10 @@ function blurFeedback() {
 
 function keydownFeedback(e) {
     if (e.keyCode == ENTER_KEYCODE) {
-        var countdown = $('#content .feedback .chars-remaining .char-countdown');
+        var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
         var num_left = parseInt(countdown.html());
         if (num_left >= 0) {
-            var feedback = $('#content .feedback');
+            var feedback = $('#content .feedback-form');
             feedback.submit();
         }
         return false;
@@ -208,12 +208,12 @@ function keydownFeedback(e) {
 \*---------------------------------------------------------------------------*/
 
 function changeFeedback() {
-    var comment = $('#content .feedback [name="feedback"]').val();
+    var comment = $('#content .feedback-form [name="feedback"]').val();
     var num = comment.length;
     var num_left = 140 - num;
     num_left = num_left.toString();
 
-    var countdown = $('#content .feedback .chars-remaining .char-countdown');
+    var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
     if (countdown.html() != num_left) {
         countdown.html(num_left);
         if (num_left < 0) {
@@ -233,7 +233,7 @@ function changeFeedback() {
 var feedbackSubmitted = false;
 
 function submitFeedback() {
-    var feedback = $('#content .feedback [name="feedback"]');
+    var feedback = $('#content .feedback-form [name="feedback"]');
     var comment = feedback.val();
     $.ajax({
         type: 'POST',
@@ -257,7 +257,7 @@ function submitFeedback() {
         },
         success: function(data, textStatus, jqXHR) {
             feedback.val('');
-            var countdown = $('#content .feedback .chars-remaining .char-countdown');
+            var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
             countdown.html('140');
             countdown.removeClass('chars-over-limit');
             countdown.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
@@ -306,6 +306,10 @@ function setStats(json) {
 
         if ($('#' + key).length) {
             $('#' + key).sticky();
+        }
+
+        if (key == 'feedback') {
+            $('#feedback-comments').prepend(val);
         }
     });
 }

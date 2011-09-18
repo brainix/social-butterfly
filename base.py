@@ -246,14 +246,17 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         """ """
         if not feedback.admin:
             self._email_feedback(feedback)
-        feedback = {
-            'feedback': {
-                'admin': feedback.admin,
-                'comment': feedback.comment,
-            },
+
+        path = os.path.join(TEMPLATES, 'feedbacks.html')
+        feedbacks = (feedback,)
+        debug = DEBUG
+        html = template.render(path, locals(), debug=DEBUG)
+
+        json = {
+            'feedback': html
         }
-        feedback = simplejson.dumps(feedback)
-        channels.Channel.broadcast(feedback)
+        json = simplejson.dumps(json)
+        channels.Channel.broadcast(json)
 
     BaseHandler.defer()
     def _email_feedback(self, feedback):
@@ -272,9 +275,9 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
     def _serve_error(self, error_code):
         """ """
         path = os.path.join(TEMPLATES, 'error.html')
-        debug = DEBUG
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
+        debug = DEBUG
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 

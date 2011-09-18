@@ -144,6 +144,7 @@ class Feedback(base.WebHandler):
         """Serve the feedback page."""
         path = os.path.join(TEMPLATES, 'feedback.html')
         title = 'feedback'
+        feedbacks = models.Feedback.all().order('-datetime').fetch(20)
         active_tab = 'feedback'
         stats = self.get_stats(json=False)
         debug = DEBUG
@@ -154,7 +155,6 @@ class Feedback(base.WebHandler):
     def post(self):
         """A user has submitted feedback."""
         comment = self.request.get('comment')
-        """
         try:
             feedback = models.Feedback.factory(False, comment)
         except ValueError:
@@ -162,7 +162,6 @@ class Feedback(base.WebHandler):
         else:
             self.broadcast_feedback(feedback)
             self.broadcast_event(ANON_FEEDBACK_EVENT)
-        """
 
 
 class GetToken(base.WebHandler):
