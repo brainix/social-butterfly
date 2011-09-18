@@ -191,8 +191,7 @@ function blurFeedback() {
 \*---------------------------------------------------------------------------*/
 
 function keydownFeedback(e) {
-    var keyCode = e.keyCode;
-    if (keyCode == ENTER_KEYCODE) {
+    if (e.keyCode == ENTER_KEYCODE) {
         var countdown = $('#content .feedback .chars-remaining .char-countdown');
         var num_left = parseInt(countdown.html());
         if (num_left >= 0) {
@@ -209,8 +208,7 @@ function keydownFeedback(e) {
 \*---------------------------------------------------------------------------*/
 
 function changeFeedback() {
-    var feedback = $('#content .feedback [name="feedback"]');
-    var comment = feedback.val();
+    var comment = $('#content .feedback [name="feedback"]').val();
     var num = comment.length;
     var num_left = 140 - num;
     num_left = num_left.toString();
@@ -218,6 +216,11 @@ function changeFeedback() {
     var countdown = $('#content .feedback .chars-remaining .char-countdown');
     if (countdown.html() != num_left) {
         countdown.html(num_left);
+        if (num_left < 0) {
+            countdown.addClass('chars-over-limit');
+        } else {
+            countdown.removeClass('chars-over-limit');
+        }
         countdown.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
     }
 }
@@ -227,9 +230,42 @@ function changeFeedback() {
  |                              submitFeedback()                             |
 \*---------------------------------------------------------------------------*/
 
+var feedbackSubmitted = false;
+
 function submitFeedback() {
     var feedback = $('#content .feedback [name="feedback"]');
-    feedback.val('');
+    var comment = feedback.val();
+    $.ajax({
+        type: 'POST',
+        url: '/feedback',
+        data: {comment: comment},
+        cache: false,
+        beforeSend: function(jqXHR, settings) {
+            if (feedbackSubmitted) {
+                var message = "You've already submitted a comment.\n";
+                message += "Please wait for this request to complete.";
+                alert(message);
+                return false;
+            } else {
+                feedbackSubmitted = true;
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            message = 'Oops, something has gone wrong.\n\n';
+            message += 'Please try to submit your comment again.';
+            alert(message);
+        },
+        success: function(data, textStatus, jqXHR) {
+            feedback.val('');
+            var countdown = $('#content .feedback .chars-remaining .char-countdown');
+            countdown.html('140');
+            countdown.removeClass('chars-over-limit');
+            countdown.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
+        },
+        complete: function(jqXHR, textStatus) {
+            feedbackSubmitted = false;
+        }
+    });
     return false;
 }
 

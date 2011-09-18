@@ -34,6 +34,8 @@ from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT
 from config import ALBUM_PAGE_EVENT, TECH_PAGE_EVENT, FEEDBACK_PAGE_EVENT
 from config import HELP_EVENT, START_EVENT, NEXT_EVENT, STOP_EVENT, ME_EVENT
 from config import TEXT_MESSAGE_EVENT, AVAILABLE_EVENT, UNAVAILABLE_EVENT
+from config import ANON_FEEDBACK_EVENT, ADMIN_FEEDBACK_EVENT
+from config import ADMIN_MOBILE
 import availability
 import base
 import channels
@@ -49,7 +51,7 @@ class NotFound(base.WebHandler):
 
     def get(self, *args, **kwds):
         """Someone has issued a GET request on a nonexistent URL."""
-        return self.serve_error(404)
+        self.serve_error(404)
 
 
 class Home(base.WebHandler):
@@ -64,7 +66,7 @@ class Home(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
-        self.memcache_and_broadcast(None, None, event=HOMEPAGE_EVENT)
+        self.broadcast_event(HOMEPAGE_EVENT)
 
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
@@ -79,7 +81,7 @@ class Home(base.WebHandler):
             xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
             if created:
-                self.memcache_and_broadcast(NUM_USERS_KEY, 1, event=SIGN_UP_EVENT)
+                self.broadcast_stats(NUM_USERS_KEY, 1, SIGN_UP_EVENT)
 
 
 class Stats(base.WebHandler):
@@ -94,7 +96,7 @@ class Stats(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
-        self.memcache_and_broadcast(None, None, event=STATS_PAGE_EVENT)
+        self.broadcast_event(STATS_PAGE_EVENT)
 
 
 class Album(base.WebHandler):
@@ -104,7 +106,7 @@ class Album(base.WebHandler):
         """Serve the album page."""
         html = self._render_album()
         self.response.out.write(html)
-        self.memcache_and_broadcast(None, None, event=ALBUM_PAGE_EVENT)
+        self.broadcast_event(ALBUM_PAGE_EVENT)
 
     @base.BaseHandler.memoize(24 * 60 * 60)
     def _render_album(self):
@@ -132,7 +134,7 @@ class Tech(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
-        self.memcache_and_broadcast(None, None, event=TECH_PAGE_EVENT)
+        self.broadcast_event(TECH_PAGE_EVENT)
 
 
 class Feedback(base.WebHandler):
@@ -147,7 +149,20 @@ class Feedback(base.WebHandler):
         debug = DEBUG
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
-        self.memcache_and_broadcast(None, None, event=TECH_PAGE_EVENT)
+        self.broadcast_event(FEEDBACK_PAGE_EVENT)
+
+    def post(self):
+        """A user has submitted feedback."""
+        comment = self.request.get('comment')
+        """
+        try:
+            feedback = models.Feedback.factory(False, comment)
+        except ValueError:
+            self.serve_error(400)
+        else:
+            self.broadcast_feedback(feedback)
+            self.broadcast_event(ANON_FEEDBACK_EVENT)
+        """
 
 
 class GetToken(base.WebHandler):
@@ -158,7 +173,7 @@ class GetToken(base.WebHandler):
         _log.debug('someone has requested token to open channel')
         if DEBUG:
             _log.info('running on SDK; not opening channel (too much CPU)')
-            return self.serve_error(503)
+            self.serve_error(503)
         else:
             _log.info('running on cloud; creating channel, returning token')
             token = channels.Channel.create()
@@ -276,7 +291,7 @@ class Chat(base.ChatHandler):
         alice = self.get_account(message)
         _log.debug('%s typed /help' % alice)
         self.send_help(alice)
-        self.memcache_and_broadcast(None, None, event=HELP_EVENT)
+        self.broadcast_event(HELP_EVENT)
 
     @base.ChatHandler.require_account
     def start_command(self, message=None):
@@ -293,7 +308,7 @@ class Chat(base.ChatHandler):
             # Notify Alice and Bob.
             self.notify_started(alice)
             self.notify_chatting(bob)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1, event=START_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1, START_EVENT)
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
@@ -333,7 +348,7 @@ class Chat(base.ChatHandler):
                 self.notify_chatting(carol)
             if dave not in (alice, bob, carol):
                 self.notify_chatting(dave)
-            self.memcache_and_broadcast(None, None, event=NEXT_EVENT)
+            self.broadcast_event(NEXT_EVENT)
 
     @base.ChatHandler.require_account
     def stop_command(self, message=None):
@@ -356,7 +371,7 @@ class Chat(base.ChatHandler):
                 self.notify_been_nexted(bob)
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1, event=STOP_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1, STOP_EVENT)
 
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
@@ -401,7 +416,7 @@ class Chat(base.ChatHandler):
                     method(bob, message.body)
                     shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
                     event = ME_EVENT if me else TEXT_MESSAGE_EVENT
-                    self.memcache_and_broadcast(None, None, event=event)
+                    self.broadcast_stats(None, None, event)
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
@@ -435,7 +450,7 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, 1, event=AVAILABLE_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1, AVAILABLE_EVENT)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -462,7 +477,7 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
-            self.memcache_and_broadcast(NUM_ACTIVE_USERS_KEY, -1, event=UNAVAILABLE_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1, UNAVAILABLE_EVENT)
 
 
 class Probe(base.WebHandler):
@@ -483,3 +498,15 @@ class Mail(base.MailHandler):
     def receive(self, email_message):
         """Someone has sent us an email message."""
         _log.info('%s has sent us an email message' % email_message.sender)
+        if not email_message.sender == '<' + ADMIN_MOBILE + '>':
+            self.serve_error(401)
+        else:
+            for content_type, body in email_message.bodies('text/plain'):
+                try:
+                    comment = body.decode()
+                    feedback = models.Feedback.factory(True, comment)
+                except ValueError:
+                    self.serve_error(400)
+                else:
+                    self.broadcast_feedback(feedback)
+                    self.broadcast_event(ADMIN_FEEDBACK_EVENT)

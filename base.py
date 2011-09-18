@@ -28,15 +28,18 @@ import os
 import traceback
 
 from django.utils import simplejson
+from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.ext import db
+from google.appengine.ext import deferred
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import mail_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
-from config import ADMIN_EMAILS, DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
+from config import ADMIN_EMAILS, ADMIN_MOBILE, FEEDBACK_EMAIL, FEEDBACK_SUBJECT
 from config import NUM_MESSAGES_KEY
 import channels
 import models
@@ -135,6 +138,23 @@ class BaseHandler(object):
                                    for key in kwds]) + ')'
         return memcache_key
 
+    @staticmethod
+    def defer(countdown=None, queue=None):
+        """Defer the execution of a method."""
+        def wrap1(method):
+            @functools.wraps(method)
+            def wrap2(self, *args, **kwds):
+                method_name = method.func_name
+                _log.debug('deferring execution of %s' % method_name)
+                if countdown is not None:
+                    kwds['_countdown'] = countdown
+                if queue is not None:
+                    kwds['_queue'] = queue
+                deferred.defer(method, *args, **kwds)
+                _log.debug('deferred execution of %s' % method_name)
+            return wrap2
+        return wrap1
+
     def handle_exception(self, exception, debug_mode):
         """Houston, we have a problem...  Handle an uncaught exception.
 
@@ -208,13 +228,42 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
             stats = simplejson.dumps(stats)
         return stats
 
-    def memcache_and_broadcast(self, memcache_key, change, event=None):
+    def broadcast_stats(self, memcache_key, change, event):
         """ """
-        if memcache_key:
+        if memcache_key is not None:
             assert change in (1, -1)
             getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
         json = self.get_stats(json=True, event=event)
         channels.Channel.broadcast(json)
+
+    def broadcast_event(self, event):
+        """ """
+        event = {event: 1}
+        event = simplejson.dumps(event)
+        channels.Channel.broadcast(event)
+
+    def broadcast_feedback(self, feedback):
+        """ """
+        if not feedback.admin:
+            self._email_feedback(feedback)
+        feedback = {
+            'feedback': {
+                'admin': feedback.admin,
+                'comment': feedback.comment,
+            },
+        }
+        feedback = simplejson.dumps(feedback)
+        channels.Channel.broadcast(feedback)
+
+    BaseHandler.defer()
+    def _email_feedback(self, feedback):
+        """ """
+        message = mail.EmailMessage()
+        message.sender = FEEDBACK_EMAIL
+        message.to = ADMIN_MOBILE
+        message.subject = FEEDBACK_SUBJECT
+        message.body = feedback.comment
+        message.send()
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):

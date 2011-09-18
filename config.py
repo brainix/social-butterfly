@@ -72,6 +72,8 @@ ME_EVENT = 'me_event'
 TEXT_MESSAGE_EVENT = 'text_message_event'
 AVAILABLE_EVENT = 'available_event'
 UNAVAILABLE_EVENT = 'unavailable_event'
+ANON_FEEDBACK_EVENT = 'anon_feedback_event'
+ADMIN_FEEDBACK_EVENT = 'admin_feedback_event'
 
 
 # The local part (the part before the at (@) symbol) of Gmail addresses must be
@@ -92,6 +94,8 @@ VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com',)
 
 ADMIN_EMAILS = ('brainix@gmail.com', 'rajiv.bakulesh.shah@gmail.com',)
 ADMIN_MOBILE = '7137258220@mms.att.net'
+FEEDBACK_EMAIL = 'feedback@social-butterfly.appspotmail.com'
+FEEDBACK_SUBJECT = 'Social Butterfly Feedback'
 
 
 HTTP_CODE_TO_TITLE = {

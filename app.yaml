@@ -46,7 +46,7 @@ handlers:
 - url: /assets
   static_dir: assets
 
-- url: /_ah/mail/.+
+- url: /_ah/mail/feedback@.*social-butterfly\.appspotmail\.com
   script: main.py
   login: admin
 

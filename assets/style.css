@@ -128,7 +128,7 @@ b {
     font: 16px "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, arial, sans-serif;
     line-height: 150%;
     margin-top: 0.75em;
-    padding-left: 0.2em;
+    padding: 0.2em;
     width: 75%;
 }
 
@@ -160,10 +160,14 @@ div.sticky-note p img {
     vertical-align: middle;
 }
 
-#content .chars-remaining {
+.chars-remaining {
     font-size: 13px;
     padding-right: 10em;
     text-align: right;
+}
+
+.chars-over-limit {
+    color: #B62F2F;
 }
 
 
