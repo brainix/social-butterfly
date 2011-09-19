@@ -39,8 +39,7 @@ from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
-from config import ADMIN_EMAILS, ADMIN_MOBILE, FEEDBACK_EMAIL, FEEDBACK_SUBJECT
-from config import NUM_MESSAGES_KEY
+from config import NUM_MESSAGES_KEY, ADMIN_EMAILS
 import channels
 import models
 import notifications
@@ -215,25 +214,23 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         """Pure virtual method."""
         raise NotImplementedError
 
-    def get_stats(self, json=False, event=None):
+    def get_stats(self, json=False):
         """ """
         stats = {
             'num_users': self.num_users(),
             'num_active_users': self.num_active_users(),
             'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
         }
-        if event is not None:
-            stats[event] = 1;
         if json:
             stats = simplejson.dumps(stats)
         return stats
 
-    def broadcast_stats(self, memcache_key, change, event):
+    def broadcast_stats(self, memcache_key, change):
         """ """
         if memcache_key is not None:
             assert change in (1, -1)
             getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
-        json = self.get_stats(json=True, event=event)
+        json = self.get_stats(json=True)
         channels.Channel.broadcast(json)
 
     def broadcast_event(self, event):
@@ -241,32 +238,6 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         event = {event: 1}
         event = simplejson.dumps(event)
         channels.Channel.broadcast(event)
-
-    def broadcast_feedback(self, feedback):
-        """ """
-        if not feedback.admin:
-            self._email_feedback(feedback)
-
-        path = os.path.join(TEMPLATES, 'feedbacks.html')
-        feedbacks = (feedback,)
-        debug = DEBUG
-        html = template.render(path, locals(), debug=DEBUG)
-
-        json = {
-            'feedback': html
-        }
-        json = simplejson.dumps(json)
-        channels.Channel.broadcast(json)
-
-    BaseHandler.defer()
-    def _email_feedback(self, feedback):
-        """ """
-        message = mail.EmailMessage()
-        message.sender = FEEDBACK_EMAIL
-        message.to = ADMIN_MOBILE
-        message.subject = FEEDBACK_SUBJECT
-        message.body = feedback.comment
-        message.send()
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):

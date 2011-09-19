@@ -125,25 +125,3 @@ class Account(db.Model):
         if domain not in VALID_GMAIL_DOMAINS:
             body = 'handle ends with invalid domain'
             log_and_raise(body)
-
-
-class Feedback(db.Model):
-    """ """
-
-    admin = db.BooleanProperty(required=True, indexed=False)
-    comment = db.StringProperty(required=True, indexed=False)
-    datetime = db.DateTimeProperty(required=True, auto_now=True)
-
-    @classmethod
-    def factory(cls, admin, comment):
-        """A user has submitted feedback.  Store it in the datastore."""
-        cls._validate_comment(comment)
-        feedback = cls(admin=admin, comment=comment)
-        db.put_async(feedback)
-        return feedback
-
-    @staticmethod
-    def _validate_comment(comment):
-        """A user has submitted feedback.  Validate his/her comment."""
-        if not 0 < len(comment) <= 140:
-            raise ValueError

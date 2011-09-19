@@ -21,9 +21,6 @@
 \*---------------------------------------------------------------------------*/
 
 
-ENTER_KEYCODE = 13;
-
-
 /*---------------------------------------------------------------------------*\
  |                                    $()                                    |
 \*---------------------------------------------------------------------------*/
@@ -38,23 +35,6 @@ $(function() {
         $('#content .sign-up .register').submit(signUp);
         var defaultHandle = handle.prop('defaultValue');
         handle.val(defaultHandle);
-    }
-
-    var comment = $('#content .feedback-form [name="comment"]');
-    if (comment.length) {
-        comment.focus(focusComment);
-        comment.blur(blurComment);
-        comment.keydown(keydownComment);
-        comment.keyup(changeComment);
-        comment.change(changeComment);
-        comment.bind('input cut', function(e) {changeComment();});
-        comment.bind('input paste', function(e) {changeComment();});
-
-        var feedbackForm = $('#content .feedback-form');
-        feedbackForm.submit(submitFeedback);
-
-        var defaultFeedback = comment.prop('defaultValue');
-        comment.val(defaultFeedback);
     }
 
     if ($('.flipclock').length) {
@@ -165,107 +145,6 @@ function signUp() {
         },
         complete: function(jqXHR, textStatus) {
             signUpSubmitted = false;
-        }
-    });
-    return false;
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                               focusComment()                              |
-\*---------------------------------------------------------------------------*/
-
-function focusComment() {
-    focus('#content .feedback-form [name="comment"]');
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                               blurComment()                               |
-\*---------------------------------------------------------------------------*/
-
-function blurComment() {
-    blur('#content .feedback-form [name="comment"]');
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                              keydownComment()                             |
-\*---------------------------------------------------------------------------*/
-
-function keydownComment(e) {
-    if (e.keyCode == ENTER_KEYCODE) {
-        var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
-        var numLeft = parseInt(countdown.html());
-        if (numLeft >= 0) {
-            var feedback = $('#content .feedback-form');
-            feedback.submit();
-        }
-        return false;
-    }
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                              changeComment()                              |
-\*---------------------------------------------------------------------------*/
-
-function changeComment() {
-    var comment = $('#content .feedback-form [name="comment"]');
-    var numUsed = comment.val().length;
-    var numLeft = 140 - numUsed;
-    numLeft = numLeft.toString();
-
-    var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
-    if (countdown.html() != numLeft) {
-        countdown.html(numLeft);
-        if (numLeft < 0) {
-            countdown.addClass('chars-over-limit');
-        } else {
-            countdown.removeClass('chars-over-limit');
-        }
-        countdown.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
-    }
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                              submitFeedback()                             |
-\*---------------------------------------------------------------------------*/
-
-var feedbackSubmitted = false;
-
-function submitFeedback() {
-    var comment = $('#content .feedback-form [name="comment"]');
-    $.ajax({
-        type: 'POST',
-        url: '/feedback',
-        data: {comment: comment.val()},
-        cache: false,
-        beforeSend: function(jqXHR, settings) {
-            if (feedbackSubmitted) {
-                var message = "You've already submitted a comment.\n";
-                message += "Please wait for this request to complete.";
-                alert(message);
-                return false;
-            } else {
-                feedbackSubmitted = true;
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            message = 'Oops, something has gone wrong.\n\n';
-            message += 'Please try to submit your comment again.';
-            alert(message);
-        },
-        success: function(data, textStatus, jqXHR) {
-            comment.val('');
-            var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
-            countdown.html('140');
-            countdown.removeClass('chars-over-limit');
-            countdown.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
-        },
-        complete: function(jqXHR, textStatus) {
-            feedbackSubmitted = false;
         }
     });
     return false;

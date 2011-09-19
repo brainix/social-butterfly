@@ -30,12 +30,8 @@ from google.appengine.ext.webapp import template
 
 from config import DEBUG, TEMPLATES
 from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
-from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT
-from config import ALBUM_PAGE_EVENT, TECH_PAGE_EVENT, FEEDBACK_PAGE_EVENT
-from config import HELP_EVENT, START_EVENT, NEXT_EVENT, STOP_EVENT, ME_EVENT
-from config import TEXT_MESSAGE_EVENT, AVAILABLE_EVENT, UNAVAILABLE_EVENT
-from config import ANON_FEEDBACK_EVENT, ADMIN_FEEDBACK_EVENT
-from config import ADMIN_MOBILE
+from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT, ALBUM_PAGE_EVENT, TECH_PAGE_EVENT
+from config import HELP_EVENT, START_EVENT, NEXT_EVENT, STOP_EVENT, ME_EVENT, TEXT_MESSAGE_EVENT, AVAILABLE_EVENT, UNAVAILABLE_EVENT
 import availability
 import base
 import channels
@@ -81,7 +77,8 @@ class Home(base.WebHandler):
             xmpp.send_invite(str(account))
             _log.info('%s signed up' % handle)
             if created:
-                self.broadcast_stats(NUM_USERS_KEY, 1, SIGN_UP_EVENT)
+                self.broadcast_stats(NUM_USERS_KEY, 1)
+                self.broadcast_event(SIGN_UP_EVENT)
 
 
 class Stats(base.WebHandler):
@@ -135,34 +132,6 @@ class Tech(base.WebHandler):
         html = template.render(path, locals(), debug=debug)
         self.response.out.write(html)
         self.broadcast_event(TECH_PAGE_EVENT)
-
-
-class Feedback(base.WebHandler):
-    """Request handler to serve the feedback page."""
-
-    def get(self):
-        """Serve the feedback page."""
-        path = os.path.join(TEMPLATES, 'feedback.html')
-        title = 'feedback'
-        # feedbacks = models.Feedback.all().order('-datetime').fetch(20)
-        feedbacks = tuple()
-        active_tab = 'feedback'
-        stats = self.get_stats(json=False)
-        debug = DEBUG
-        html = template.render(path, locals(), debug=debug)
-        self.response.out.write(html)
-        self.broadcast_event(FEEDBACK_PAGE_EVENT)
-
-    def post(self):
-        """A user has submitted feedback."""
-        comment = self.request.get('comment')
-        try:
-            feedback = models.Feedback.factory(False, comment)
-        except ValueError:
-            self.serve_error(400)
-        else:
-            self.broadcast_feedback(feedback)
-            self.broadcast_event(ANON_FEEDBACK_EVENT)
 
 
 class GetToken(base.WebHandler):
@@ -308,7 +277,8 @@ class Chat(base.ChatHandler):
             # Notify Alice and Bob.
             self.notify_started(alice)
             self.notify_chatting(bob)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1, START_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1)
+            self.broadcast_event(START_EVENT)
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
@@ -371,7 +341,8 @@ class Chat(base.ChatHandler):
                 self.notify_been_nexted(bob)
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1, STOP_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1)
+            self.broadcast_event(STOP_EVENT)
 
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
@@ -416,7 +387,8 @@ class Chat(base.ChatHandler):
                     method(bob, message.body)
                     shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
                     event = ME_EVENT if me else TEXT_MESSAGE_EVENT
-                    self.broadcast_stats(None, None, event)
+                    self.broadcast_stats(None, None)
+                    self.broadcast_event(event)
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
@@ -450,7 +422,8 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1, AVAILABLE_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1)
+            self.broadcast_event(AVAILABLE_EVENT)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -477,7 +450,8 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1, UNAVAILABLE_EVENT)
+            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1)
+            self.broadcast_event(UNAVAILABLE_EVENT)
 
 
 class Probe(base.WebHandler):
@@ -498,15 +472,3 @@ class Mail(base.MailHandler):
     def receive(self, email_message):
         """Someone has sent us an email message."""
         _log.info('%s has sent us an email message' % email_message.sender)
-        if not email_message.sender == '<' + ADMIN_MOBILE + '>':
-            self.serve_error(401)
-        else:
-            for content_type, body in email_message.bodies('text/plain'):
-                try:
-                    comment = body.decode()
-                    feedback = models.Feedback.factory(True, comment)
-                except ValueError:
-                    self.serve_error(400)
-                else:
-                    self.broadcast_feedback(feedback)
-                    self.broadcast_event(ADMIN_FEEDBACK_EVENT)
