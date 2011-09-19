@@ -144,7 +144,8 @@ class Feedback(base.WebHandler):
         """Serve the feedback page."""
         path = os.path.join(TEMPLATES, 'feedback.html')
         title = 'feedback'
-        feedbacks = models.Feedback.all().order('-datetime').fetch(20)
+        # feedbacks = models.Feedback.all().order('-datetime').fetch(20)
+        feedbacks = tuple()
         active_tab = 'feedback'
         stats = self.get_stats(json=False)
         debug = DEBUG

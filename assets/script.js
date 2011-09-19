@@ -40,18 +40,21 @@ $(function() {
         handle.val(defaultHandle);
     }
 
-    var feedback = $('#content .feedback-form [name="feedback"]');
-    if (feedback.length) {
-        feedback.focus(focusFeedback);
-        feedback.blur(blurFeedback);
-        feedback.keydown(keydownFeedback);
-        feedback.keyup(changeFeedback);
-        feedback.change(changeFeedback);
-        feedback.bind('input cut', function(event) {changeFeedback();});
-        feedback.bind('input paste', function(event) {changeFeedback();});
-        $('#content .feedback-form').submit(submitFeedback);
-        var defaultFeedback = feedback.prop('defaultValue');
-        feedback.val(defaultFeedback);
+    var comment = $('#content .feedback-form [name="comment"]');
+    if (comment.length) {
+        comment.focus(focusComment);
+        comment.blur(blurComment);
+        comment.keydown(keydownComment);
+        comment.keyup(changeComment);
+        comment.change(changeComment);
+        comment.bind('input cut', function(e) {changeComment();});
+        comment.bind('input paste', function(e) {changeComment();});
+
+        var feedbackForm = $('#content .feedback-form');
+        feedbackForm.submit(submitFeedback);
+
+        var defaultFeedback = comment.prop('defaultValue');
+        comment.val(defaultFeedback);
     }
 
     if ($('.flipclock').length) {
@@ -169,32 +172,32 @@ function signUp() {
 
 
 /*---------------------------------------------------------------------------*\
- |                              focusFeedback()                              |
+ |                               focusComment()                              |
 \*---------------------------------------------------------------------------*/
 
-function focusFeedback() {
-    focus('#content .feedback-form [name="feedback"]');
+function focusComment() {
+    focus('#content .feedback-form [name="comment"]');
 }
 
 
 /*---------------------------------------------------------------------------*\
- |                               blurFeedback()                              |
+ |                               blurComment()                               |
 \*---------------------------------------------------------------------------*/
 
-function blurFeedback() {
-    blur('#content .feedback-form [name="feedback"]');
+function blurComment() {
+    blur('#content .feedback-form [name="comment"]');
 }
 
 
 /*---------------------------------------------------------------------------*\
- |                             keydownFeedback()                             |
+ |                              keydownComment()                             |
 \*---------------------------------------------------------------------------*/
 
-function keydownFeedback(e) {
+function keydownComment(e) {
     if (e.keyCode == ENTER_KEYCODE) {
         var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
-        var num_left = parseInt(countdown.html());
-        if (num_left >= 0) {
+        var numLeft = parseInt(countdown.html());
+        if (numLeft >= 0) {
             var feedback = $('#content .feedback-form');
             feedback.submit();
         }
@@ -204,19 +207,19 @@ function keydownFeedback(e) {
 
 
 /*---------------------------------------------------------------------------*\
- |                              changeFeedback()                             |
+ |                              changeComment()                              |
 \*---------------------------------------------------------------------------*/
 
-function changeFeedback() {
-    var comment = $('#content .feedback-form [name="feedback"]').val();
-    var num = comment.length;
-    var num_left = 140 - num;
-    num_left = num_left.toString();
+function changeComment() {
+    var comment = $('#content .feedback-form [name="comment"]');
+    var numUsed = comment.val().length;
+    var numLeft = 140 - numUsed;
+    numLeft = numLeft.toString();
 
     var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
-    if (countdown.html() != num_left) {
-        countdown.html(num_left);
-        if (num_left < 0) {
+    if (countdown.html() != numLeft) {
+        countdown.html(numLeft);
+        if (numLeft < 0) {
             countdown.addClass('chars-over-limit');
         } else {
             countdown.removeClass('chars-over-limit');
@@ -233,12 +236,11 @@ function changeFeedback() {
 var feedbackSubmitted = false;
 
 function submitFeedback() {
-    var feedback = $('#content .feedback-form [name="feedback"]');
-    var comment = feedback.val();
+    var comment = $('#content .feedback-form [name="comment"]');
     $.ajax({
         type: 'POST',
         url: '/feedback',
-        data: {comment: comment},
+        data: {comment: comment.val()},
         cache: false,
         beforeSend: function(jqXHR, settings) {
             if (feedbackSubmitted) {
@@ -256,7 +258,7 @@ function submitFeedback() {
             alert(message);
         },
         success: function(data, textStatus, jqXHR) {
-            feedback.val('');
+            comment.val('');
             var countdown = $('#content .feedback-form .chars-remaining .char-countdown');
             countdown.html('140');
             countdown.removeClass('chars-over-limit');
@@ -280,36 +282,43 @@ function updateStats() {
         url: '/get-stats',
         cache: false,
         success: function(data, textStatus, jqXHR) {
-            setStats(data);
+            parseJSON(data);
         }
     });
 }
 
 
 /*---------------------------------------------------------------------------*\
- |                                 setStats()                                |
+ |                                parseJSON()                                |
 \*---------------------------------------------------------------------------*/
 
-function setStats(json) {
+function parseJSON(json) {
     json = $.parseJSON(json);
     $.each(json, function(key, val) {
-        var objs = $('.flipclock.' + key);
-        if (objs.length) {
-            objs.flipclock('set', val);
+        var flipclocks = $('.flipclock.' + key);
+        if (flipclocks.length) {
+            flipclocks.flipclock('set', val);
         }
 
-        var objs = $('.' + key).not('.flipclock');
-        if (objs.length && objs.html() != val) {
-            objs.html(val);
-            objs.stop(true, true).effect('highlight', {color: '#D1D9DC'}, 1000);
+        var footerCounters = $('.' + key).not('.flipclock');
+        if (footerCounters.length && footerCounters.html() != val) {
+            footerCounters.html(val);
+            footerCounters.stop(true, true);
+            footerCounters.effect('highlight', {color: '#D1D9DC'}, 1000);
         }
 
-        if ($('#' + key).length) {
-            $('#' + key).sticky();
+        var notification = $('#' + key);
+        if (notification.length) {
+            notification.sticky();
         }
 
         if (key == 'feedback') {
-            $('#feedback-comments').prepend(val);
+            var feedbackComments = $('#feedback-comments');
+            if (feedbackComments.length) {
+                feedbackComments.prepend(val);
+                var comment = $('.feedback-comment').filter(':first');
+                comment.fadeIn();
+            }
         }
     });
 }
@@ -390,7 +399,7 @@ function socketOpened() {
 \*---------------------------------------------------------------------------*/
 
 function socketMessaged(message) {
-    setStats(message.data);
+    parseJSON(message.data);
 }
 
 
