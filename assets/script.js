@@ -30,11 +30,7 @@ $(function() {
 
     var handle = $('#content .sign-up .register [name="handle"]');
     if (handle.length) {
-        handle.focus(focusHandle);
-        handle.blur(blurHandle);
         $('#content .sign-up .register').submit(signUp);
-        var defaultHandle = handle.prop('defaultValue');
-        handle.val(defaultHandle);
     }
 
     if ($('.flipclock').length) {
@@ -53,50 +49,6 @@ $(function() {
         window.setInterval(openSocket, 2 * 60 * 60 * 1000);
     }
 });
-
-
-/*---------------------------------------------------------------------------*\
- |                                  focus()                                  |
-\*---------------------------------------------------------------------------*/
-
-function focus(selector) {
-    var element = $(selector);
-    var defaultValue = element.prop('defaultValue');
-    if (element.val() == defaultValue) {
-        element.val('');
-    }
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                                   blur()
-\*---------------------------------------------------------------------------*/
-
-function blur(selector) {
-    var element = $(selector);
-    if (element.val() == '') {
-        var defaultHandle = element.prop('defaultValue');
-        element.val(defaultHandle);
-    }
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                               focusHandle()                               |
-\*---------------------------------------------------------------------------*/
-
-function focusHandle() {
-    focus('#content .sign-up .register [name="handle"]');
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                                blurHandle()                               |
-\*---------------------------------------------------------------------------*/
-
-function blurHandle() {
-    blur('#content .sign-up .register [name="handle"]');
-}
 
 
 /*---------------------------------------------------------------------------*\

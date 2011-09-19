@@ -119,8 +119,8 @@ b {
 }
 
 #content form input {
-    -moz-border-radius: 4px 4px 4px 4px;
     -webkit-border-radius: 4px;
+    -moz-border-radius: 4px 4px 4px 4px;
     border: 1px solid #959EA1;
     color: #B62F2F;
     font-size: 16px;
@@ -128,6 +128,14 @@ b {
     margin-top: 0.75em;
     padding: 0.2em;
     width: 75%;
+}
+
+#content form input::-webkit-input-placeholder {
+    color: #B62F2F;
+}
+
+#content form input:-moz-placeholder {
+    color: #B62F2F;
 }
 
 #content .signed-up {
