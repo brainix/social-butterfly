@@ -363,7 +363,7 @@ class Chat(base.ChatHandler):
     @base.ChatHandler.require_account
     def _common_message(self, message=None, me=True):
         """Alice has typed a /me command or a message to her partner.
-        
+
         Relay Alice's /me command or message to her chat partner, Bob.
         """
         alice = self.get_account(message)
@@ -409,7 +409,7 @@ class Available(availability.AvailabilityHandler):
     @base.WebHandler.send_presence
     def post(self):
         """Alice has become available for chat.
-        
+
         Mark her available, and if possible, pair her with a chat partner, Bob.
         """
         alice, made_available = self.make_available(True)
@@ -431,7 +431,7 @@ class Unavailable(availability.AvailabilityHandler):
 
     def post(self):
         """Alice has become unavailable for chat.
-        
+
         Mark her unavailable.  If she had a chat partner, Bob, pair him with a
         new partner, Carol.
         """

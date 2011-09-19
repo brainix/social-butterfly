@@ -28,7 +28,6 @@ import os
 import traceback
 
 from django.utils import simplejson
-from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import deferred
