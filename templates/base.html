@@ -38,10 +38,12 @@
         <link rel="shortcut icon" href="/favicon.ico">
     </head>
     <body>
-        <div id="heading">
-            <h1><a href="/">Social Butterfly</a></h1>
-            <h2>{{ title }}</h2>
-        </div>
+        <header>
+            <hgroup>
+                <h1><a href="/">Social Butterfly</a></h1>
+                <h2>{{ title }}</h2>
+            </hgroup>
+        </header>
 
         <div id="content">
             {% block content %}{% endblock %}

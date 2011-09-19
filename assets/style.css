@@ -60,11 +60,11 @@ b {
  |                               Heading Styles                              |
 \*---------------------------------------------------------------------------*/
 
-#heading {
+header {
     margin-bottom: 42px;
 }
 
-#heading h1 {
+header hgroup h1 {
     color: #D1D9DC;
     font-size: 102px;
     letter-spacing: -7px;
@@ -73,15 +73,15 @@ b {
     margin-bottom: -20px;
 }
 
-#heading h1 a {
+header hgroup h1 a {
     color: #D1D9DC;
 }
 
-#heading h1 a:hover {
+header hgroup h1 a:hover {
     color: #B62F2F;
 }
 
-#heading h2,
+header hgroup h2,
 #content h3 {
     color: #959EA1;
     font-size: 35px;
