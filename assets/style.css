@@ -170,34 +170,34 @@ div.sticky-note p img {
  |                               Footer Styles                               |
 \*---------------------------------------------------------------------------*/
 
-#footer ul,
-#footer ul li {
+footer nav ul,
+footer nav ul li {
     display: inline;
 }
 
-#footer ul li {
+footer nav ul li {
     border-left: 1px solid #959EA1;
     margin-left: 0.75em;
     padding-left: 0.75em;
 }
 
-#footer ul li.first {
+footer nav ul li.first {
     border-left: 0;
     margin-left: 0;
     padding-left: 0;
 }
 
-#footer ul li,
-#footer p {
+footer nav ul li,
+footer p {
     color: #959EA1;
     font-size: 13px;
     line-height: 175%;
 }
 
-#footer p a {
+footer p a {
     color: #516064;
 }
 
-#footer p a:hover {
+footer p a:hover {
     text-decoration: underline;
 }

@@ -21,22 +21,21 @@
 \*------------------------------------------------------------ {% endcomment %}
 
 
-<!DOCTYPE html 
-    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html lang="en">
     <head>
         <title>social butterfly - {{ title }}</title>
-        <link type="text/css" rel="stylesheet" href="/assets/sticky.min.css" />
-        <link type="text/css" rel="stylesheet" href="/assets/style.css" />
-        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+        <meta charset="utf-8" />
         <meta name="keywords" content="Social Butterfly, chat with strangers, Google Talk, chat, random, strangers, Omegle, Chatroulette" />
         <meta name="description" content="Social Butterfly allows you to anonymously chat with strangers through Google Talk." />
         <meta name="author" content="Code A La Mode" />
         <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
         <meta name="msvalidate.01" content="A4C1B453D9C861C0A9E98C459D92DF65" />
+        <link rel="stylesheet" href="/assets/sticky.min.css" />
+        <link rel="stylesheet" href="/assets/style.css" />
+        <link rel="shortcut icon" href="/favicon.ico">
     </head>
     <body>
         <div id="heading">
@@ -48,13 +47,15 @@
             {% block content %}{% endblock %}
         </div>
 
-        <div id="footer">
-            <ul>
-                <li class="first">{% ifnotequal active_tab 'home' %}<a href="/">{% endifnotequal %}Social Butterfly{% ifnotequal active_tab 'home' %}</a>{% endifnotequal %}</li>
-                <li>{% ifnotequal active_tab 'stats' %}<a href="/stats">{% endifnotequal %}Stats{% ifnotequal active_tab 'stats' %}</a>{% endifnotequal %}</li>
-                <li>{% ifnotequal active_tab 'album' %}<a href="/album">{% endifnotequal %}Album{% ifnotequal active_tab 'album' %}</a>{% endifnotequal %}</li>
-                <li>{% ifnotequal active_tab 'tech' %}<a href="/tech">{% endifnotequal %}Tech{% ifnotequal active_tab 'tech' %}</a>{% endifnotequal %}</li>
-            </ul>
+        <footer>
+            <nav>
+                <ul>
+                    <li class="first">{% ifnotequal active_tab 'home' %}<a href="/">{% endifnotequal %}Social Butterfly{% ifnotequal active_tab 'home' %}</a>{% endifnotequal %}</li>
+                    <li>{% ifnotequal active_tab 'stats' %}<a href="/stats">{% endifnotequal %}Stats{% ifnotequal active_tab 'stats' %}</a>{% endifnotequal %}</li>
+                    <li>{% ifnotequal active_tab 'album' %}<a href="/album">{% endifnotequal %}Album{% ifnotequal active_tab 'album' %}</a>{% endifnotequal %}</li>
+                    <li>{% ifnotequal active_tab 'tech' %}<a href="/tech">{% endifnotequal %}Tech{% ifnotequal active_tab 'tech' %}</a>{% endifnotequal %}</li>
+                </ul>
+            </nav>
             {% if stats %}
                 <p>
                     <span class="num_users">{{ stats.num_users }}</span> users total,
@@ -62,7 +63,7 @@
                     <span class="num_messages">{{ stats.num_messages }}</span> messages so far today
                 </p>
             {% endif %}
-        </div>
+        </footer>
 
         {% include "notifications.html" %}
 
