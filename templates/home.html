@@ -39,8 +39,20 @@
     <section class="sign-up">
         <h1>How do I sign up?</h1>
         <form action="/" method="post" autocomplete="off" class="register">
+
+            {% comment %}
+                This is how I'd love to do it:
+
+                <input name="handle" type="email" required
+                       placeholder="Enter your Gmail address here." />
+
+                But Safari doesn't understand how to style placeholders
+                properly.  :-(
+            {% endcomment %}
+
             <input name="handle" type="email" required
-                   placeholder="Enter your Gmail address here." />
+                   value="Enter your Gmail address here." />
+
         </form>
     </section>
 

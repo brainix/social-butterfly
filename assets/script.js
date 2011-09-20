@@ -33,15 +33,22 @@ var HR = 60 * MIN;
 $(function() {
     // Hooray, a page has been loaded!
 
-    var handle = $('.register [name="handle"]');
-    if (handle.length) {
-        $('.register').submit(signUp);
+    var form = $('.register');
+    if (form.length) {
+        form.submit(signUp);
+
+        var handle = form.children('[name="handle"]');
+        handle.focus(focusHandle);
+        handle.blur(blurHandle);
+        var defaultHandle = handle.prop('defaultValue');
+        handle.val(defaultValue);
     }
 
-    if ($('.flipclock').length) {
-        $('.flipclock.num_users').flipclock('init', {digits: 4});
-        $('.flipclock.num_active_users').flipclock('init', {digits: 4});
-        $('.flipclock.num_messages').flipclock('init', {digits: 4});
+    var flipclocks = $('.flipclock');
+    if (flipclocks.length) {
+        flipclocks.filter('.num_users').flipclock('init', {digits: 4});
+        flipclocks.filter('.num_active_users').flipclock('init', {digits: 4});
+        flipclocks.filter('.num_messages').flipclock('init', {digits: 4});
         window.setTimeout(updateStats, 3 * SEC);
     }
 
@@ -54,6 +61,50 @@ $(function() {
         window.setInterval(openSocket, 1 * HR + 59 * MIN);
     }
 });
+
+
+/*---------------------------------------------------------------------------*\     
+ |                                  focus()                                  |      
+\*---------------------------------------------------------------------------*/     
+        
+function focus(selector) {      
+    var element = $(selector);      
+    var defaultValue = element.prop('defaultValue');        
+    if (element.val() == defaultValue) {        
+        element.val('');        
+    }       
+}       
+        
+        
+/*---------------------------------------------------------------------------*\     
+ |                                   blur()     
+\*---------------------------------------------------------------------------*/     
+        
+function blur(selector) {       
+    var element = $(selector);      
+    if (element.val() == '') {      
+        var defaultHandle = element.prop('defaultValue');       
+        element.val(defaultHandle);     
+    }       
+}       
+        
+        
+/*---------------------------------------------------------------------------*\     
+ |                               focusHandle()                               |      
+\*---------------------------------------------------------------------------*/     
+        
+function focusHandle() {        
+    focus('.register [name="handle"]');       
+}       
+        
+        
+/*---------------------------------------------------------------------------*\     
+ |                                blurHandle()                               |      
+\*---------------------------------------------------------------------------*/     
+        
+function blurHandle() {     
+    blur('.register [name="handle"]');        
+}
 
 
 /*---------------------------------------------------------------------------*\
