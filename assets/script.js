@@ -21,6 +21,11 @@
 \*---------------------------------------------------------------------------*/
 
 
+var SEC = 1000;
+var MIN = 60 * SEC;
+var HR = 60 * MIN;
+
+
 /*---------------------------------------------------------------------------*\
  |                                    $()                                    |
 \*---------------------------------------------------------------------------*/
@@ -37,7 +42,7 @@ $(function() {
         $('.flipclock.num_users').flipclock('init', {digits: 4});
         $('.flipclock.num_active_users').flipclock('init', {digits: 4});
         $('.flipclock.num_messages').flipclock('init', {digits: 4});
-        window.setTimeout(updateStats, 3 * 1000);
+        window.setTimeout(updateStats, 3 * SEC);
     }
 
     if ($('#gravatars').length) {
@@ -46,7 +51,7 @@ $(function() {
 
     if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
         openSocket();
-        window.setInterval(openSocket, 2 * 60 * 60 * 1000);
+        window.setInterval(openSocket, 1 * HR + 59 * MIN);
     }
 });
 
@@ -135,7 +140,7 @@ function parseJSON(json) {
         if (footerCounters.length && footerCounters.html() != val) {
             footerCounters.html(val);
             footerCounters.stop(true, true);
-            footerCounters.effect('highlight', {color: '#D1D9DC'}, 1000);
+            footerCounters.effect('highlight', {color: '#D1D9DC'}, 1 * SEC);
         }
 
         var notification = $('#' + key);
