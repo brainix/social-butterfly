@@ -33,9 +33,9 @@ var HR = 60 * MIN;
 $(function() {
     // Hooray, a page has been loaded!
 
-    var handle = $('#content .sign-up .register [name="handle"]');
+    var handle = $('.register [name="handle"]');
     if (handle.length) {
-        $('#content .sign-up .register').submit(signUp);
+        $('.register').submit(signUp);
     }
 
     if ($('.flipclock').length) {
@@ -63,7 +63,7 @@ $(function() {
 var signUpSubmitted = false;
 
 function signUp() {
-    var handle = $('#content .sign-up .register [name="handle"]').val();
+    var handle = $('.register [name="handle"]').val();
     $.ajax({
         type: 'POST',
         url: '/',
@@ -94,9 +94,9 @@ function signUp() {
             alert(message);
         },
         success: function(data, textStatus, jqXHR) {
-            var signUpForm = $('#content .sign-up');
+            var signUpForm = $('.sign-up');
             signUpForm.fadeOut('slow', function() {
-                var signedUpText = $('#content .signed-up');
+                var signedUpText = $('.signed-up');
                 signedUpText.fadeIn('slow');
             });
         },
@@ -146,15 +146,6 @@ function parseJSON(json) {
         var notification = $('#' + key);
         if (notification.length) {
             notification.sticky();
-        }
-
-        if (key == 'feedback') {
-            var feedbackComments = $('#feedback-comments');
-            if (feedbackComments.length) {
-                feedbackComments.prepend(val);
-                var comment = $('.feedback-comment').filter(':first');
-                comment.fadeIn();
-            }
         }
     });
 }

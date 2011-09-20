@@ -26,35 +26,45 @@
 
 {% block content %}
 
-    <h3>What is Social Butterfly?</h3>
-    <p>
-        Social Butterfly allows you to anonymously chat with random strangers
-        through <a href="http://www.google.com/talk/">Google Talk</a>.  If you
-        use Gmail, you already have Google Talk.
-    </p>
+    <section>
+        <h1>What is Social Butterfly?</h1>
+        <p>
+            Social Butterfly allows you to anonymously chat with random
+            strangers through
+            <a href="http://www.google.com/talk/">Google Talk</a>.
+            If you use Gmail, you already have Google Talk.
+        </p>
+    </section>
 
-    <h3>Open Source</h3>
-    <p>
-        Social Butterfly is written in Python for Google&rsquo;s App Engine
-        cloud.  You can view Social Butterfly&rsquo;s clean, object-oriented
-        <a href="http://code.google.com/p/social-butterfly/source/browse/#svn%2Ftrunk">source code</a>.
-    </p>
+    <section>
+        <h1>Open Source</h1>
+        <p>
+            Social Butterfly is written in Python for Google&rsquo;s App Engine
+            cloud.  You can view Social Butterfly&rsquo;s clean,
+            object-oriented
+            <a href="http://code.google.com/p/social-butterfly/source/browse/#svn%2Ftrunk">source code</a>.
+        </p>
+    </section>
 
-    <h3>Scalable</h3>
-    <p>
-        Social Butterfly uses techniques like memcache,
-        <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/shards.py">sharding counters</a>,
-        and deferred task queues to scale to
-        <span class="num_users">{{ stats.num_users }}</span> users and
-        counting.
-    </p>
+    <section>
+        <h1>Scalable</h1>
+        <p>
+            Social Butterfly uses techniques like memcache,
+            <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/shards.py">sharding counters</a>,
+            and deferred task queues to scale to
+            <span class="num_users">{{ stats.num_users }}</span>
+            users and counting.
+        </p>
+    </section>
 
-    <h3>Real-Time</h3>
-    <p>
-        Social Butterfly uses
-        <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/channels.py">channels</a>
-        (similar to WebSockets) for real-time communication.  The footer and
-        Growls on every page are live.
-    </p>
+    <section>
+        <h1>Real-Time</h1>
+        <p>
+            Social Butterfly uses
+            <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/channels.py">channels</a>
+            (similar to WebSockets) for real-time communication.  The footer
+            and Growls on every page are live.
+        </p>
+    </section>
 
 {% endblock %}

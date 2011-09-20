@@ -82,7 +82,7 @@ header hgroup h1 a:hover {
 }
 
 header hgroup h2,
-#content h3 {
+article section h1 {
     color: #959EA1;
     font-size: 35px;
     font-weight: 300;
@@ -94,31 +94,31 @@ header hgroup h2,
  |                               Content Styles                              |
 \*---------------------------------------------------------------------------*/
 
-#content {
+article {
     margin-bottom: 50px;
 }
 
-#content p {
+article p {
     font-size: 16px;
     line-height: 175%;
     margin-bottom: 28px;
     width: 75%;
 }
 
-#content p a {
+article p a {
     color: #B62F2F;
 }
 
-#content p a:hover {
+article p a:hover {
     text-decoration: underline;
 }
 
-#content form {
+article form {
     margin-bottom: 38px;
     width: 75%;
 }
 
-#content form input {
+article form input {
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px 4px 4px 4px;
     border: 1px solid #959EA1;
@@ -130,20 +130,20 @@ header hgroup h2,
     width: 75%;
 }
 
-#content form input::-webkit-input-placeholder {
+article form input::-webkit-input-placeholder {
     color: #B62F2F;
 }
 
-#content form input:-moz-placeholder {
+article form input:-moz-placeholder {
     color: #B62F2F;
 }
 
-#content .signed-up {
+article .signed-up {
     display: none;
 }
 
-#content .twitter-share-button-wrapper,
-#content .google-plus-one-button-wrapper {
+article .twitter-share-button-wrapper,
+article .google-plus-one-button-wrapper {
     margin-top: 35px;
 }
 
