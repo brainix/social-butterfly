@@ -59,8 +59,7 @@ class Home(base.WebHandler):
         title = 'chat with strangers'
         active_tab = 'home'
         stats = self.get_stats(json=False)
-        debug = DEBUG
-        html = template.render(path, locals(), debug=debug)
+        html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
         self.broadcast_event(HOMEPAGE_EVENT)
 
@@ -90,8 +89,7 @@ class Stats(base.WebHandler):
         title = 'stats'
         active_tab = 'stats'
         stats = self.get_stats(json=False)
-        debug = DEBUG
-        html = template.render(path, locals(), debug=debug)
+        html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
         self.broadcast_event(STATS_PAGE_EVENT)
 
@@ -101,21 +99,22 @@ class Album(base.WebHandler):
 
     def get(self):
         """Serve the album page."""
-        html = self._render_album()
+        path = os.path.join(TEMPLATES, 'album.html')
+        title = 'album'
+        album_javascript = self._render_album_javascript()
+        active_tab = 'album'
+        stats = self.get_stats(json=False)
+        html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
         self.broadcast_event(ALBUM_PAGE_EVENT)
 
     @base.BaseHandler.memoize(24 * 60 * 60)
-    def _render_album(self):
+    def _render_album_javascript(self):
         """ """
-        path = os.path.join(TEMPLATES, 'album.html')
-        title = 'album'
+        path = os.path.join(TEMPLATES, 'album_javascript.html')
         users = self.get_users(started=None, available=None, chatting=None,
                                order=False)
-        active_tab = 'album'
-        stats = self.get_stats(json=False)
-        debug = DEBUG
-        html = template.render(path, locals(), debug=debug)
+        html = template.render(path, locals(), debug=DEBUG)
         return html
 
 
@@ -128,8 +127,7 @@ class Tech(base.WebHandler):
         title = 'tech'
         active_tab = 'tech'
         stats = self.get_stats(json=False)
-        debug = DEBUG
-        html = template.render(path, locals(), debug=debug)
+        html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
         self.broadcast_event(TECH_PAGE_EVENT)
 

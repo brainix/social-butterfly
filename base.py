@@ -247,7 +247,6 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
         path = os.path.join(TEMPLATES, 'error.html')
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         error_url = self.request.url.split('//', 1)[-1]
-        debug = DEBUG
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
 
