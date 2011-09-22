@@ -82,7 +82,7 @@ function focus(selector) {
         
 function blur(selector) {       
     var element = $(selector);      
-    if (element.val() == '') {      
+    if (element.val() === '') {
         var defaultHandle = element.prop('defaultValue');       
         element.val(defaultHandle);     
     }       
@@ -128,6 +128,7 @@ function signUp() {
                 return false;
             } else {
                 signUpSubmitted = true;
+                return true;
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -141,6 +142,7 @@ function signUp() {
                 default:
                     message = 'Oops, something has gone wrong.\n\nPlease try ';
                     message += 'to sign up again.';
+                    break;
             }
             alert(message);
         },
