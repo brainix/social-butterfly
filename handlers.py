@@ -91,7 +91,7 @@ class Stats(base.WebHandler):
     def get(self):
         """Serve the stats page."""
         path = os.path.join(TEMPLATES, 'stats.html')
-        title = 'stats'
+        title = 'interesting statistics'
         active_tab = 'stats'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=DEBUG)
@@ -105,7 +105,7 @@ class Album(base.WebHandler):
     def get(self):
         """Serve the album page."""
         path = os.path.join(TEMPLATES, 'album.html')
-        title = 'album'
+        title = 'photo album'
         album_javascript = self._render_album_javascript()
         active_tab = 'album'
         stats = self.get_stats(json=False)
@@ -129,7 +129,7 @@ class Tech(base.WebHandler):
     def get(self):
         """Serve the tech page."""
         path = os.path.join(TEMPLATES, 'tech.html')
-        title = 'tech'
+        title = 'about our technologies'
         active_tab = 'tech'
         stats = self.get_stats(json=False)
         html = template.render(path, locals(), debug=DEBUG)

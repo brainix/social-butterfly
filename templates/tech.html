@@ -27,19 +27,19 @@
 {% block content %}
 
     <section>
-        <h1>What is Social Butterfly?</h1>
+        <h1>What is this tech page?</h1>
         <p>
-            Social Butterfly allows you to anonymously chat with random
-            strangers through
+            Social Butterfly allows you to chat with strangers over
             <a href="http://www.google.com/talk/">Google Talk</a>.
-            If you use Gmail, you already have Google Talk.
+            This page describes the technologies we used to make Social
+            Butterfly.
         </p>
     </section>
 
     <section>
-        <h1>Open Source</h1>
+        <h1>Cloud, Open Source</h1>
         <p>
-            Social Butterfly is written in Python for Google&rsquo;s App Engine
+            We wrote Social Butterfly in Python for Google&rsquo;s App Engine
             cloud.  You can view Social Butterfly&rsquo;s clean,
             object-oriented
             <a href="http://code.google.com/p/social-butterfly/source/browse/#svn%2Ftrunk">source code</a>.
@@ -49,9 +49,9 @@
     <section>
         <h1>Scalable</h1>
         <p>
-            Social Butterfly uses techniques like memcache,
+            We used techniques like memcache,
             <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/shards.py">sharding counters</a>,
-            and deferred task queues to scale to
+            and deferred task queues to scale Social Butterfly up to
             <span class="num_users">{{ stats.num_users }}</span>
             users and counting.
         </p>
@@ -60,10 +60,11 @@
     <section>
         <h1>Real-Time</h1>
         <p>
-            Social Butterfly uses
+            We used
             <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/channels.py">channels</a>
             (similar to Comet or WebSockets) for real-time communication.  The
-            footer and Growls on every page are live.
+            <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/assets/script.js">footer and Growls</a>
+            on every page are live.
         </p>
     </section>
 
