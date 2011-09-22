@@ -157,6 +157,10 @@ div.sticky-note p img {
     vertical-align: middle;
 }
 
+#gravatars {
+    line-height: 0;
+}
+
 
 /*---------------------------------------------------------------------------*\
  |                             Flip Clock Styles                             |
