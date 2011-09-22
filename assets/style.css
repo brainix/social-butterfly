@@ -142,11 +142,6 @@ article .signed-up {
     display: none;
 }
 
-article .twitter-share-button-wrapper,
-article .google-plus-one-button-wrapper {
-    margin-top: 35px;
-}
-
 .notification {
     display: none;
 }

@@ -91,10 +91,11 @@ class Account(db.Model):
         """A user has signed up.  Clean up his/her chat handle."""
         handle = handle.strip().lower()
 
-        valid_gmail_domains = ['@' + domain for domain in VALID_GMAIL_DOMAINS]
-        valid_gmail_domains = tuple(valid_gmail_domains)
-        if not handle.endswith(valid_gmail_domains):
-            handle += valid_gmail_domains[0]
+        if not '@' in handle:
+            valid_domains = ['@' + domain for domain in VALID_GMAIL_DOMAINS]
+            valid_domains = tuple(valid_domains)
+            if not handle.endswith(valid_domains):
+                handle += valid_domains[0]
 
         return handle
 

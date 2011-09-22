@@ -67,17 +67,22 @@ class Home(base.WebHandler):
         """A user has signed up.  Create an account, and send a chat invite."""
         handle = self.request.get('handle')
         _log.info('%s signing up' % handle)
-        try:
-            account, created = models.Account.factory(handle)
-        except ValueError:
-            _log.warning("%s couldn't sign up" % handle)
+        if not handle:
+            _log.warning("%s couldn't sign up (didn't supply handle)" % handle)
             self.serve_error(400)
         else:
-            xmpp.send_invite(str(account))
-            _log.info('%s signed up' % handle)
-            if created:
-                self.broadcast_stats(NUM_USERS_KEY, 1)
-                self.broadcast_event(SIGN_UP_EVENT)
+            try:
+                account, created = models.Account.factory(handle)
+            except ValueError:
+                body = "%s couldn't sign up (error creating account)" % handle
+                _log.warning(body)
+                self.serve_error(400)
+            else:
+                xmpp.send_invite(str(account))
+                _log.info('%s signed up' % handle)
+                if created:
+                    self.broadcast_stats(NUM_USERS_KEY, 1)
+                    self.broadcast_event(SIGN_UP_EVENT)
 
 
 class Stats(base.WebHandler):
