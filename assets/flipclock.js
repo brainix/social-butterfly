@@ -78,6 +78,7 @@
             return retVal;
         } else {
             $.error("$.flipclock." + method + "() method doesn't exist");
+            return undefined;
         }
     };
 
