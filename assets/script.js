@@ -115,48 +115,55 @@ var signUpSubmitted = false;
 
 function signUp() {
     var handle = $('.register [name="handle"]').val();
-    $.ajax({
-        type: 'POST',
-        url: '/',
-        data: {handle: handle},
-        cache: false,
-        beforeSend: function(jqXHR, settings) {
-            if (signUpSubmitted) {
-                var message = "You've already submitted a request to sign up.\n";
-                message += "Please wait for this request to complete.";
+    if (handle === '') {
+        var message = "You haven't entered your Gmail address.\n\nPlease ";
+        message += "enter your Gmail address and sign up again.";
+        alert(message);
+    } else {
+        $.ajax({
+            type: 'POST',
+            url: '/',
+            data: {handle: handle},
+            cache: false,
+            beforeSend: function(jqXHR, settings) {
+                if (signUpSubmitted) {
+                    var message = "You've already submitted a request to ";
+                    message += "sign up.\n\nPlease wait for that request to ";
+                    message += "complete.";
+                    alert(message);
+                    return false;
+                } else {
+                    signUpSubmitted = true;
+                    return true;
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                var message = '';
+                switch (jqXHR.status) {
+                    case 400:
+                        message = "You've entered an invalid Gmail ";
+                        message += "address.\n\nPlease correct your Gmail ";
+                        message += "address and sign up again.";
+                        break;
+                    default:
+                        message = "Oops, something has gone wrong.\n\nPlease ";
+                        message += "try to sign up again.";
+                        break;
+                }
                 alert(message);
-                return false;
-            } else {
-                signUpSubmitted = true;
-                return true;
+            },
+            success: function(data, textStatus, jqXHR) {
+                var signUpForm = $('.sign-up');
+                signUpForm.fadeOut('slow', function() {
+                    var signedUpText = $('.signed-up');
+                    signedUpText.fadeIn('slow');
+                });
+            },
+            complete: function(jqXHR, textStatus) {
+                signUpSubmitted = false;
             }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            var message = '';
-            switch (jqXHR.status) {
-                case 400:
-                    message = "Oops, you've entered an invalid Google Talk ";
-                    message += 'address.\n\nPlease correct your Google Talk ';
-                    message += 'address and sign up again.';
-                    break;
-                default:
-                    message = 'Oops, something has gone wrong.\n\nPlease try ';
-                    message += 'to sign up again.';
-                    break;
-            }
-            alert(message);
-        },
-        success: function(data, textStatus, jqXHR) {
-            var signUpForm = $('.sign-up');
-            signUpForm.fadeOut('slow', function() {
-                var signedUpText = $('.signed-up');
-                signedUpText.fadeIn('slow');
-            });
-        },
-        complete: function(jqXHR, textStatus) {
-            signUpSubmitted = false;
-        }
-    });
+        });
+    }
     return false;
 }
 
