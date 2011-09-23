@@ -214,7 +214,7 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         """Pure virtual method."""
         raise NotImplementedError
 
-    def get_stats(self, json=False):
+    def get_stats(self):
         """ """
         client = memcache.Client()
         stats = [NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY]
@@ -229,24 +229,24 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         if missed:
             client.cas_multi_async(missed)
             stats.update(missed)
-
-        if json:
-            stats = simplejson.dumps(stats)
         return stats
 
-    def broadcast_stats(self, memcache_key, change):
+    def update_stat(self, memcache_key, change):
         """ """
-        if memcache_key is not None:
-            assert change in (1, -1)
-            getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
-        json = self.get_stats(json=True)
-        channels.Channel.broadcast(json)
+        assert change in (1, -1)
+        getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
 
-    def broadcast_event(self, event):
+    def broadcast(self, stats=False, event=None):
         """ """
-        event = {event: 1}
-        event = simplejson.dumps(event)
-        channels.Channel.broadcast(event)
+        d = {}
+        if stats:
+            stats = self.get_stats()
+            d.update(stats)
+        if event is not None:
+            d[event] = 1
+        if d:
+            json = simplejson.dumps(d)
+            channels.Channel.broadcast(json)
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
@@ -284,7 +284,7 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
         def wrap(self, *args, **kwds):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
-            stats = self.get_stats(json=False)
+            stats = self.get_stats()
             self.send_status(alice, stats)
             return return_value
         return wrap

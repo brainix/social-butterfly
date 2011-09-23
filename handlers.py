@@ -25,6 +25,7 @@
 import logging
 import os
 
+from django.utils import simplejson
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
 
@@ -58,10 +59,10 @@ class Home(base.WebHandler):
         path = os.path.join(TEMPLATES, 'home.html')
         title = 'chat with strangers'
         active_tab = 'home'
-        stats = self.get_stats(json=False)
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
-        self.broadcast_event(HOMEPAGE_EVENT)
+        self.broadcast(stats=False, event=HOMEPAGE_EVENT)
 
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
@@ -81,8 +82,8 @@ class Home(base.WebHandler):
                 xmpp.send_invite(str(account))
                 _log.info('%s signed up' % handle)
                 if created:
-                    self.broadcast_stats(NUM_USERS_KEY, 1)
-                    self.broadcast_event(SIGN_UP_EVENT)
+                    self.update_stat(NUM_USERS_KEY, 1)
+                    self.broadcast(stats=True, event=SIGN_UP_EVENT)
 
 
 class Stats(base.WebHandler):
@@ -93,10 +94,10 @@ class Stats(base.WebHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         title = 'interesting statistics'
         active_tab = 'stats'
-        stats = self.get_stats(json=False)
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
-        self.broadcast_event(STATS_PAGE_EVENT)
+        self.broadcast(stats=False, event=STATS_PAGE_EVENT)
 
 
 class Album(base.WebHandler):
@@ -108,10 +109,10 @@ class Album(base.WebHandler):
         title = 'photo album'
         album_javascript = self._render_album_javascript()
         active_tab = 'album'
-        stats = self.get_stats(json=False)
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
-        self.broadcast_event(ALBUM_PAGE_EVENT)
+        self.broadcast(stats=False, event=ALBUM_PAGE_EVENT)
 
     @base.BaseHandler.memoize(24 * 60 * 60)
     def _render_album_javascript(self):
@@ -131,10 +132,10 @@ class Tech(base.WebHandler):
         path = os.path.join(TEMPLATES, 'tech.html')
         title = 'about our technologies'
         active_tab = 'tech'
-        stats = self.get_stats(json=False)
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
-        self.broadcast_event(TECH_PAGE_EVENT)
+        self.broadcast(stats=False, event=TECH_PAGE_EVENT)
 
 
 class GetToken(base.WebHandler):
@@ -158,8 +159,9 @@ class GetStats(base.WebHandler):
 
     def get(self):
         """Return a JSON object containing updated interesting statistics."""
-        json = self.get_stats(json=True)
-        self.response.out.write(json)
+        stats = self.get_stats()
+        stats = simplejson.dumps(stats)
+        self.response.out.write(stats)
 
 
 class ResetStats(base.WebHandler):
@@ -263,7 +265,7 @@ class Chat(base.ChatHandler):
         alice = self.get_account(message)
         _log.debug('%s typed /help' % alice)
         self.send_help(alice)
-        self.broadcast_event(HELP_EVENT)
+        self.broadcast(stats=False, event=HELP_EVENT)
 
     @base.ChatHandler.require_account
     def start_command(self, message=None):
@@ -280,8 +282,8 @@ class Chat(base.ChatHandler):
             # Notify Alice and Bob.
             self.notify_started(alice)
             self.notify_chatting(bob)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1)
-            self.broadcast_event(START_EVENT)
+            self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
+            self.broadcast(stats=True, event=START_EVENT)
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
@@ -321,7 +323,7 @@ class Chat(base.ChatHandler):
                 self.notify_chatting(carol)
             if dave not in (alice, bob, carol):
                 self.notify_chatting(dave)
-            self.broadcast_event(NEXT_EVENT)
+            self.broadcast(stats=False, event=NEXT_EVENT)
 
     @base.ChatHandler.require_account
     def stop_command(self, message=None):
@@ -344,8 +346,8 @@ class Chat(base.ChatHandler):
                 self.notify_been_nexted(bob)
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1)
-            self.broadcast_event(STOP_EVENT)
+            self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
+            self.broadcast(stats=True, event=STOP_EVENT)
 
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
@@ -390,8 +392,7 @@ class Chat(base.ChatHandler):
                     method(bob, message.body)
                     shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
                     event = ME_EVENT if me else TEXT_MESSAGE_EVENT
-                    self.broadcast_stats(None, None)
-                    self.broadcast_event(event)
+                    self.broadcast(stats=True, event=event)
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
@@ -425,8 +426,8 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 self.notify_chatting(alice)
                 self.notify_chatting(bob)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, 1)
-            self.broadcast_event(AVAILABLE_EVENT)
+            self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
+            self.broadcast(stats=True, event=AVAILABLE_EVENT)
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -453,8 +454,8 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 self.notify_been_nexted(bob)
                 self.notify_chatting(carol)
-            self.broadcast_stats(NUM_ACTIVE_USERS_KEY, -1)
-            self.broadcast_event(UNAVAILABLE_EVENT)
+            self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
+            self.broadcast(stats=True, event=UNAVAILABLE_EVENT)
 
 
 class Probe(base.WebHandler):
