@@ -83,8 +83,8 @@ function focus(selector) {
 function blur(selector) {       
     var element = $(selector);      
     if (element.val() === '') {
-        var defaultHandle = element.prop('defaultValue');       
-        element.val(defaultHandle);     
+        var defaultValue = element.prop('defaultValue');       
+        element.val(defaultValue);     
     }       
 }       
         
