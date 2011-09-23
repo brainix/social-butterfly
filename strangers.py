@@ -24,10 +24,8 @@
 
 import logging
 
-from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY
 import models
 
 
@@ -59,25 +57,19 @@ class StrangerMixin(object):
             carols = carols.order('datetime' if order else '-datetime')
         return carols
 
-    def _count_users(self, memcache_key, started, available, chatting):
+    def _count_users(self, started, available, chatting):
         """ """
-        num_carols = memcache.get(memcache_key)
-        if num_carols is None:
-            _log.info('memcache miss when counting users')
-            carols = self.get_users(started, available, chatting, None)
-            num_carols = carols.count()
-            memcache.set(memcache_key, num_carols)
-        else:
-            _log.debug('memcache hit when counting users')
+        carols = self.get_users(started, available, chatting, None)
+        num_carols = carols.count()
         return num_carols
 
     def num_users(self):
         """Return the total number of users."""
-        return self._count_users(NUM_USERS_KEY, None, None, None)
+        return self._count_users(None, None, None)
 
     def num_active_users(self):
         """Return the number of started and available users."""
-        return self._count_users(NUM_ACTIVE_USERS_KEY, True, True, None)
+        return self._count_users(True, True, None)
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner, Carol.

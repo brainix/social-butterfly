@@ -38,7 +38,8 @@ from google.appengine.ext.webapp import xmpp_handlers
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
-from config import NUM_MESSAGES_KEY, ADMIN_EMAILS
+from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
+from config import ADMIN_EMAILS
 import channels
 import models
 import notifications
@@ -215,11 +216,20 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
 
     def get_stats(self, json=False):
         """ """
-        stats = {
-            'num_users': self.num_users(),
-            'num_active_users': self.num_active_users(),
-            'num_messages': shards.Shard.get_count(NUM_MESSAGES_KEY),
-        }
+        client = memcache.Client()
+        stats = [NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY]
+        stats = client.get_multi(stats, for_cas=True)
+        missed = {}
+        if not stats.has_key(NUM_USERS_KEY):
+            missed[NUM_USERS_KEY] = self.num_users()
+        if not stats.has_key(NUM_ACTIVE_USERS_KEY):
+            missed[NUM_ACTIVE_USERS_KEY] = self.num_active_users()
+        if not stats.has_key(NUM_MESSAGES_KEY):
+            missed[NUM_MESSAGES_KEY] = shards.Shard.get_count(NUM_MESSAGES_KEY)
+        if missed:
+            client.cas_multi_async(missed)
+            stats.update(missed)
+
         if json:
             stats = simplejson.dumps(stats)
         return stats
