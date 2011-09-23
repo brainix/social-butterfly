@@ -41,7 +41,7 @@ $(function() {
         handle.focus(focusHandle);
         handle.blur(blurHandle);
         var defaultHandle = handle.prop('defaultValue');
-        handle.val(defaultValue);
+        handle.val(defaultHandle);
     }
 
     var flipclocks = $('.flipclock');
