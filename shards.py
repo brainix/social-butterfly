@@ -162,12 +162,14 @@ class Shard(db.Model):
         def txn():
             for retry in range(NUM_RETRIES):
                 shard = client.gets(key_name)
+                method_name = 'cas'
                 if shard is None:
                     shard = cls.get_by_key_name(key_name)
                     if shard is None:
                         shard = cls(key_name=key_name, name=name)
+                    method_name = 'add'
                 shard.count += 1
-                if client.cas(key_name, shard):
+                if getattr(client, method_name)(key_name, shard):
                     db.put_async(shard)
                     return True
             return False
