@@ -62,7 +62,8 @@ class Channel(db.Model):
             _log.warning("couldn't create channel; couldn't allocate ID")
         else:
             token = channel.create_channel(client_id)
-            deferred.defer(cls.destroy, client_id, _countdown=2*60*60)
+            _countdown = 2 * 60 * 60
+            deferred.defer(cls.destroy, client_id, _countdown=_countdown)
             _log.debug('created channel %s, token %s' % (client_id, token))
             return token
 
