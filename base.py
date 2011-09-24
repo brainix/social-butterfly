@@ -169,7 +169,7 @@ class BaseHandler(object):
         if isinstance(exception, CapabilityDisabledError):
             # The only time this exception is thrown is when the datastore is
             # in read-only mode for maintenance.  Gracefully degrade - throw a
-            # 503 error.  For more info, see:
+            # 503 error.  For more information, see:
             #   http://code.google.com/appengine/docs/python/howto/maintenance.html
             error_code = 503
         else:
@@ -186,14 +186,6 @@ class BaseHandler(object):
         self._serve_error(error_code)
 
     def _serve_error(self, error_code):
-        """Pure virtual method."""
-        raise NotImplementedError
-
-    def get_handle(self):
-        """Pure virtual method."""
-        raise NotImplementedError
-
-    def get_account(self):
         """Pure virtual method."""
         raise NotImplementedError
 
