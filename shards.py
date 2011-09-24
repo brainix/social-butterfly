@@ -128,16 +128,19 @@ class Shard(db.Model):
         """Retrieve the value for a given sharded counter."""
         client = memcache.Client()
         total = client.gets(name)
-        if total is not None:
-            _log.debug('memcache hit when getting count for ' + name)
-        else:
+        if total is None:
             _log.info('memcache miss when getting count for ' + name)
-            total = increment
             config = _ShardConfig.memcache_get(name)
             if config is not None:
+                total = increment
                 shards = cls.all().filter('name = ', name)
                 for shard in shards:
                     total += shard.count
+                client.add(name, total)
+        else:
+            _log.debug('memcache hit when getting count for ' + name)
+            if increment:
+                total += increment
                 client.cas(name, total)
         return total
 
@@ -202,7 +205,7 @@ class Shard(db.Model):
 
         # Finally, delete the memcached count, configuration, and shards.
         client = memcache.Client()
-        key_names = [name, name+'_config']
+        key_names = [name, name + '_config']
         for index in range(num_shards):
             key_names.append(name + str(index))
         client.delete_multi_async(key_names)
