@@ -84,6 +84,7 @@ class Home(base.WebHandler):
                 if created:
                     self.update_stat(NUM_USERS_KEY, 1)
                     self.broadcast(stats=True, event=SIGN_UP_EVENT)
+                    self.send_presence_to_all()
 
 
 class Stats(base.WebHandler):
@@ -283,7 +284,9 @@ class Chat(base.ChatHandler):
             self.notify_started(alice)
             self.notify_chatting(bob)
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
+            async.get_result()
             self.broadcast(stats=True, event=START_EVENT)
+            self.send_presence_to_all()
 
     @base.ChatHandler.require_account
     def next_command(self, message=None):
@@ -334,11 +337,11 @@ class Chat(base.ChatHandler):
             self.notify_already_stopped(alice)
         else:
             alice.started = False
-            alice, bob, async = self.stop_chat(alice)
+            alice, bob, async1 = self.stop_chat(alice)
             if bob is None:
                 carol = None
             else:
-                bob, carol, async = self.start_chat(bob, alice)
+                bob, carol, async2 = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, and Carol.
             self.notify_stopped(alice)
@@ -347,7 +350,9 @@ class Chat(base.ChatHandler):
             if carol not in (alice, bob):
                 self.notify_chatting(carol)
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
+            async1.get_result()
             self.broadcast(stats=True, event=STOP_EVENT)
+            self.send_presence_to_all()
 
     @base.ChatHandler.require_account
     @base.ChatHandler.require_admin
@@ -410,7 +415,6 @@ class Error(base.WebHandler):
 class Available(availability.AvailabilityHandler):
     """Request handler to listen for when users become available for chat."""
 
-    @base.WebHandler.send_presence
     def post(self):
         """Alice has become available for chat.
 
@@ -428,6 +432,7 @@ class Available(availability.AvailabilityHandler):
                 self.notify_chatting(bob)
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             self.broadcast(stats=True, event=AVAILABLE_EVENT)
+            self.send_presence_to_all()
 
 
 class Unavailable(availability.AvailabilityHandler):
@@ -456,6 +461,7 @@ class Unavailable(availability.AvailabilityHandler):
                 self.notify_chatting(carol)
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
             self.broadcast(stats=True, event=UNAVAILABLE_EVENT)
+            self.send_presence_to_all()
 
 
 class Probe(base.WebHandler):

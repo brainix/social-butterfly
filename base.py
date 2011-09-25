@@ -29,12 +29,14 @@ import traceback
 
 from django.utils import simplejson
 from google.appengine.api import memcache
+from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext import deferred
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import mail_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import xmpp_handlers
+from google.appengine.runtime import DeadlineExceededError
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
@@ -239,6 +241,27 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         if d:
             json = simplejson.dumps(d)
             channels.Channel.broadcast(json)
+
+    def send_presence_to_all(self):
+        """ """
+        cls = self.__class__
+        stats = self.get_stats()
+        status = '%s users total, ' % stats['num_users']
+        status += '%s available for chat' % stats['num_active_users']
+        deferred.defer(cls._send_presence_to_all, status, cursor=None)
+
+    @classmethod
+    def _send_presence_to_all(cls, status, cursor=None):
+        """ """
+        carols = models.Account.all().filter('available =', True)
+        if cursor is not None:
+            carols = carols.with_cursor(cursor)
+        try:
+            for carol in carols:
+                xmpp.send_presence(str(carol), status=status)
+                cursor = carols.cursor()
+        except DeadlineExceededError:
+            deferred.defer(cls._send_presence_to_all, status, cursor=cursor)
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):

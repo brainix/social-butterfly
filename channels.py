@@ -83,11 +83,11 @@ class Channel(db.Model):
     def broadcast(cls, json, name=None):
         """Schedule broadcasting the specified JSON string to all channels."""
         _log.debug('deferring broadcasting JSON to all channels')
-        deferred.defer(cls._deferred_broadcast, json, name=name, cursor=None)
+        deferred.defer(cls._broadcast, json, name=name, cursor=None)
         _log.debug('deferred broadcasting JSON to all channels')
 
     @classmethod
-    def _deferred_broadcast(cls, json, name=None, cursor=None):
+    def _broadcast(cls, json, name=None, cursor=None):
         """Broadcast the specified JSON string to all channels."""
         _log.debug('broadcasting JSON to all channels')
         keys = cls.all(keys_only=True)
@@ -101,8 +101,7 @@ class Channel(db.Model):
                 channel.send_message(client_id, json)
                 cursor = keys.cursor()
         except DeadlineExceededError:
-            deferred.defer(cls._deferred_broadcast, json, name=name,
-                           cursor=cursor)
+            deferred.defer(cls._broadcast, json, name=name, cursor=cursor)
         _log.debug('broadcasted JSON to all channels')
 
     @classmethod

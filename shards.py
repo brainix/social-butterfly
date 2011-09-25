@@ -150,12 +150,12 @@ class Shard(db.Model):
         if memcache.incr(name) is None:
             cls.get_count(name, increment=1)
         if defer:
-            deferred.defer(cls._deferred_increment_count, name)
+            deferred.defer(cls._increment_count, name)
         else:
-            cls._deferred_increment_count(name)
+            cls._increment_count(name)
 
     @classmethod
-    def _deferred_increment_count(cls, name):
+    def _increment_count(cls, name):
         """Increment the memcached and datastored values for a shard."""
         client = memcache.Client()
         config = _ShardConfig.memcache_get_or_insert(name)
