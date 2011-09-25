@@ -130,7 +130,7 @@ class Tech(base.WebHandler):
     def get(self):
         """Serve the tech page."""
         path = os.path.join(TEMPLATES, 'tech.html')
-        title = 'about our technologies'
+        title = 'our technologies'
         active_tab = 'tech'
         stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)

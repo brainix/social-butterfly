@@ -45,10 +45,13 @@
             }
             this.data('flipclock', data);
 
+            var paths = [];
             for (var state = 0; state < 10; state += 0.5) {
                 var path = stateToPath(this, state);
-                preload(this, path);
+                // paths.push(path);
+                paths[paths.length] = path;
             }
+            preload(this, paths);
 
             draw(this);
             return this;
@@ -98,13 +101,16 @@
         return path;
     }
 
-    function preload(obj, url) {
+    function preload(obj, urls) {
         // Given a URL to an image, preload that image.
         if (document.images) {
-            var data = obj.data('flipclock');
-            var cachedImage = document.createElement("img");
-            cachedImage.src = url;
-            data.cache.push(cachedImage);
+            for (var index = 0; index < urls.length; index++) {
+                var url = urls[index];
+                var data = obj.data('flipclock');
+                var cachedImage = document.createElement("img");
+                cachedImage.src = url;
+                data.cache.push(cachedImage);
+            }
         }
     }
 
