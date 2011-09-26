@@ -148,7 +148,11 @@ article .signed-up {
 }
 
 .sticky-queue {
-    width: 300px;
+    width: 300px !important;
+}
+
+.sticky {
+    height: auto !important;
 }
 
 .sticky-note p img {
