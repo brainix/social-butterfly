@@ -37,6 +37,7 @@ import availability
 import base
 import channels
 import models
+import notifications
 import shards
 
 
@@ -232,7 +233,7 @@ class Subscribed(base.WebHandler):
         if not handle:
             handle = 'an unknown user'
         _log.debug('%s has allowed us to receive his/her presence' % handle)
-        self.send_help(handle)
+        notifications.Notifications.help(handle)
 
 
 class Unsubscribe(base.WebHandler):
@@ -265,7 +266,7 @@ class Chat(base.ChatHandler):
         """Alice has typed /help."""
         alice = self.get_account(message)
         _log.debug('%s typed /help' % alice)
-        self.send_help(alice)
+        notifications.Notifications.help(alice)
         self.broadcast(stats=False, event=HELP_EVENT)
 
     @base.ChatHandler.require_account
@@ -274,15 +275,15 @@ class Chat(base.ChatHandler):
         alice = self.get_account(message)
         _log.debug('%s typed /start' % alice)
         if alice.started:
-            self.notify_already_started(alice)
+            notifications.Notifications.already_started(alice)
         else:
             alice.started = True
             alice.available = True
             alice, bob, async = self.start_chat(alice, None)
 
             # Notify Alice and Bob.
-            self.notify_started(alice)
-            self.notify_chatting(bob)
+            notifications.Notifications.started(alice)
+            notifications.Notifications.chatting(bob)
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             async.get_result()
             self.broadcast(stats=True, event=START_EVENT)
@@ -297,12 +298,12 @@ class Chat(base.ChatHandler):
             # Alice hasn't yet made herself available for chat.  She must first
             # type /start and start chatting with a partner before she can type
             # /next to chat with a different partner.
-            self.notify_not_started(alice)
+            notifications.Notifications.not_started(alice)
         elif alice.partner is None:
             # Alice has made herself available for chat, but she isn't
             # currently chatting with a partner.  She must be chatting with a
             # partner in order to type /next to chat with a different partner.
-            self.notify_not_chatting(alice)
+            notifications.Notifications.not_chatting(alice)
         else:
             alice, bob, async = self.stop_chat(alice)
             alice, carol, async = self.start_chat(alice, bob)
@@ -319,13 +320,13 @@ class Chat(base.ChatHandler):
                 bob, dave, async = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, Carol, and Dave.
-            self.notify_nexted(alice)
+            notifications.Notifications.nexted(alice)
             if bob not in (alice,):
-                self.notify_been_nexted(bob)
+                notifications.Notifications.been_nexted(bob)
             if carol not in (alice, bob):
-                self.notify_chatting(carol)
+                notifications.Notifications.chatting(carol)
             if dave not in (alice, bob, carol):
-                self.notify_chatting(dave)
+                notifications.Notifications.chatting(dave)
             self.broadcast(stats=False, event=NEXT_EVENT)
 
     @base.ChatHandler.require_account
@@ -334,7 +335,7 @@ class Chat(base.ChatHandler):
         alice = self.get_account(message)
         _log.debug('%s typed /stop' % alice)
         if not alice.started:
-            self.notify_already_stopped(alice)
+            notifications.Notifications.already_stopped(alice)
         else:
             alice.started = False
             alice, bob, async1 = self.stop_chat(alice)
@@ -344,11 +345,11 @@ class Chat(base.ChatHandler):
                 bob, carol, async2 = self.start_chat(bob, alice)
 
             # Notify Alice, Bob, and Carol.
-            self.notify_stopped(alice)
+            notifications.Notifications.stopped(alice)
             if bob not in (alice,):
-                self.notify_been_nexted(bob)
+                notifications.Notifications.been_nexted(bob)
             if carol not in (alice, bob):
-                self.notify_chatting(carol)
+                notifications.Notifications.chatting(carol)
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
             async1.get_result()
             self.broadcast(stats=True, event=STOP_EVENT)
@@ -360,7 +361,7 @@ class Chat(base.ChatHandler):
         """Alice has typed /who.  Tell her who she's chatting with."""
         alice = self.get_account(message)
         _log.debug('%s typed /who' % alice)
-        self.notify_who(alice)
+        notifications.Notifications.who(alice)
 
     def me_command(self, message=None):
         """Alice has typed /me.  Relay her /me action to her chat partner."""
@@ -380,20 +381,20 @@ class Chat(base.ChatHandler):
         verb = '/me' if me else 'IM'
         _log.debug('%s typed %s' % (alice, verb))
         if not alice.started:
-            self.notify_not_started(alice)
+            notifications.Notifications.not_started(alice)
         else:
             bob = alice.partner
             if bob is None:
-                self.notify_not_chatting(alice)
+                notifications.Notifications.not_chatting(alice)
             else:
                 deliverable = self.is_deliverable(alice)
                 if not deliverable:
                     _log.info("can't send %s's %s to %s" % (alice, verb, bob))
-                    self.notify_undeliverable(alice)
+                    notifications.Notifications.undeliverable(alice)
                 else:
                     _log.info("sending %s's %s to %s" % (alice, verb, bob))
-                    method_name = 'send_me' if me else 'send_message'
-                    method = getattr(self, method_name)
+                    method_name = 'me' if me else 'message'
+                    method = getattr(notifications.Notifications, method_name)
                     method(bob, message.body)
                     shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
                     event = ME_EVENT if me else TEXT_MESSAGE_EVENT
@@ -428,8 +429,8 @@ class Available(availability.AvailabilityHandler):
             else:
                 body = '%s became available; found partner %s' % (alice, bob)
                 _log.info(body)
-                self.notify_chatting(alice)
-                self.notify_chatting(bob)
+                notifications.Notifications.chatting(alice)
+                notifications.Notifications.chatting(bob)
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             self.broadcast(stats=True, event=AVAILABLE_EVENT)
             self.send_presence_to_all()
@@ -457,8 +458,8 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('looking for new partner for %s' % bob)
                 else:
                     _log.info('found new partner for %s: %s' % (bob, carol))
-                self.notify_been_nexted(bob)
-                self.notify_chatting(carol)
+                notifications.Notifications.been_nexted(bob)
+                notifications.Notifications.chatting(carol)
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
             self.broadcast(stats=True, event=UNAVAILABLE_EVENT)
             self.send_presence_to_all()

@@ -29,7 +29,6 @@ import traceback
 
 from django.utils import simplejson
 from google.appengine.api import memcache
-from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.ext import deferred
 from google.appengine.ext import webapp
@@ -192,8 +191,7 @@ class BaseHandler(object):
         raise NotImplementedError
 
 
-class _CommonHandler(BaseHandler, notifications.NotificationMixin,
-                     strangers.StrangerMixin):
+class _CommonHandler(BaseHandler, strangers.StrangerMixin):
     """Abstract base request handler class."""
 
     def _serve_error(self, error_code):
@@ -246,22 +244,20 @@ class _CommonHandler(BaseHandler, notifications.NotificationMixin,
         """ """
         cls = self.__class__
         stats = self.get_stats()
-        status = '%s users total, ' % stats['num_users']
-        status += '%s available for chat' % stats['num_active_users']
-        deferred.defer(cls._send_presence_to_all, status, cursor=None)
+        deferred.defer(cls._send_presence_to_all, stats, cursor=None)
 
     @classmethod
-    def _send_presence_to_all(cls, status, cursor=None):
+    def _send_presence_to_all(cls, stats, cursor=None):
         """ """
         carols = models.Account.all().filter('available =', True)
         if cursor is not None:
             carols = carols.with_cursor(cursor)
         try:
             for carol in carols:
-                xmpp.send_presence(str(carol), status=status)
+                notifications.Notifications.status(carol, stats)
                 cursor = carols.cursor()
         except DeadlineExceededError:
-            deferred.defer(cls._send_presence_to_all, status, cursor=cursor)
+            deferred.defer(cls._send_presence_to_all, stats, cursor=cursor)
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
@@ -300,7 +296,7 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
             return_value = method(self, *args, **kwds)
             alice = self.get_account()
             stats = self.get_stats()
-            self.send_status(alice, stats)
+            notifications.Notifications.status(alice, stats)
             return return_value
         return wrap
 
@@ -366,7 +362,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
             if alice is None:
                 body = "decorator requirements failed; %s hasn't registered"
                 _log.warning(body % message.sender)
-                self.notify_requires_account(message.sender)
+                notifications.Notifications.requires_account(message.sender)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message, **kwds)
@@ -387,7 +383,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
             if str(alice) not in ADMIN_EMAILS:
                 body = "decorator requirements failed; %s isn't an admin"
                 _log.warning(body % message.sender)
-                self.notify_unknown_command(message.sender)
+                notifications.Notifications.unknown_command(message.sender)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)

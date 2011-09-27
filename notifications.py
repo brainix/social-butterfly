@@ -34,15 +34,15 @@ import models
 _log = logging.getLogger(__name__)
 
 
-class NotificationMixin(object):
+class Notifications(object):
     """ """
 
     def _send_notification(method):
         """ """
         @functools.wraps(method)
-        def wrap(self, alice, *args, **kwds):
+        def wrap(alice, *args, **kwds):
             if alice:
-                body = method(self, alice, *args, **kwds)
+                body = method(alice, *args, **kwds)
                 status = xmpp.send_message(str(alice), body)
                 assert status in (xmpp.NO_ERROR, xmpp.INVALID_JID,
                                   xmpp.OTHER_ERROR)
@@ -52,23 +52,25 @@ class NotificationMixin(object):
     def _send_presence(method):
         """ """
         @functools.wraps(method)
-        def wrap(self, alice, *args, **kwds):
+        def wrap(alice, *args, **kwds):
             if alice:
-                status = method(self, alice, *args, **kwds)
+                status = method(alice, *args, **kwds)
                 xmpp.send_presence(str(alice), status=status)
                 return status
         return wrap
 
+    @staticmethod
     @_send_notification
-    def notify_requires_account(self, alice):
+    def requires_account(alice):
         """ """
         body = 'To chat with strangers, sign up here:\n\n'
         body += 'http://social-butterfly.appspot.com/\n\n'
         body += 'It takes 5 seconds!'
         return body
 
+    @staticmethod
     @_send_notification
-    def send_help(self, alice):
+    def help(alice):
         """ """
         body = 'Type /start to make yourself available for chat.\n\n'
         body += 'Type /next to chat with someone else.\n\n'
@@ -76,8 +78,9 @@ class NotificationMixin(object):
         body += 'Type /help to see this help text.'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_already_started(self, alice):
+    def already_started(alice):
         """ """
         body = "You'd already made yourself available for chat.\n\n"
         alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
@@ -87,8 +90,9 @@ class NotificationMixin(object):
             body += "And you're already chatting with a partner!"
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_started(self, alice):
+    def started(alice):
         """Notify Alice that she's made herself available for chat."""
         body = "You've made yourself available for chat.\n\n"
         alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
@@ -98,29 +102,33 @@ class NotificationMixin(object):
             body += 'Now chatting with a partner.  Say hello!'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_chatting(self, alice):
+    def chatting(alice):
         """Notify Alice that she's now chatting with a partner."""
         body = 'Now chatting with a partner.  Say hello!'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_not_started(self, alice):
+    def not_started(alice):
         """ """
         body = "You're not currently chatting with a partner, and you're "
         body += 'unavailable for chat.\n\nType /start to make yourself '
         body += 'available for chat.'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_not_chatting(self, alice):
+    def not_chatting(alice):
         """ """
         body = "You're not currently chatting with a partner, but you're "
         body += 'available for chat.\n\nLooking for a chat partner...'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_nexted(self, alice):
+    def nexted(alice):
         """Notify Alice that she's /nexted her partner."""
         body = "You've disconnected from your current chat partner.\n\n"
         alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
@@ -130,8 +138,9 @@ class NotificationMixin(object):
             body += 'Now chatting with a new partner.  Say hello!'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_been_nexted(self, alice):
+    def been_nexted(alice):
         """Notify Alice that her partner has /nexted her."""
         body = 'Your current chat partner has disconnected.\n\n'
         alice_partner_key = models.Account.partner.get_value_for_datastore(alice)
@@ -141,47 +150,54 @@ class NotificationMixin(object):
             body += 'Now chatting with a new partner.  Say hello!'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_already_stopped(self, alice):
+    def already_stopped(alice):
         """ """
         body = "You'd already made yourself unavailable for chat."
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_stopped(self, alice):
+    def stopped(alice):
         """Notify Alice that she's made herself unavailable for chat."""
         body = "You've made yourself unavailable for chat."
         return body
 
+    @staticmethod
     @_send_notification
-    def send_me(self, alice, body):
+    def me(alice, body):
         """ """
         body = string.replace(body, '/me ', '', 1)
         body = 'Your partner ' + body
         return body
 
+    @staticmethod
     @_send_notification
-    def send_message(self, alice, body):
+    def message(alice, body):
         """ """
         body = 'Partner: ' + body
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_undeliverable(self, alice):
+    def undeliverable(alice):
         """Notify Alice that we couldn't deliver her message to her partner."""
         body = "Couldn't deliver your message to your chat partner.\n\n"
         body += 'Please try to send your message again, '
         body += 'or type /next to chat with someone else.'
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_unknown_command(self, alice):
+    def unknown_command(alice):
         """ """
         body = "Unknown command"
         return body
 
+    @staticmethod
     @_send_notification
-    def notify_who(self, alice):
+    def who(alice):
         """ """
         bob = alice.partner
         try:
@@ -196,8 +212,9 @@ class NotificationMixin(object):
             body = "You're currently chatting with: %s" % bob
         return body
 
+    @staticmethod
     @_send_presence
-    def send_status(self, alice, stats):
+    def status(alice, stats):
         """ """
         status = '%s users total, ' % stats['num_users']
         status += '%s available for chat' % stats['num_active_users']
