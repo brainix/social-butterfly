@@ -226,7 +226,10 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
     def update_stat(self, memcache_key, change):
         """ """
         assert change in (1, -1)
-        getattr(memcache, 'incr' if change == 1 else 'decr')(memcache_key)
+        func_name = 'incr' if change == 1 else 'decr'
+        func = getattr(memcache, func_name)
+        return_value = func(memcache_key)
+        return return_value
 
     def broadcast(self, stats=False, event=None):
         """ """

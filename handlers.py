@@ -173,7 +173,7 @@ class ResetStats(base.WebHandler):
     def get(self):
         """ """
         _log.info('cron resetting num messages sharding counter')
-        shards.Shard.reset_count(NUM_MESSAGES_KEY)
+        shards.Shard.reset(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
 
 
@@ -396,7 +396,7 @@ class Chat(base.ChatHandler):
                     method_name = 'me' if me else 'message'
                     method = getattr(notifications.Notifications, method_name)
                     method(bob, message.body)
-                    shards.Shard.increment_count(NUM_MESSAGES_KEY, defer=True)
+                    shards.Shard.increment(NUM_MESSAGES_KEY, defer=True)
                     event = ME_EVENT if me else TEXT_MESSAGE_EVENT
                     self.broadcast(stats=True, event=event)
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))

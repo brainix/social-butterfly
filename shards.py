@@ -102,22 +102,22 @@ class Shard(db.Model):
             client.cas(key_name, config)
 
     @staticmethod
-    def get_created_time(name):
+    def created(name):
         """Get the date/time when a named counter was first incremented.
         
         If a counter with the given name has not yet been incremented, this
-        method returns None.
+        method (implicitly) returns None.
         """
         config = _ShardConfig.memcache_get(name)
         if config is not None:
             return config.datetime
 
     @classmethod
-    def get_updated_time(cls, name):
+    def updated(cls, name):
         """Get the date/time when a named counter was last incremented.
 
         If a counter with the given name has not yet been incremented, this
-        method returns None.
+        method (implicitly) returns None.
         """
         shard = cls.all().filter('name = ', name).order('-datetime').get()
         if shard is not None:
@@ -145,21 +145,21 @@ class Shard(db.Model):
         return total
 
     @classmethod
-    def increment_count(cls, name, defer=False):
+    def increment(cls, name, defer=False):
         """Increment the memcached total value for a given sharded counter."""
         if memcache.incr(name) is None:
             cls.get_count(name, increment=1)
         if defer:
-            deferred.defer(cls._increment_count, name)
+            deferred.defer(cls._increment, name)
         else:
-            cls._increment_count(name)
+            cls._increment(name)
 
     @classmethod
-    def _increment_count(cls, name):
+    def _increment(cls, name):
         """Increment the memcached and datastored values for a shard."""
         client = memcache.Client()
         config = _ShardConfig.memcache_get_or_insert(name)
-        index = random.randint(0, config.num_shards-1)
+        index = random.randint(0, config.num_shards - 1)
         key_name = name + str(index)
 
         def txn():
@@ -172,14 +172,16 @@ class Shard(db.Model):
                         shard = cls(key_name=key_name, name=name)
                     method_name = 'add'
                 shard.count += 1
-                if getattr(client, method_name)(key_name, shard):
+                method = getattr(client, method_name)
+                success = method(key_name, shard)
+                if success:
                     db.put_async(shard)
-                    return True
-            return False
+                    break
+            return success
         success = db.run_in_transaction(txn)
 
     @classmethod
-    def reset_count(cls, name):
+    def reset(cls, name):
         """Reset to 0 the value for a given sharded counter."""
 
         # First, delete all of the datastored shards, 500 at a time.  We do 500
