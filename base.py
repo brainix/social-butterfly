@@ -217,7 +217,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         # First, try to get all of the stats from memcache.
         client = memcache.Client()
         stats = [NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY]
-        stats = client.get_multi(stats, for_cas=True)
+        stats = client.get_multi(stats)
 
         # Next, if any of the stats wasn't memcached, fall back to computing
         # that stat.
@@ -238,7 +238,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         # Finally, if we fell back to computing any of the stats, shove that
         # stat back into memcache and into the dict that we're going to return.
         if missed:
-            client.cas_multi_async(missed)
+            client.add_multi_async(missed)
             stats.update(missed)
         return stats
 
