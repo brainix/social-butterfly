@@ -247,8 +247,15 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         assert change in (1, -1)
         func_name = 'incr' if change == 1 else 'decr'
         func = getattr(memcache, func_name)
-        return_value = func(memcache_key)
-        return return_value
+        value = func(memcache_key)
+        if value is None:
+            if memcache_key == NUM_USERS_KEY:
+                value = self.num_users()
+            elif memcache_key == NUM_ACTIVE_USERS_KEY:
+                value = self.num_active_users()
+            if value is not None:
+                memcache.add(memcache_key, value)
+        return value
 
     def broadcast(self, stats=False, event=None):
         """ """
