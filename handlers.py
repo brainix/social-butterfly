@@ -182,7 +182,20 @@ class FlushChannels(base.WebHandler):
 
     @base.WebHandler.require_cron
     def get(self):
-        """ """
+        """Flush stale channels.
+        
+        Google App Engine implements the real-time web using a technology
+        called channels (similar to Comet or WebSockets), for server initiated
+        communication to the browser.
+        
+        The problem is that these channels only have a lifespan of 2 hours
+        (after which, they're expired and can no longer transport messages).
+        And sometimes, these channels expire uncleanly without sending
+        disconnect messages.
+
+        So once a day, cron sends a request to call this method to delete all
+        of the expired channels.  Just some housekeeping.
+        """
         _log.info('cron flushing stale channels')
         channels.Channel.flush()
         _log.info('cron flushed stale channels')
@@ -208,7 +221,7 @@ class Disconnected(base.WebHandler):
 
 
 class Subscribe(base.WebHandler):
-    """ """
+    """Request handler to listen for XMPP subscribe requests."""
 
     def post(self):
         """ """
@@ -219,7 +232,7 @@ class Subscribe(base.WebHandler):
 
 
 class Subscribed(base.WebHandler):
-    """Request handler to listen for XMPP subscription notifications."""
+    """Request handler to listen for XMPP subscribed notifications."""
 
     def post(self):
         """Alice has subscribed to Social Butterfly.  Send the help text.
@@ -237,7 +250,7 @@ class Subscribed(base.WebHandler):
 
 
 class Unsubscribe(base.WebHandler):
-    """ """
+    """Request handler to listen for XMPP unsubscribe requests."""
 
     def post(self):
         """ """
@@ -248,7 +261,7 @@ class Unsubscribe(base.WebHandler):
 
 
 class Unsubscribed(base.WebHandler):
-    """ """
+    """Request handler to listen for XMPP unsubscribed notifications."""
 
     def post(self):
         """ """
@@ -470,7 +483,12 @@ class Probe(base.WebHandler):
 
     @base.WebHandler.send_presence
     def post(self):
-        """ """
+        """A user is probing for our chat status.  Send it to them.
+        
+        We send our chat status in the @base.WebHandler.send_presence
+        decorator, so there's nothing else for us to do here expect log the
+        request.
+        """
         handle = self.get_handle()
         if handle is None:
             handle = 'an unknown user'

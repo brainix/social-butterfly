@@ -40,12 +40,17 @@ _log = logging.getLogger(__name__)
 def main():
     """It's time for the dog and pony show...
     
-    This is the main entry point into our webapp.  Configure our URL mapping,
-    define our WSGI webapp, then run our webapp.
+    This is the main entry point into our webapp.  We have to do some startup
+    tasks:
+        1. Register our Django page template filters.
+        2. Configure our URL mapping.
+        3. Define and run our WSGI webapp.
     """
 
+    # Register our Django page template filters.
     template.register_template_library('filters')
 
+    # Configure our URL mapping.
     url_mapping = (
         handlers.Mail.mapping(),                                                # Email handler.
         ('/_ah/xmpp/presence/probe/',               handlers.Probe),            # XMPP probe handler.
@@ -69,6 +74,8 @@ def main():
         ('/',                                       handlers.Home),             # Web homepage handler.
         ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found handler.
     )
+
+    # Define and run our WSGI webapp.
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)
 

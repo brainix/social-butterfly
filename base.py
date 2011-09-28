@@ -207,17 +207,36 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         raise NotImplementedError
 
     def get_stats(self):
-        """ """
+        """Return a dict containing all of the statistics that we track.
+
+        We track the total number of users who've signed up for Social
+        Butterfly, the number of users currently online and available for chat,
+        and the number of instant messages sent today.
+        """
+
+        # First, try to get all of the stats from memcache.
         client = memcache.Client()
         stats = [NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY]
         stats = client.get_multi(stats, for_cas=True)
+
+        # Next, if any of the stats wasn't memcached, fall back to computing
+        # that stat.
         missed = {}
         if not stats.has_key(NUM_USERS_KEY):
             missed[NUM_USERS_KEY] = self.num_users()
         if not stats.has_key(NUM_ACTIVE_USERS_KEY):
             missed[NUM_ACTIVE_USERS_KEY] = self.num_active_users()
         if not stats.has_key(NUM_MESSAGES_KEY):
-            missed[NUM_MESSAGES_KEY] = shards.Shard.get_count(NUM_MESSAGES_KEY)
+            # Since this stat is actually a sharding counter, our sharding
+            # counter implementation should keep this stat memcached.  So don't
+            # update memcache (leave that to our sharding counter
+            # implementation).  Only update our dict.
+            num_messages = shards.Shard.get_count(NUM_MESSAGES_KEY)
+            num_messages = 0 if num_messages is None else num_messages
+            stats[NUM_MESSAGES_KEY] = num_messages
+
+        # Finally, if we fell back to computing any of the stats, shove that
+        # stat back into memcache and into the dict that we're going to return.
         if missed:
             client.cas_multi_async(missed)
             stats.update(missed)
@@ -327,7 +346,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
         pass
 
     def get_handle(self, message):
-        """ """
+        """From an XMPP message, determine the handle that sent it."""
         handle = message.sender
         handle = handle.split('/', 1)[0].lower()
         return handle
@@ -394,7 +413,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
 
 
 class MailHandler(_CommonHandler, mail_handlers.InboundMailHandler):
-    """Abstract base chat request handler class."""
+    """Abstract base inbound email request handler class."""
 
     def _serve_error(self, error_code):
         """ """
