@@ -271,22 +271,35 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
 
     def send_presence_to_all(self):
         """ """
+        _log.info('deferring sending presence to all online users')
         cls = self.__class__
         stats = self.get_stats()
         deferred.defer(cls._send_presence_to_all, stats, cursor=None)
+        _log.info('deferred sending presence to all online users')
 
     @classmethod
     def _send_presence_to_all(cls, stats, cursor=None):
         """ """
+        _log.info('sending presence to all online users')
         carols = models.Account.all().filter('available =', True)
         if cursor is not None:
             carols = carols.with_cursor(cursor)
         try:
             for carol in carols:
                 notifications.Notifications.status(carol, stats)
+                # There's a chance that Google App Engine will throw the
+                # DeadlineExceededError exception at this point in the flow of
+                # execution.  In this case, carol will have already received
+                # our chat status, but cursor will not have been updated.  So
+                # on the next go-around, carol will receive our chat status
+                # again.  I'm just documenting this possibility, but it
+                # shouldn't be a big deal.
                 cursor = carols.cursor()
         except DeadlineExceededError:
+            _log.warning('deadline; deferring presence to remaining users')
             deferred.defer(cls._send_presence_to_all, stats, cursor=cursor)
+        else:
+            _log.info('sent presence to all online users')
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):

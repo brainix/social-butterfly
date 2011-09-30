@@ -46,7 +46,7 @@ class Channel(db.Model):
     @classmethod
     def create(cls, name=None):
         """Create a channel."""
-        _log.debug('creating channel')
+        _log.info('creating channel')
 
         def txn():
             for retry in range(NUM_RETRIES):
@@ -64,32 +64,32 @@ class Channel(db.Model):
             token = channel.create_channel(client_id)
             _countdown = 2 * 60 * 60
             deferred.defer(cls.destroy, client_id, _countdown=_countdown)
-            _log.debug('created channel %s, token %s' % (client_id, token))
+            _log.info('created channel %s, token %s' % (client_id, token))
             return token
 
     @classmethod
     def destroy(cls, client_id):
         """Destroy the specified channel."""
-        _log.debug('destroying channel %s' % client_id)
+        _log.info('destroying channel %s' % client_id)
         chan = cls.get_by_key_name(client_id)
         if chan is None:
             body = "couldn't destroy channel %s; already destroyed" % client_id
-            _log.debug(body)
+            _log.info(body)
         else:
             db.delete_async(chan)
-            _log.debug('destroyed channel %s' % client_id)
+            _log.info('destroyed channel %s' % client_id)
 
     @classmethod
     def broadcast(cls, json, name=None):
         """Schedule broadcasting the specified JSON string to all channels."""
-        _log.debug('deferring broadcasting JSON to all channels')
+        _log.info('deferring broadcasting JSON to all connected channels')
         deferred.defer(cls._broadcast, json, name=name, cursor=None)
-        _log.debug('deferred broadcasting JSON to all channels')
+        _log.info('deferred broadcasting JSON to all connected channels')
 
     @classmethod
     def _broadcast(cls, json, name=None, cursor=None):
         """Broadcast the specified JSON string to all channels."""
-        _log.debug('broadcasting JSON to all channels')
+        _log.info('broadcasting JSON to all connected channels')
         keys = cls.all(keys_only=True)
         if name is not None:
             keys = keys.filter('name = ', name)
@@ -99,18 +99,27 @@ class Channel(db.Model):
             for key in keys:
                 client_id = key.name()
                 channel.send_message(client_id, json)
+                # There's a chance that Google App Engine will throw the
+                # DeadlineExceededError exception at this point in the flow of
+                # execution.  In this case, channel will have already received
+                # our JSON broadcast, but cursor will not have been updated.
+                # So on the next go-around, channel will receive our JSON
+                # broadcast again.  I'm just documenting this possibility, but
+                # it shouldn't be a big deal.
                 cursor = keys.cursor()
         except DeadlineExceededError:
+            _log.warning("deadline; deferring broadcast to remaining channels")
             deferred.defer(cls._broadcast, json, name=name, cursor=cursor)
-        _log.debug('broadcasted JSON to all channels')
+        else:
+            _log.info('broadcasted JSON to all connected channels')
 
     @classmethod
     def flush(cls):
         """Destroy all channels created over two hours ago."""
-        _log.debug('destroying all channels over two hours old')
+        _log.info('destroying all channels over two hours old')
         now = datetime.datetime.now()
         timeout = datetime.timedelta(hours=2)
         expiry = now - timeout
         keys = cls.all(keys_only=True).filter('datetime <=', expiry)
         db.delete_async(keys)
-        _log.debug('destroyed all channels over two hours old')
+        _log.info('destroyed all channels over two hours old')
