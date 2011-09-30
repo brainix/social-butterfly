@@ -429,6 +429,7 @@ class Error(base.WebHandler):
 class Available(availability.AvailabilityHandler):
     """Request handler to listen for when users become available for chat."""
 
+    @base.WebHandler.send_presence
     def post(self):
         """Alice has become available for chat.
 
