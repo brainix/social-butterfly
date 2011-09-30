@@ -48,7 +48,7 @@ def main():
     """
 
     # Register our Django page template filters.
-    template.register_template_library('filters')
+    template.register_template_library('filters.filters')
 
     # Configure our URL mapping.
     url_mapping = (

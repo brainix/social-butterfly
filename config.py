@@ -42,7 +42,7 @@ _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 # Which library versions to use.  For more information, see:
 #   http://code.google.com/appengine/docs/python/tools/libraries.html
 LIBRARIES = {
-    'django': '0.96',
+    'django': '1.2',
 }
 
 
