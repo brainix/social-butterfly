@@ -27,11 +27,11 @@
 {% block content %}
 
     <section>
-        <h1>What is this tech page?</h1>
+        <h1>We Love Technology</h1>
         <p>
             Social Butterfly allows you to chat with strangers over
             <a href="http://www.google.com/talk/">Google Talk</a>.
-            This page describes the technologies we used to make Social
+            This page describes the technologies we use to make Social
             Butterfly.
         </p>
     </section>
@@ -39,7 +39,7 @@
     <section>
         <h1>Cloud, Open Source</h1>
         <p>
-            We wrote Social Butterfly in Python for Google&rsquo;s App Engine
+            Social Butterfly is written in Python for Google&rsquo;s App Engine
             cloud.  You can view Social Butterfly&rsquo;s clean,
             object-oriented
             <a href="http://code.google.com/p/social-butterfly/source/browse/#svn%2Ftrunk">source code</a>.
@@ -49,7 +49,7 @@
     <section>
         <h1>Scalable</h1>
         <p>
-            We used techniques like memcache,
+            We use techniques like memcache,
             <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/shards.py">sharding counters</a>,
             and deferred task queues to scale Social Butterfly up to
             <span class="num_users">{{ stats.num_users }}</span>
@@ -60,7 +60,7 @@
     <section>
         <h1>Real-Time</h1>
         <p>
-            We used
+            We use
             <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/channels.py">channels</a>
             (similar to Comet or WebSockets) for real-time communication.  The
             <a href="http://code.google.com/p/social-butterfly/source/browse/trunk/assets/script.js">footer and Growls</a>

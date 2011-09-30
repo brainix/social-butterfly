@@ -36,7 +36,13 @@ class AvailabilityHandler(base.WebHandler):
     """ """
 
     def make_available(self, available):
-        """ """
+        """Make Alice either available or unavailable for chat.
+        
+        Return Alice's account entity, and whether or not we change Alice's
+        available status.  (We may not end up changing Alice's available status
+        for example, if she's already unavailable and someone calls this method
+        to make her unavailable.)
+        """
         alice, changed = self._change_available(available)
         self._log_available(available, alice, changed)
         return alice, changed
@@ -44,13 +50,14 @@ class AvailabilityHandler(base.WebHandler):
     @base.WebHandler.run_in_transaction
     def _change_available(self, available):
         """ """
-        alice = self.get_account()
-        changed = False
-        if alice is not None and alice.started and alice.available != available:
+        alice = self.get_account(cache=False)
+        change = alice is not None and \
+                 alice.started and \
+                 alice.available != available
+        if change:
             alice.available = available
             db.put(alice)
-            changed = True
-        return alice, changed
+        return alice, change
 
     def _log_available(self, available, alice, changed):
         """ """

@@ -60,7 +60,7 @@ class BaseHandler(object):
 
     @staticmethod
     def run_in_transaction(method):
-        """Transactionally execute a method."""
+        """Decorator to transactionally execute a method."""
         @functools.wraps(method)
         def wrap(*args, **kwds):
             method_name = method.func_name
@@ -140,7 +140,7 @@ class BaseHandler(object):
 
     @staticmethod
     def defer(countdown=None, queue=None):
-        """Defer the execution of a method."""
+        """Decorator to defer the execution of a method."""
         def wrap1(method):
             @functools.wraps(method)
             def wrap2(self, *args, **kwds):
@@ -306,11 +306,10 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
         handle = handle.split('/', 1)[0].lower()
         return handle
 
-    def get_account(self):
+    def get_account(self, cache=True):
         """ """
-        try:
-            alice = self.request.alice
-        except AttributeError:
+        alice = self.request.get('alice') if cache else None
+        if alice is None:
             handle = self.request.get('from')
             key_name = models.Account.key_name(handle)
             alice = models.Account.get_by_key_name(key_name)
@@ -331,7 +330,12 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
 
     @staticmethod
     def require_cron(method):
-        """ """
+        """Ensure that only cron can call a request handler method.
+        
+        We do this by checking for a special request header, X-AppEngine-Cron,
+        that Google App Engine sets on a request if and only if the request was
+        initiated by cron.
+        """
         @functools.wraps(method)
         def wrap(self, *args, **kwds):
             _log.debug('decorated %s can only be called by cron' % method)
