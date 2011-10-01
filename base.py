@@ -273,8 +273,8 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         """ """
         _log.info('deferring sending presence to all online users')
         cls = self.__class__
-        carols = self.get_users(started=None, available=True, chatting=None,
-                                order=None)
+        carols = self.get_users(keys_only=True, started=None, available=True,
+                                chatting=None, order=None)
         stats = self.get_stats()
         deferred.defer(cls._send_presence_to_all, carols, stats, cursor=None)
         _log.info('deferred sending presence to all online users')
@@ -287,6 +287,8 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
             carols = carols.with_cursor(cursor)
         try:
             for carol in carols:
+                carol = carol.name()
+                carol = models.Account.key_to_handle(carol)
                 notifications.Notifications.status(carol, stats)
                 # There's a chance that Google App Engine will throw the
                 # DeadlineExceededError exception at this point in the flow of
@@ -326,7 +328,7 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
         alice = self.request.get('alice') if cache else None
         if alice is None:
             handle = self.request.get('from')
-            key_name = models.Account.key_name(handle)
+            key_name = models.Account.handle_to_key(handle)
             alice = models.Account.get_by_key_name(key_name)
             self.request.alice = alice
         return alice
@@ -382,7 +384,7 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
         try:
             alice = self.request.alice
         except AttributeError:
-            key_name = models.Account.key_name(message.sender)
+            key_name = models.Account.handle_to_key(message.sender)
             alice = models.Account.get_by_key_name(key_name)
             self.request.alice = alice
         return alice

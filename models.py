@@ -55,9 +55,16 @@ class Account(db.Model):
         return str(self) != str(other)
 
     @staticmethod
-    def key_name(handle):
-        """Convert an IM handle into an account key."""
-        return 'account_' + handle.split('/', 1)[0].lower()
+    def handle_to_key(handle):
+        """Convert an IM handle address into an account key name."""
+        key_name = 'account_' + handle.split('/', 1)[0].lower()
+        return key_name
+
+    @staticmethod
+    def key_to_handle(key_name):
+        """Convert an account key name into an IM handle address."""
+        handle = key_name[len('_account'):]
+        return handle
 
     @classmethod
     def factory(cls, handle):
@@ -67,7 +74,7 @@ class Account(db.Model):
         cls._validate_handle(handle)
 
         handle = db.IM('xmpp', handle)
-        key_name = cls.key_name(handle.address)
+        key_name = cls.handle_to_key(handle.address)
 
         def txn():
             account = cls.get_by_key_name(key_name)
@@ -78,7 +85,7 @@ class Account(db.Model):
             else:
                 account = cls(key_name=key_name, handle=handle, started=False,
                               available=False)
-                db.put_async(account)
+                account.put()
                 created = True
                 _log.info('created account %s' % account)
             return account, created

@@ -35,15 +35,16 @@ _log = logging.getLogger(__name__)
 class StrangerMixin(object):
     """ """
 
-    def get_users(self, started=True, available=True, chatting=False,
-                  order=True):
+    def get_users(self, keys_only=False, started=True, available=True,
+                  chatting=False, order=True):
         """ """
+        assert keys_only in (False, True)
         assert started in (None, False, True)
         assert available in (None, False, True)
         assert chatting in (None, False, True)
         assert order in (None, False, True)
 
-        carols = models.Account.all()
+        carols = models.Account.all(keys_only=keys_only)
         if started is not None:
             carols = carols.filter('started =', started)
         if available is not None:
@@ -59,7 +60,9 @@ class StrangerMixin(object):
 
     def _count_users(self, started, available, chatting):
         """ """
-        carols = self.get_users(started, available, chatting, None)
+        carols = self.get_users(keys_only=True, started=started,
+                                available=available, chatting=chatting,
+                                order=None)
         num_carols = carols.count()
         return num_carols
 
@@ -77,8 +80,8 @@ class StrangerMixin(object):
         Bob was Alice's previous chat partner (if any).  Pair Alice with
         someone different this time (if possible).
         """
-        carols = self.get_users(started=True, available=True, chatting=False)
-        # only_one = carols.count(2) == 1
+        carols = self.get_users(keys_only=False, started=True, available=True,
+                                chatting=False, order=True)
         for carol in carols:
             # Make sure to not pair Alice with herself, and pair Alice with
             # someone other than Bob this time.

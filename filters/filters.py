@@ -27,18 +27,21 @@ import logging
 
 from google.appengine.ext.webapp.template import create_template_register
 
+import models
+
 
 _log = logging.getLogger(__name__)
 register = create_template_register()
 
 
 @register.filter
-def gravatar_hash(user):
-    """Convert a user object into a Gravatar (globally recognized avatar) URL.
+def gravatar_hash(account_key):
+    """Convert a user key name to a Gravatar (globally recognized avatar) URL.
 
     For more information, see:
         http://en.gravatar.com/site/implement/url
     """
-    email = str(user)
-    hash = hashlib.md5(email).hexdigest()
-    return hash
+    account_key_name = account_key.name()
+    account_email = models.Account.key_to_handle(account_key_name)
+    account_gravatar_hash = hashlib.md5(account_email).hexdigest()
+    return account_gravatar_hash

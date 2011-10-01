@@ -120,8 +120,8 @@ class Album(base.WebHandler):
     def _render_album_javascript(self):
         """ """
         path = os.path.join(TEMPLATES, 'album_javascript.html')
-        users = self.get_users(started=None, available=None, chatting=None,
-                               order=False)
+        users = self.get_users(keys_only=True, started=None, available=None,
+                               chatting=None, order=False)
         html = template.render(path, locals(), debug=DEBUG)
         return html
 
