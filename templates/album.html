@@ -46,6 +46,8 @@
 
 {% block javascript %}
 
-    {{ album_javascript }}
+    {% autoescape off %}
+        {{ album_javascript }}
+    {% endautoescape %}
 
 {% endblock %}
