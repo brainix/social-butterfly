@@ -86,10 +86,17 @@ class Shard(db.Model):
         This method never decreases the number of shards.
         """
         def txn():
-            config = _ShardConfig.get_or_insert(name, name=name)
+            created = False
+            updated = False
+            config = _ShardConfig.get(name)
+            if config is None:
+                created = True
+                config = _ShardConfig(name=name)
             if config.num_shards < num:
+                updated = True
                 config.num_shards = num
-                db.put_async(config)
+            if created or updated:
+                config.put()
             return config
         config = db.run_in_transaction(txn)
 
@@ -175,7 +182,7 @@ class Shard(db.Model):
                 method = getattr(client, method_name)
                 success = method(key_name, shard)
                 if success:
-                    db.put_async(shard)
+                    shard.put()
                     break
             return success
         success = db.run_in_transaction(txn)
@@ -193,7 +200,6 @@ class Shard(db.Model):
         while keys:
             db.delete_async(keys)
             cursor = shards.cursor()
-            shards = cls.all(keys_only=True).filter('name = ', name)
             shards = shards.with_cursor(cursor)
             keys = shards.fetch(500)
 
