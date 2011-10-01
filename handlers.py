@@ -276,7 +276,7 @@ class Chat(base.ChatHandler):
 
     @base.ChatHandler.require_account
     def help_command(self, message=None):
-        """Alice has typed /help."""
+        """Alice has typed /help.  Send her the help text."""
         alice = self.get_account(message)
         _log.debug('%s typed /help' % alice)
         notifications.Notifications.help(alice)

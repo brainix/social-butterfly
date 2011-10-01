@@ -41,7 +41,7 @@ _log = logging.getLogger(__name__)
 
 
 class _ShardConfig(db.Model):
-    """Tracks the number of shards for each named counter."""
+    """Datastore model containing the configuration for a named counter."""
 
     name = db.StringProperty(required=True)
     num_shards = db.IntegerProperty(default=DEFAULT_NUM_SHARDS, required=True)
@@ -73,7 +73,7 @@ class _ShardConfig(db.Model):
 
 
 class Shard(db.Model):
-    """Shards for each named counter."""
+    """Datastore model for a shard for a named counter, and public API."""
 
     name = db.StringProperty(required=True)
     count = db.IntegerProperty(required=True, default=0)
@@ -81,7 +81,7 @@ class Shard(db.Model):
 
     @staticmethod
     def set_num_shards(name, num):
-        """Increase the number of shards for a given counter to the given num.
+        """Increase the number of shards for a named counter to the given num.
 
         This method never decreases the number of shards.
         """
@@ -125,7 +125,7 @@ class Shard(db.Model):
 
     @classmethod
     def get_count(cls, name, increment=0):
-        """Retrieve the value for a given sharded counter."""
+        """Retrieve the value for a named counter."""
         client = memcache.Client()
         total = client.gets(name)
         if total is None:
@@ -146,7 +146,7 @@ class Shard(db.Model):
 
     @classmethod
     def increment(cls, name, defer=False):
-        """Increment the memcached total value for a given sharded counter."""
+        """Increment the memcached total value for a named counter."""
         if memcache.incr(name) is None:
             cls.get_count(name, increment=1)
         if defer:
@@ -182,7 +182,7 @@ class Shard(db.Model):
 
     @classmethod
     def reset(cls, name):
-        """Reset to 0 the value for a given sharded counter."""
+        """Reset to 0 the value for a named counter."""
 
         # First, delete all of the datastored shards, 500 at a time.  We do 500
         # at a time because the datastore limits batch operations to 500 per

@@ -19,7 +19,7 @@
 #       along with Social Butterfly.  If not, see:                            #
 #           <http://www.gnu.org/licenses/>.                                   #
 #-----------------------------------------------------------------------------#
-""" """
+"""Datastore model and public API for Google App Engine channel management."""
 
 
 import datetime
@@ -38,14 +38,20 @@ _log = logging.getLogger(__name__)
 
 
 class Channel(db.Model):
-    """ """
+    """Datastore model and public API for Google App Engine channel management.
+    
+    Google App Engine implements channels (similar to Comet or WebSockets) for
+    real-time cloud to browser communication.  But App Engine only provides the
+    communication primitives.  We need to persist additional data about the
+    open channels, so that we know who to broadcast the messages to.
+    """
 
     name = db.StringProperty()
     datetime = db.DateTimeProperty(required=True, auto_now=True)
 
     @classmethod
     def create(cls, name=None):
-        """Create a channel."""
+        """Create a channel and return its token."""
         _log.info('creating channel')
 
         def txn():
