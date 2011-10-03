@@ -67,11 +67,11 @@ class StrangerMixin(object):
 
     def num_users(self):
         """Return the total number of users."""
-        return self._count_users(started=None, available=None, chatting=None)
+        return self._count_users()
 
     def num_active_users(self):
         """Return the number of started and available users."""
-        return self._count_users(started=True, available=True, chatting=None)
+        return self._count_users(started=True, available=True)
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner, Carol.
