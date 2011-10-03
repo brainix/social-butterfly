@@ -35,8 +35,8 @@ _log = logging.getLogger(__name__)
 class StrangerMixin(object):
     """ """
 
-    def get_users(self, keys_only=False, started=True, available=True,
-                  chatting=False, order=True):
+    def get_users(self, keys_only=True, started=None, available=None,
+                  chatting=None, order=None):
         """ """
         assert keys_only in (False, True)
         assert started in (None, False, True)
@@ -58,21 +58,20 @@ class StrangerMixin(object):
             carols = carols.order('datetime' if order else '-datetime')
         return carols
 
-    def _count_users(self, started, available, chatting):
+    def _count_users(self, started=None, available=None, chatting=None):
         """ """
-        carols = self.get_users(keys_only=True, started=started,
-                                available=available, chatting=chatting,
-                                order=None)
+        carols = self.get_users(started=started, available=available,
+                                chatting=chatting)
         num_carols = carols.count()
         return num_carols
 
     def num_users(self):
         """Return the total number of users."""
-        return self._count_users(None, None, None)
+        return self._count_users(started=None, available=None, chatting=None)
 
     def num_active_users(self):
         """Return the number of started and available users."""
-        return self._count_users(True, True, None)
+        return self._count_users(started=True, available=True, chatting=None)
 
     def _find_partner(self, alice, bob):
         """Alice is looking to chat.  Find her a partner, Carol.

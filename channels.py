@@ -107,11 +107,11 @@ class Channel(db.Model):
                 channel.send_message(client_id, json)
                 # There's a chance that Google App Engine will throw the
                 # DeadlineExceededError exception at this point in the flow of
-                # execution.  In this case, channel will have already received
-                # our JSON broadcast, but cursor will not have been updated.
-                # So on the next go-around, channel will receive our JSON
-                # broadcast again.  I'm just documenting this possibility, but
-                # it shouldn't be a big deal.
+                # execution.  In this case, the current channel will have
+                # already received our JSON broadcast, but the cursor will not
+                # have been updated.  So on the next go-around, the current
+                # channel will receive our JSON broadcast again.  I'm just
+                # documenting this possibility, but it shouldn't be a big deal.
                 cursor = keys.cursor()
         except DeadlineExceededError:
             _log.warning("deadline; deferring broadcast to remaining channels")

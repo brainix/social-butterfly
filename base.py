@@ -273,8 +273,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         """ """
         _log.info('deferring sending presence to all online users')
         cls = self.__class__
-        carols = self.get_users(keys_only=True, started=None, available=True,
-                                chatting=None, order=None)
+        carols = self.get_users(available=True)
         stats = self.get_stats()
         deferred.defer(cls._send_presence_to_all, carols, stats, cursor=None)
         _log.info('deferred sending presence to all online users')
@@ -285,6 +284,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         _log.info('sending presence to all online users')
         if cursor is not None:
             carols = carols.with_cursor(cursor)
+        num_carols = 0
         try:
             for carol in carols:
                 carol = carol.name()
@@ -298,11 +298,14 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                 # again.  I'm just documenting this possibility, but it
                 # shouldn't be a big deal.
                 cursor = carols.cursor()
+                num_carols += 1
         except DeadlineExceededError:
+            _log.info('sent presence to %s online users' % num_carols)
             _log.warning('deadline; deferring presence to remaining users')
             deferred.defer(cls._send_presence_to_all, carols, stats,
                            cursor=cursor)
         else:
+            _log.info('sent presence to %s online users' % num_carols)
             _log.info('sent presence to all online users')
 
 

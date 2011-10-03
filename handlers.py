@@ -120,8 +120,7 @@ class Album(base.WebHandler):
     def _render_album_javascript(self):
         """ """
         path = os.path.join(TEMPLATES, 'album_javascript.html')
-        users = self.get_users(keys_only=True, started=None, available=None,
-                               chatting=None, order=False)
+        users = self.get_users()
         html = template.render(path, locals(), debug=DEBUG)
         return html
 
@@ -250,7 +249,11 @@ class Subscribed(base.WebHandler):
 
 
 class Unsubscribe(base.WebHandler):
-    """Request handler to listen for XMPP unsubscribe requests."""
+    """Request handler to listen for XMPP unsubscribe requests.
+    
+    XXX:  I'm not exactly sure when this request handler is called.  I should
+    probably find out at some point.
+    """
 
     def post(self):
         """ """
@@ -261,7 +264,11 @@ class Unsubscribe(base.WebHandler):
 
 
 class Unsubscribed(base.WebHandler):
-    """Request handler to listen for XMPP unsubscribed notifications."""
+    """Request handler to listen for XMPP unsubscribed notifications.
+    
+    XXX:  I'm not exactly sure when this request handler is called.  I should
+    probably find out at some point.
+    """
 
     def post(self):
         """ """
@@ -416,7 +423,11 @@ class Chat(base.ChatHandler):
 
 
 class Error(base.WebHandler):
-    """ """
+    """
+
+    XXX:  I'm not exactly sure when this request handler is called.  I should
+    probably find out at some point.
+    """
 
     def post(self):
         """ """
