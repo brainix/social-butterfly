@@ -43,8 +43,7 @@ _log = logging.getLogger(__name__)
 class _ShardConfig(db.Model):
     """Datastore model containing the configuration for a named counter."""
 
-    name = db.StringProperty(required=True)
-    num_shards = db.IntegerProperty(default=DEFAULT_NUM_SHARDS, required=True)
+    num_shards = db.IntegerProperty(default=DEFAULT_NUM_SHARDS, required=True, indexed=False)
     datetime = db.DateTimeProperty(required=True, indexed=False, auto_now_add=True)
 
     @classmethod
@@ -53,7 +52,7 @@ class _ShardConfig(db.Model):
         key_name = name + '_config'
         config = memcache.get(key_name)
         if config is None:
-            config = cls.get_or_insert(name, name=name)
+            config = cls.get_or_insert(key_name)
             memcache.add(key_name, config)
         return config
 
@@ -64,7 +63,7 @@ class _ShardConfig(db.Model):
         config = memcache.get(key_name)
         if config is None:
             try:
-                config = cls.get(name)
+                config = cls.get(key_name)
             except db.BadKeyError:
                 config = None
             else:
@@ -85,13 +84,15 @@ class Shard(db.Model):
 
         This method never decreases the number of shards.
         """
+        key_name = name + '_config'
+
         def txn():
             created = False
             updated = False
-            config = _ShardConfig.get(name)
+            config = _ShardConfig.get(key_name)
             if config is None:
                 created = True
-                config = _ShardConfig(name=name)
+                config = _ShardConfig(key_name=key_name)
             if config.num_shards < num:
                 updated = True
                 config.num_shards = num
@@ -101,7 +102,6 @@ class Shard(db.Model):
         config = db.run_in_transaction(txn)
 
         client = memcache.Client()
-        key_name = name + '_config'
         memcached_config = client.gets(key_name)
         if memcached_config is None:
             client.add(key_name, config)
