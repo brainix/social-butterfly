@@ -62,11 +62,8 @@ class _ShardConfig(db.Model):
         key_name = name + '_config'
         config = memcache.get(key_name)
         if config is None:
-            try:
-                config = cls.get(key_name)
-            except db.BadKeyError:
-                config = None
-            else:
+            config = cls.get_by_key_name(key_name)
+            if config is not None:
                 memcache.add(key_name, config)
         return config
 
@@ -138,12 +135,19 @@ class Shard(db.Model):
         if total is None:
             _log.info('memcache miss when getting count for ' + name)
             config = _ShardConfig.memcache_get(name)
-            if config is not None:
+            if config is None:
+                _log.warning("couldn't find shard config for " + name)
+            else:
+                _log.info('found shard config for ' + name)
                 total = increment
                 shards = cls.all().filter('name = ', name)
+                num_shards = 0
                 for shard in shards:
                     total += shard.count
+                    num_shards += 1
+                _log.info('found %s shards for %s' % (num_shards, name))
                 client.add(name, total)
+                _log.info('computed and memcached count for ' + name)
         else:
             _log.debug('memcache hit when getting count for ' + name)
             if increment:
