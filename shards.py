@@ -133,21 +133,21 @@ class Shard(db.Model):
         client = memcache.Client()
         total = client.gets(name)
         if total is None:
-            _log.info('memcache miss when getting count for ' + name)
+            _log.debug('memcache miss when getting count for ' + name)
             config = _ShardConfig.memcache_get(name)
             if config is None:
-                _log.warning("couldn't find shard config for " + name)
+                _log.debug("couldn't find shard config for " + name)
             else:
-                _log.info('found shard config for ' + name)
+                _log.debug('found shard config for ' + name)
                 total = increment
                 shards = cls.all().filter('name = ', name)
                 num_shards = 0
                 for shard in shards:
                     total += shard.count
                     num_shards += 1
-                _log.info('found %s shards for %s' % (num_shards, name))
+                _log.debug('found %s shards for %s' % (num_shards, name))
                 client.add(name, total)
-                _log.info('computed and memcached count for ' + name)
+                _log.debug('computed and memcached count for ' + name)
         else:
             _log.debug('memcache hit when getting count for ' + name)
             if increment:
