@@ -85,8 +85,16 @@ class StrangerMixin(object):
             # Make sure to not pair Alice with herself, and pair Alice with
             # someone other than Bob this time.
             if carol not in (alice, bob):
+
                 # TODO: Use Google App Engine's XMPP API to ensure that Carol's
                 # Google Talk status is available (and not idle or busy).
+                #
+                # Upon further research, I've discovered that it's currently
+                # impossible to detect a user's status.  All we can see is
+                # whether or not a user is online, but not if the user is
+                # available, idle, or away.  Universal sadness.  :-(  For more
+                # information, see:
+                #     http://code.google.com/p/googleappengine/issues/detail?id=2238#c6
 
                 # Hooray, we've found Alice a chat partner!
                 return carol
