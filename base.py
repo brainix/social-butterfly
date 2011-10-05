@@ -286,18 +286,24 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         cls = self.__class__
         active_users = memcache.get(ACTIVE_USERS_KEY)
         stats = self.get_stats()
+        deferred_sending_presence = False
         if active_users is not None:
             if active_users:
                 deferred.defer(cls._send_presence_to_set, active_users, stats)
+                deferred_sending_presence = True
         else:
             active_users = self.get_users(started=True, available=True)
             if active_users.count(1):
                 deferred.defer(cls._send_presence_to_query, active_users,
                                stats)
+                deferred_sending_presence = True
             else:
                 active_users = set()
                 memcache.add(ACTIVE_USERS_KEY, active_users)
-        _log.info('deferred sending presence to all active users')
+        if deferred_sending_presence:
+            _log.info('deferred sending presence to all active users')
+        else:
+            _log.info('not deferring sending presence (no active users)')
 
     @classmethod
     def _send_presence_to_set(cls, carols, stats):

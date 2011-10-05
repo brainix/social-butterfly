@@ -95,7 +95,10 @@ class Channel(db.Model):
         channels = channels.count(1)
         if channels:
             deferred.defer(cls._broadcast, json, name=name, cursor=None)
-        _log.info('deferred broadcasting JSON to all connected channels')
+            _log.info('deferred broadcasting JSON to all connected channels')
+        else:
+            body = 'not deferring broadcasting JSON (no connected channels)'
+            _log.info(body)
 
     @classmethod
     def _broadcast(cls, json, name=None, cursor=None):
