@@ -271,17 +271,17 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
 
     def send_presence_to_all(self):
         """ """
-        _log.info('deferring sending presence to all online users')
+        _log.info('deferring sending presence to all /started users')
         cls = self.__class__
-        carols = self.get_users(available=True)
+        carols = self.get_users(started=True, available=True)
         stats = self.get_stats()
         deferred.defer(cls._send_presence_to_all, carols, stats, cursor=None)
-        _log.info('deferred sending presence to all online users')
+        _log.info('deferred sending presence to all /started users')
 
     @classmethod
     def _send_presence_to_all(cls, carols, stats, cursor=None):
         """ """
-        _log.info('sending presence to all online users')
+        _log.info('sending presence to all /started users')
         if cursor is not None:
             carols = carols.with_cursor(cursor)
         num_carols = 0
@@ -300,13 +300,13 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                 cursor = carols.cursor()
                 num_carols += 1
         except DeadlineExceededError:
-            _log.info('sent presence to %s online users' % num_carols)
+            _log.info('sent presence to %s /started users' % num_carols)
             _log.warning('deadline; deferring presence to remaining users')
             deferred.defer(cls._send_presence_to_all, carols, stats,
                            cursor=cursor)
         else:
-            _log.info('sent presence to %s online users' % num_carols)
-            _log.info('sent presence to all online users')
+            _log.info('sent presence to %s /started users' % num_carols)
+            _log.info('sent presence to all /started users')
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
