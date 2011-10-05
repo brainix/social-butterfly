@@ -26,6 +26,31 @@ For more information, see:
 """
 
 
+# Apparently, we have to import coldstart at the top of this module as well as
+# at the top of the main.py module.  Otherwise, we get tracebacks like this:
+#
+#   <class 'google.appengine.dist._library.UnacceptableVersionError'>: django 1.2 was requested, but 0.96.4.None is already in use
+#   Traceback (most recent call last):
+#     File "/base/data/home/apps/social-butterfly/1.353755632328827004/main.py", line 25, in <module>
+#       import coldstart
+#     File "/base/data/home/apps/social-butterfly/1.353755632328827004/coldstart.py", line 50, in <module>
+#       use_library(library, version)
+#     File "/base/python_runtime/python_lib/versions/1/google/appengine/dist/_library.py", line 414, in use_library
+#       InstallLibrary(name, version, explicit=True)
+#     File "/base/python_runtime/python_lib/versions/1/google/appengine/dist/_library.py", line 367, in InstallLibrary
+#       CheckInstalledVersion(name, version, explicit=True)
+#     File "/base/python_runtime/python_lib/versions/1/google/appengine/dist/_library.py", line 300, in CheckInstalledVersion
+#       (name, desired_version, installed_version))
+#
+# google.appengine.ext.appstats.recording must be importing some Django module.
+# So if we import google.appengine.ext.appstats.recording before we import
+# coldstart, Google App Engine will pick the wrong (default) Django version.
+#
+# For more information, see:
+#   http://stackoverflow.com/questions/4994913/app-engine-default-django-version-change
+
+import coldstart
+
 import logging
 
 from google.appengine.ext.appstats import recording

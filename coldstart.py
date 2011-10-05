@@ -30,6 +30,7 @@ imports, to ensure that we import the correct library versions.
 
 
 # Let's get the ball rolling.  First things first: let's configure the logger.
+
 import logging
 from config import DEBUG
 logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
@@ -43,6 +44,7 @@ _log = logging.getLogger(__name__)
 #
 # For more information, see:
 #   http://code.google.com/appengine/docs/python/tools/libraries.html
+
 from google.appengine.dist import use_library
 from config import LIBRARIES
 for library, version in LIBRARIES.items():

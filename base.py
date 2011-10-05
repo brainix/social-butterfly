@@ -432,11 +432,11 @@ class ChatHandler(_CommonHandler, xmpp_handlers.CommandHandler):
         @functools.wraps(method)
         def wrap(self, message=None):
             _log.debug('decorated %s requires admin account' % method)
-            alice = self.get_account(message)
-            if str(alice) not in ADMIN_EMAILS:
+            handle = self.get_handle(message)
+            if handle not in ADMIN_EMAILS:
                 body = "decorator requirements failed; %s isn't an admin"
-                _log.warning(body % message.sender)
-                notifications.Notifications.unknown_command(message.sender)
+                _log.warning(body % handle)
+                notifications.Notifications.unknown_command(handle)
             else:
                 _log.debug('decorator requirements passed; calling method')
                 return method(self, message=message)
