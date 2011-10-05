@@ -307,6 +307,7 @@ class Chat(base.ChatHandler):
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             async.get_result()
             self.broadcast(stats=True, event=START_EVENT)
+            self.update_active_users(alice)
             self.send_presence_to_all()
 
     @base.ChatHandler.require_account
@@ -373,6 +374,7 @@ class Chat(base.ChatHandler):
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
             async1.get_result()
             self.broadcast(stats=True, event=STOP_EVENT)
+            self.update_active_users(alice)
             self.send_presence_to_all()
 
     @base.ChatHandler.require_account
@@ -458,6 +460,7 @@ class Available(availability.AvailabilityHandler):
                 notifications.Notifications.chatting(bob)
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             self.broadcast(stats=True, event=AVAILABLE_EVENT)
+            self.update_active_users(alice)
             self.send_presence_to_all()
 
 
@@ -487,6 +490,7 @@ class Unavailable(availability.AvailabilityHandler):
                 notifications.Notifications.chatting(carol)
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
             self.broadcast(stats=True, event=UNAVAILABLE_EVENT)
+            self.update_active_users(alice)
             self.send_presence_to_all()
 
 

@@ -39,7 +39,7 @@ from google.appengine.runtime import DeadlineExceededError
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 from config import DEBUG, HTTP_CODE_TO_TITLE, TEMPLATES
-from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
+from config import NUM_USERS_KEY, NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY, ACTIVE_USERS_KEY
 from config import ADMIN_EMAILS
 import channels
 import models
@@ -257,6 +257,17 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                 memcache.add(memcache_key, value)
         return value
 
+    def update_active_users(self, alice):
+        """ """
+        client = memcache.Client()
+        active_users = client.gets(ACTIVE_USERS_KEY)
+        if active_users is not None:
+            active = alice.started and alice.available
+            method_name = 'add' if active else 'discard'
+            method = getattr(active_users, method_name)
+            method(str(alice))
+            client.cas(ACTIVE_USERS_KEY, active_users)
+
     def broadcast(self, stats=False, event=None):
         """ """
         d = {}
@@ -273,18 +284,48 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         """ """
         _log.info('deferring sending presence to all /started users')
         cls = self.__class__
-        carols = self.get_users(started=True, available=True)
+        active_users = memcache.get(ACTIVE_USERS_KEY)
         stats = self.get_stats()
-        deferred.defer(cls._send_presence_to_all, carols, stats, cursor=None)
+        if active_users is not None:
+            deferred.defer(cls._send_presence_to_set, active_users, stats)
+        else:
+            active_users = self.get_users(started=True, available=True)
+            deferred.defer(cls._send_presence_to_query, active_users, stats)
         _log.info('deferred sending presence to all /started users')
 
     @classmethod
-    def _send_presence_to_all(cls, carols, stats, cursor=None):
+    def _send_presence_to_set(cls, carols, stats):
         """ """
-        _log.info('sending presence to all /started users')
+        _log.info('sending presence')
+        num_carols = 0
+        sent_to = set()
+        try:
+            for carol in carols:
+                notifications.Notifications.status(carol, stats)
+                num_carols += 1
+                sent_to.add(carol)
+        except DeadlineExceededError:
+            _log.info('sent presence to %s users' % num_carols)
+            _log.warning('deadline; deferring presence to remaining users')
+            send_to = carol - sent_to
+            deferred.defer(cls._send_presence_to_set, send_to, stats)
+        else:
+            _log.info('sent presence to %s users' % num_carols)
+            _log.info('sent presence')
+
+    @classmethod
+    def _send_presence_to_query(cls, carols, stats, cursor=None):
+        """ """
+        _log.info('sending presence')
         if cursor is not None:
             carols = carols.with_cursor(cursor)
         num_carols = 0
+
+        client = memcache.Client()
+        active_users, memcached = client.gets(ACTIVE_USERS_KEY), True
+        if active_users is None:
+            active_users, memcached = set(), False
+
         try:
             for carol in carols:
                 carol = carol.name()
@@ -299,14 +340,20 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                 # shouldn't be a big deal.
                 cursor = carols.cursor()
                 num_carols += 1
+                active_users.add(carol)
         except DeadlineExceededError:
-            _log.info('sent presence to %s /started users' % num_carols)
+            _log.info('sent presence to %s users' % num_carols)
             _log.warning('deadline; deferring presence to remaining users')
-            deferred.defer(cls._send_presence_to_all, carols, stats,
+
+            method_name = 'cas' if memcached else 'add'
+            method = getattr(client, method_name)
+            method(ACTIVE_USERS_KEY, active_users)
+
+            deferred.defer(cls._send_presence_to_query, carols, stats,
                            cursor=cursor)
         else:
-            _log.info('sent presence to %s /started users' % num_carols)
-            _log.info('sent presence to all /started users')
+            _log.info('sent presence to %s users' % num_carols)
+            _log.info('sent presence')
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
