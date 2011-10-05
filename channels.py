@@ -101,6 +101,7 @@ class Channel(db.Model):
             keys = keys.filter('name = ', name)
         if cursor is not None:
             keys = keys.with_cursor(cursor)
+        num_channels = 0
         try:
             for key in keys:
                 client_id = key.name()
@@ -113,10 +114,13 @@ class Channel(db.Model):
                 # channel will receive our JSON broadcast again.  I'm just
                 # documenting this possibility, but it shouldn't be a big deal.
                 cursor = keys.cursor()
+                num_channels += 1
         except DeadlineExceededError:
+            _log.info('broadcasted JSON to %s channels' % num_channels)
             _log.warning("deadline; deferring broadcast to remaining channels")
             deferred.defer(cls._broadcast, json, name=name, cursor=cursor)
         else:
+            _log.info('broadcasted JSON to %s channels' % num_channels)
             _log.info('broadcasted JSON to all connected channels')
 
     @classmethod

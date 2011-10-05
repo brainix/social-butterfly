@@ -282,7 +282,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
 
     def send_presence_to_all(self):
         """ """
-        _log.info('deferring sending presence to all /started users')
+        _log.info('deferring sending presence to all active users')
         cls = self.__class__
         active_users = memcache.get(ACTIVE_USERS_KEY)
         stats = self.get_stats()
@@ -291,12 +291,12 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         else:
             active_users = self.get_users(started=True, available=True)
             deferred.defer(cls._send_presence_to_query, active_users, stats)
-        _log.info('deferred sending presence to all /started users')
+        _log.info('deferred sending presence to all active users')
 
     @classmethod
     def _send_presence_to_set(cls, carols, stats):
         """ """
-        _log.info('sending presence')
+        _log.info('sending presence to all active users')
         num_carols = 0
         sent_to = set()
         try:
@@ -311,12 +311,12 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
             deferred.defer(cls._send_presence_to_set, send_to, stats)
         else:
             _log.info('sent presence to %s users' % num_carols)
-            _log.info('sent presence')
+            _log.info('sent presence to all active users')
 
     @classmethod
     def _send_presence_to_query(cls, carols, stats, cursor=None):
         """ """
-        _log.info('sending presence')
+        _log.info('sending presence to all active users')
         if cursor is not None:
             carols = carols.with_cursor(cursor)
         num_carols = 0
@@ -353,7 +353,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                            cursor=cursor)
         else:
             _log.info('sent presence to %s users' % num_carols)
-            _log.info('sent presence')
+            _log.info('sent presence to all active users')
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
