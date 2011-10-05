@@ -307,7 +307,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         except DeadlineExceededError:
             _log.info('sent presence to %s users' % num_carols)
             _log.warning('deadline; deferring presence to remaining users')
-            send_to = carol - sent_to
+            send_to = carols - sent_to
             deferred.defer(cls._send_presence_to_set, send_to, stats)
         else:
             _log.info('sent presence to %s users' % num_carols)
