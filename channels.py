@@ -31,7 +31,7 @@ from google.appengine.ext import db
 from google.appengine.ext import deferred
 from google.appengine.runtime import DeadlineExceededError
 
-from config import CLIENT_IDS_KEY, NUM_RETRIES
+from config import NUM_RETRIES
 
 
 _log = logging.getLogger(__name__)
@@ -89,7 +89,12 @@ class Channel(db.Model):
     def broadcast(cls, json, name=None):
         """Schedule broadcasting the specified JSON string to all channels."""
         _log.info('deferring broadcasting JSON to all connected channels')
-        deferred.defer(cls._broadcast, json, name=name, cursor=None)
+        channels = cls.all()
+        if name is not None:
+            channels = channels.filter('name =', name)
+        channels = channels.count(1)
+        if channels:
+            deferred.defer(cls._broadcast, json, name=name, cursor=None)
         _log.info('deferred broadcasting JSON to all connected channels')
 
     @classmethod

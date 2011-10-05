@@ -26,6 +26,7 @@ import logging
 import os
 
 from django.utils import simplejson
+from google.appengine.api import memcache
 from google.appengine.api import xmpp
 from google.appengine.ext.webapp import template
 
@@ -174,6 +175,13 @@ class ResetStats(base.WebHandler):
         _log.info('cron resetting num messages sharding counter')
         shards.Shard.reset(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
+
+        _log.info('flushing memcache')
+        success = memcache.flush_all()
+        if success:
+            _log.info('flushed memcache')
+        else:
+            _log.error("couldn't flush memcache (RPC or server error)")
 
 
 class FlushChannels(base.WebHandler):

@@ -57,7 +57,6 @@ NUM_USERS_KEY = 'num_users'
 NUM_ACTIVE_USERS_KEY = 'num_active_users'
 NUM_MESSAGES_KEY = 'num_messages'
 ACTIVE_USERS_KEY = 'active_users'
-CLIENT_IDS_KEY = 'client_ids'
 
 HOMEPAGE_EVENT = 'homepage_event'
 SIGN_UP_EVENT = 'sign_up_event'
