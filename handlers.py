@@ -145,7 +145,7 @@ class GetToken(base.WebHandler):
 
     def get(self):
         """Create a channel and return its token."""
-        _log.debug('someone has requested token to open channel')
+        _log.info('someone has requested token to open channel')
         if DEBUG:
             _log.info('running on SDK; not opening channel (too much CPU)')
             self.serve_error(503)
@@ -214,7 +214,7 @@ class Connected(base.WebHandler):
     def post(self):
         """A channel has connected and can receive messages."""
         client_id = self.request.get('from')
-        _log.debug('channel %s has connected' % client_id)
+        _log.info('channel %s has connected' % client_id)
 
 
 class Disconnected(base.WebHandler):
@@ -223,7 +223,7 @@ class Disconnected(base.WebHandler):
     def post(self):
         """A channel has disconnected and can no longer receive messages."""
         client_id = self.request.get('from')
-        _log.debug('channel %s has disconnected' % client_id)
+        _log.info('channel %s has disconnected' % client_id)
         channels.Channel.destroy(client_id)
 
 
@@ -235,7 +235,7 @@ class Subscribe(base.WebHandler):
         handle = self.get_handle()
         if not handle:
             handle = 'an unknown user'
-        _log.debug("%s wishes to subscribe to our presence" % handle)
+        _log.info("%s wishes to subscribe to our presence" % handle)
 
 
 class Subscribed(base.WebHandler):
@@ -252,7 +252,7 @@ class Subscribed(base.WebHandler):
         handle = self.get_handle()
         if not handle:
             handle = 'an unknown user'
-        _log.debug('%s has allowed us to receive his/her presence' % handle)
+        _log.info('%s has allowed us to receive his/her presence' % handle)
         notifications.Notifications.help(handle)
 
 
@@ -268,7 +268,7 @@ class Unsubscribe(base.WebHandler):
         handle = self.get_handle()
         if not handle:
             handle = 'an unknown user'
-        _log.debug('%s is unsubscribing from our presence' % handle)
+        _log.info('%s is unsubscribing from our presence' % handle)
 
 
 class Unsubscribed(base.WebHandler):
@@ -283,7 +283,7 @@ class Unsubscribed(base.WebHandler):
         handle = self.get_handle()
         if not handle:
             handle = 'an unknown user'
-        _log.debug('%s has denied/cancelled our subscription request' % handle)
+        _log.info('%s has denied/cancelled our subscription request' % handle)
 
 
 class Chat(base.ChatHandler):
@@ -293,7 +293,7 @@ class Chat(base.ChatHandler):
     def help_command(self, message=None):
         """Alice has typed /help.  Send her the help text."""
         alice = self.get_account(message)
-        _log.debug('%s typed /help' % alice)
+        _log.info('%s typed /help' % alice)
         notifications.Notifications.help(alice)
         self.broadcast(stats=False, event=HELP_EVENT)
 
@@ -301,7 +301,7 @@ class Chat(base.ChatHandler):
     def start_command(self, message=None):
         """Alice has typed /start.  Make her available for chat."""
         alice = self.get_account(message)
-        _log.debug('%s typed /start' % alice)
+        _log.info('%s typed /start' % alice)
         if alice.started:
             notifications.Notifications.already_started(alice)
         else:
@@ -322,7 +322,7 @@ class Chat(base.ChatHandler):
     def next_command(self, message=None):
         """Alice has typed /next.  Pair her with a different partner."""
         alice = self.get_account(message)
-        _log.debug('%s typed /next' % alice)
+        _log.info('%s typed /next' % alice)
         if not alice.started:
             # Alice hasn't yet made herself available for chat.  She must first
             # type /start and start chatting with a partner before she can type
@@ -362,7 +362,7 @@ class Chat(base.ChatHandler):
     def stop_command(self, message=None):
         """Alice has typed /stop.  Make her unavailable for chat."""
         alice = self.get_account(message)
-        _log.debug('%s typed /stop' % alice)
+        _log.info('%s typed /stop' % alice)
         if not alice.started:
             notifications.Notifications.already_stopped(alice)
         else:
@@ -390,7 +390,7 @@ class Chat(base.ChatHandler):
     def who_command(self, message=None):
         """Alice has typed /who.  Tell her who she's chatting with."""
         alice = self.get_account(message)
-        _log.debug('%s typed /who' % alice)
+        _log.info('%s typed /who' % alice)
         notifications.Notifications.who(alice)
 
     def me_command(self, message=None):
@@ -409,7 +409,7 @@ class Chat(base.ChatHandler):
         """
         alice = self.get_account(message)
         verb = '/me' if me else 'IM'
-        _log.debug('%s typed %s' % (alice, verb))
+        _log.info('%s typed %s' % (alice, verb))
         if not alice.started:
             notifications.Notifications.not_started(alice)
         else:
@@ -444,7 +444,7 @@ class Error(base.WebHandler):
         handle = self.get_handle()
         if not handle:
             handle = 'an unknown user'
-        _log.debug('%s errored' % handle)
+        _log.info('%s errored' % handle)
 
 
 class Available(availability.AvailabilityHandler):
@@ -516,7 +516,7 @@ class Probe(base.WebHandler):
         handle = self.get_handle()
         if handle is None:
             handle = 'an unknown user'
-        _log.debug('%s is probing for our current presence' % handle)
+        _log.info('%s is probing for our current presence' % handle)
 
 
 class Mail(base.MailHandler):
