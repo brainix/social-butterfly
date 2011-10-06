@@ -287,6 +287,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         active_users = memcache.get(ACTIVE_USERS_KEY)
         stats = self.get_stats()
         deferred_sending_presence = False
+
         if active_users is not None:
             if active_users:
                 deferred.defer(cls._send_presence_to_set, active_users, stats)
@@ -300,6 +301,7 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
             else:
                 active_users = set()
                 memcache.add(ACTIVE_USERS_KEY, active_users)
+
         if deferred_sending_presence:
             _log.info('deferred sending presence to all active users')
         else:
@@ -356,16 +358,15 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         except DeadlineExceededError:
             _log.info('sent presence to %s users' % num_carols)
             _log.warning('deadline; deferring presence to remaining users')
-
-            method_name = 'cas' if memcached else 'add'
-            method = getattr(client, method_name)
-            method(ACTIVE_USERS_KEY, active_users)
-
             deferred.defer(cls._send_presence_to_query, carols, stats,
                            cursor=cursor)
         else:
             _log.info('sent presence to %s users' % num_carols)
             _log.info('sent presence to all active users')
+        finally:
+            method_name = 'cas' if memcached else 'add'
+            method = getattr(client, method_name)
+            method(ACTIVE_USERS_KEY, active_users)
 
 
 class WebHandler(_CommonHandler, webapp.RequestHandler):
