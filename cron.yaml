@@ -32,3 +32,8 @@ cron:
   url: /flush-channels
   schedule: every day 02:00
   timezone: America/Chicago
+
+- description: flush memcache (to force ourselves never to rely on it)
+  url: /flush-memcache
+  schedule: every day 04:00
+  timezone: America/Chicago

@@ -64,6 +64,7 @@ def main():
         ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),        # XMPP subscribe handler.
         ('/_ah/channel/disconnected/',              handlers.Disconnected),     # Channel disconnected handler.
         ('/_ah/channel/connected/',                 handlers.Connected),        # Channel connected handler.
+        ('/flush-memcache',                         handlers.FlushMemcache),    # Web flush memcache cron handler.
         ('/flush-channels',                         handlers.FlushChannels),    # Web flush stale channels cron handler.
         ('/reset-stats',                            handlers.ResetStats),       # Web reset stats cron handler.
         ('/get-stats',                              handlers.GetStats),         # Web stats AJAX handler.

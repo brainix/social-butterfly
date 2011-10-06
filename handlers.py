@@ -171,17 +171,10 @@ class ResetStats(base.WebHandler):
 
     @base.WebHandler.require_cron
     def get(self):
-        """ """
+        """Reset the interesting statistics."""
         _log.info('cron resetting num messages sharding counter')
         shards.Shard.reset(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
-
-        _log.info('flushing memcache')
-        success = memcache.flush_all()
-        if success:
-            _log.info('flushed memcache')
-        else:
-            _log.error("couldn't flush memcache (RPC or server error)")
 
 
 class FlushChannels(base.WebHandler):
@@ -206,6 +199,33 @@ class FlushChannels(base.WebHandler):
         _log.info('cron flushing stale channels')
         channels.Channel.flush()
         _log.info('cron flushed stale channels')
+
+
+class FlushMemcache(base.WebHandler):
+    """Request handler to flush memcache."""
+
+    @base.WebHandler.require_cron
+    def get(self):
+        """Flush memcache.
+
+        Social Butterfly uses memcache all over the place in order to improve
+        performance.  However, a memcached item can be evicted or become
+        inconsistent at any moment.  Therefore, we periodically flush all
+        memcached items in order to:
+
+            1.  Test our code and ensure that it continues to function properly
+                even if nothing is memcached.  (After a flush, our code should
+                recompute and re-memcache everything.)
+
+            2.  Resolve inconsistencies between memcached and datastored values
+                by forcing recomputation of all memcached items.
+        """
+        _log.info('flushing memcache')
+        success = memcache.flush_all()
+        if success:
+            _log.info('flushed memcache')
+        else:
+            _log.error("couldn't flush memcache (RPC or server error)")
 
 
 class Connected(base.WebHandler):
