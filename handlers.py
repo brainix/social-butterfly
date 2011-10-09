@@ -60,7 +60,7 @@ class Home(base.WebHandler):
         """Serve the homepage."""
         path = os.path.join(TEMPLATES, 'home.html')
         title = 'chat with strangers'
-        active_tab = 'home'
+        description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
         stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
@@ -96,7 +96,7 @@ class Stats(base.WebHandler):
         """Serve the stats page."""
         path = os.path.join(TEMPLATES, 'stats.html')
         title = 'interesting statistics'
-        active_tab = 'stats'
+        description = 'Social Butterfly&rsquo;s real-time capabilities.'
         stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
@@ -110,8 +110,8 @@ class Album(base.WebHandler):
         """Serve the album page."""
         path = os.path.join(TEMPLATES, 'album.html')
         title = 'photo album'
+        description = 'All of the Gravatars of Social Butterfly&rsquo;s users.'
         album_javascript = self._render_album_javascript()
-        active_tab = 'album'
         stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)
@@ -133,7 +133,7 @@ class Tech(base.WebHandler):
         """Serve the tech page."""
         path = os.path.join(TEMPLATES, 'tech.html')
         title = 'our technologies'
-        active_tab = 'tech'
+        description = 'The technologies we use to make Social Butterfly.'
         stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         self.response.out.write(html)

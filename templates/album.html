@@ -24,11 +24,6 @@
 \*------------------------------------------------------------ {% endcomment %}
 
 
-{% block meta %}
-    <meta name="description" content="All of the Gravatars of Social Butterfly&rsquo;s users." />
-{% endblock %}
-
-
 {% block content %}
 
     <section>
@@ -45,11 +40,6 @@
         <h1>Who uses Social Butterfly?</h1>
         <div id="gravatars"></div>
     </section>
-
-{% endblock %}
-
-
-{% block javascript %}
 
     {% autoescape off %}
         {{ album_javascript }}

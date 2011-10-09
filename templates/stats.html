@@ -24,11 +24,6 @@
 \*------------------------------------------------------------ {% endcomment %}
 
 
-{% block meta %}
-    <meta name="description" content="Social Butterfly&rsquo;s real-time capabilities." />
-{% endblock %}
-
-
 {% block content %}
 
     <section>
@@ -54,12 +49,5 @@
         <h1>Messages Sent Today</h1>
         <div class="flipclock num_messages">{{ stats.num_messages }}</div>
     </section>
-
-{% endblock %}
-
-
-{% block javascript %}
-
-    <script src="/assets/flipclock.js" defer></script>
 
 {% endblock %}
