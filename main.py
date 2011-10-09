@@ -53,6 +53,7 @@ def main():
     # Configure our URL mapping.
     url_mapping = (
         handlers.Mail.mapping(),                                                # Email handler.
+
         ('/_ah/xmpp/presence/probe/',               handlers.Probe),            # XMPP probe handler.
         ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),      # XMPP unavailable handler.
         ('/_ah/xmpp/presence/available/',           handlers.Available),        # XMPP available handler.
@@ -62,17 +63,20 @@ def main():
         ('/_ah/xmpp/subscription/unsubscribe/',     handlers.Unsubscribe),      # XMPP unsubscribe handler.
         ('/_ah/xmpp/subscription/subscribed/',      handlers.Subscribed),       # XMPP subscribed handler.
         ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),        # XMPP subscribe handler.
+
         ('/_ah/channel/disconnected/',              handlers.Disconnected),     # Channel disconnected handler.
         ('/_ah/channel/connected/',                 handlers.Connected),        # Channel connected handler.
+
         ('/flush-memcache',                         handlers.FlushMemcache),    # Web flush memcache cron handler.
         ('/flush-channels',                         handlers.FlushChannels),    # Web flush stale channels cron handler.
         ('/reset-stats',                            handlers.ResetStats),       # Web reset stats cron handler.
         ('/get-stats',                              handlers.GetStats),         # Web stats AJAX handler.
         ('/get-token',                              handlers.GetToken),         # Web channel token AJAX handler.
+
         ('/tech',                                   handlers.Tech),             # Web tech page handler.
         ('/album',                                  handlers.Album),            # Web album page handler.
         ('/stats',                                  handlers.Stats),            # Web stats page handler.
-        ('/',                                       handlers.Home),             # Web homepage handler.
+        ('/',                                       handlers.HashBang),         # Web hash-bang dispatch handler.
         ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found handler.
     )
 

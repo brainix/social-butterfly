@@ -140,6 +140,27 @@ class Tech(base.WebHandler):
         self.broadcast(stats=False, event=TECH_PAGE_EVENT)
 
 
+class HashBang(Home, Stats, Album, Tech):
+    """ """
+
+    def get(self):
+        """ """
+        bases = {}
+        for cls in self.__class__.__bases__:
+            cls_name = str(cls)
+            cls_name = cls_name.split("'")[1]
+            cls_name = cls_name.split('.')[1]
+            bases[cls_name] = cls
+
+        cls_name = self.request.get('_escaped_fragment_', 'home').title()
+        try:
+            cls = bases[cls_name]
+        except KeyError:
+            self.serve_error(404)
+        else:
+            cls.get(self)
+
+
 class GetToken(base.WebHandler):
     """Request handler to create a channel and return its token."""
 
