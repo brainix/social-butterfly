@@ -33,6 +33,48 @@ var HR = 60 * MIN;
 $(function() {
     // Hooray, a page has been loaded!
 
+    if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
+        openSocket();
+        window.setInterval(openSocket, 1 * HR + 59 * MIN);
+    }
+
+    var hashBang = getHashBang();
+    if (hashBang) {
+        ajaxLoadHashBang(hashBang);
+    } else {
+        init();
+    }
+});
+
+
+/*---------------------------------------------------------------------------*\     
+ |                               getHashBang()                               |
+\*---------------------------------------------------------------------------*/     
+
+function getHashBang() {
+    var hashBang = '';
+    var hash = window.location.hash;
+    if (hash.charAt(1) == '!') {
+        hashBang = hash.slice(2);
+    }
+    return hashBang;
+}
+
+
+/*---------------------------------------------------------------------------*\     
+ |                             ajaxLoadHashBang()                            |
+\*---------------------------------------------------------------------------*/     
+
+function ajaxLoadHashBang(hashBang) {
+    alert('loading ' + hashBang);
+}
+
+
+/*---------------------------------------------------------------------------*\     
+ |                                   init()                                  |
+\*---------------------------------------------------------------------------*/     
+
+function init() {
     var form = $('.register');
     if (form.length) {
         form.submit(signUp);
@@ -55,12 +97,7 @@ $(function() {
     if ($('#gravatars').length) {
         slideshow();
     }
-
-    if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
-        openSocket();
-        window.setInterval(openSocket, 1 * HR + 59 * MIN);
-    }
-});
+}
 
 
 /*---------------------------------------------------------------------------*\     
