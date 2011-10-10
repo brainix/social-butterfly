@@ -53,17 +53,37 @@ class NotFound(base.WebHandler):
         self.serve_error(404)
 
 
+class Chrome(base.WebHandler):
+    """Request handler to serve the user interface chrome."""
+
+    def get(self):
+        """Serve the user interface chrome."""
+        path = os.path.join(TEMPLATES, 'chrome.html')
+        title = 'loading&hellip;'
+        description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
+        stats = self.get_stats()
+        html = template.render(path, locals(), debug=DEBUG)
+        self.response.out.write(html)
+
+
 class Home(base.WebHandler):
     """Request handler to serve the homepage."""
 
     def get(self):
         """Serve the homepage."""
         path = os.path.join(TEMPLATES, 'home.html')
+        snippet = self.request.snippet
         title = 'chat with strangers'
         description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
-        stats = self.get_stats()
+        if not snippet:
+            stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
+        if snippet:
+            d = {'title': title, 'description': description, 'snippet': html}
+            json = simplejson.dumps(d)
+            self.response.out.write(json)
+        else:
+            self.response.out.write(html)
         self.broadcast(stats=False, event=HOMEPAGE_EVENT)
 
     def post(self):
@@ -95,11 +115,18 @@ class Stats(base.WebHandler):
     def get(self):
         """Serve the stats page."""
         path = os.path.join(TEMPLATES, 'stats.html')
+        snippet = self.request.snippet
         title = 'interesting statistics'
         description = 'Social Butterfly&rsquo;s real-time capabilities.'
-        stats = self.get_stats()
+        if not snippet:
+            stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
+        if snippet:
+            d = {'title': title, 'description': description, 'snippet': html}
+            json = simplejson.dumps(d)
+            self.response.out.write(json)
+        else:
+            self.response.out.write(html)
         self.broadcast(stats=False, event=STATS_PAGE_EVENT)
 
 
@@ -109,12 +136,19 @@ class Album(base.WebHandler):
     def get(self):
         """Serve the album page."""
         path = os.path.join(TEMPLATES, 'album.html')
+        snippet = self.request.snippet
         title = 'photo album'
         description = 'All of the Gravatars of Social Butterfly&rsquo;s users.'
         album_javascript = self._render_album_javascript()
-        stats = self.get_stats()
+        if not snippet:
+            stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
+        if snippet:
+            d = {'title': title, 'description': description, 'snippet': html}
+            json = simplejson.dumps(d)
+            self.response.out.write(json)
+        else:
+            self.response.out.write(html)
         self.broadcast(stats=False, event=ALBUM_PAGE_EVENT)
 
     @base.BaseHandler.memoize(24 * 60 * 60)
@@ -132,15 +166,22 @@ class Tech(base.WebHandler):
     def get(self):
         """Serve the tech page."""
         path = os.path.join(TEMPLATES, 'tech.html')
+        snippet = self.request.snippet
         title = 'our technologies'
         description = 'The technologies we use to make Social Butterfly.'
-        stats = self.get_stats()
+        if not snippet:
+            stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
+        if snippet:
+            d = {'title': title, 'description': description, 'snippet': html}
+            json = simplejson.dumps(d)
+            self.response.out.write(json)
+        else:
+            self.response.out.write(html)
         self.broadcast(stats=False, event=TECH_PAGE_EVENT)
 
 
-class HashBang(Home, Stats, Album, Tech):
+class HashBang(Chrome, Home, Stats, Album, Tech):
     """ """
 
     def get(self):
@@ -152,13 +193,25 @@ class HashBang(Home, Stats, Album, Tech):
             cls_name = cls_name.split('.')[1]
             bases[cls_name] = cls
 
-        cls_name = self.request.get('_escaped_fragment_', 'home').title()
+        cls_name = self.request.get('_escaped_fragment_').title()
+        self.request.snippet = False
+        if not cls_name:
+            cls_name = self.request.get('snippet').title()
+            self.request.snippet = True
+            if not cls_name:
+                cls_name = 'Chrome'
+                self.request.snippet = False
+
         try:
             cls = bases[cls_name]
         except KeyError:
             self.serve_error(404)
         else:
             cls.get(self)
+
+    def post(self):
+        """ """
+        Home.post(self)
 
 
 class GetToken(base.WebHandler):

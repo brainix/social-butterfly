@@ -21,83 +21,87 @@
 \*------------------------------------------------------------ {% endcomment %}
 
 
-<!DOCTYPE html>
+{% if not snippet %}
+    <!DOCTYPE html>
 
 
-<html lang="en">
-    <head>
-        <title>social butterfly - {{ title }}</title>
-        <meta charset="utf-8" />
-        <meta name="keywords" content="Social Butterfly, chat with strangers, anonymous, chat, random, strangers, Google Talk, Omegle, Chatroulette" />
-        {% if description %}
-            <meta name="description" content="{{ description }}" />
-        {% endif %}
-        <meta name="author" content="Code A La Mode" />
-        <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
-        <meta name="msvalidate.01" content="A4C1B453D9C861C0A9E98C459D92DF65" />
-        <link rel="stylesheet" href="/assets/sticky.min.css" />
-        <link rel="stylesheet" href="/assets/style.css" />
-        <link rel="shortcut icon" href="/favicon.ico">
-    </head>
-    <body>
-        <header>
-            <hgroup>
-                <h1><a href="/">Social Butterfly</a></h1>
-                <h2>{{ title }}</h2>
-            </hgroup>
-        </header>
-
-        <article>
-            {% block content %}{% endblock %}
-        </article>
-
-        <footer>
-            <nav>
-                <ul>
-                    <li class="first"><a href="/">Social Butterfly</a></li>
-                    <li><a href="/stats">Stats</a></li>
-                    <li><a href="/album">Album</a></li>
-                    <li><a href="/tech">Tech</a></li>
-                </ul>
-            </nav>
-            {% if stats %}
-                <p>
-                    <span class="num_users">{{ stats.num_users }}</span> users total,
-                    <span class="num_active_users">{{ stats.num_active_users }}</span> available for chat,
-                    <span class="num_messages">{{ stats.num_messages }}</span> messages sent today
-                </p>
+    <html lang="en">
+        <head>
+            <title>social butterfly - {% autoescape off %}{{ title }}{% endautoescape %}</title>
+            <meta charset="utf-8" />
+            <meta name="keywords" content="Social Butterfly, chat with strangers, anonymous, chat, random, strangers, Google Talk, Omegle, Chatroulette" />
+            {% if description %}
+                <meta name="description" content="{{ description }}" />
             {% endif %}
-        </footer>
+            <meta name="author" content="Code A La Mode" />
+            <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
+            <meta name="msvalidate.01" content="A4C1B453D9C861C0A9E98C459D92DF65" />
+            <link rel="stylesheet" href="/assets/sticky.min.css" />
+            <link rel="stylesheet" href="/assets/style.css" />
+            <link rel="shortcut icon" href="/favicon.ico">
+        </head>
+        <body>
+            <header>
+                <hgroup>
+                    <h1><a href="#!home">Social Butterfly</a></h1>
+                    <h2>{% autoescape off %}{{ title }}{% endautoescape %}</h2>
+                </hgroup>
+            </header>
 
-        {% include "notifications.html" %}
+            <article>
+{% endif %}
+                {% block content %}{% endblock %}
+{% if not snippet %}
+            </article>
 
-        <script src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ" defer></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" defer></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" defer></script>
-        <script src='/_ah/channel/jsapi' defer></script>
-        <script src="/assets/sticky.min.js" defer></script>
-        <script src="/assets/flipclock.js" defer></script>
-        <script src="/assets/script.js" defer></script>
+            <footer>
+                <nav>
+                    <ul>
+                        <li class="first"><a href="#!home">Social Butterfly</a></li>
+                        <li><a href="#!stats">Stats</a></li>
+                        <li><a href="#!album">Album</a></li>
+                        <li><a href="#!tech">Tech</a></li>
+                    </ul>
+                </nav>
+                {% if stats %}
+                    <p>
+                        <span class="num_users">{{ stats.num_users }}</span> users total,
+                        <span class="num_active_users">{{ stats.num_active_users }}</span> available for chat,
+                        <span class="num_messages">{{ stats.num_messages }}</span> messages sent today
+                    </p>
+                {% endif %}
+            </footer>
 
-        <script>
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-2153971-5']);
-            _gaq.push(['_trackPageview']);
-            _gaq.push(['_trackPageLoadTime']);
+            {% include "notifications.html" %}
 
-            (function() {
-                var ga = document.createElement('script');
-                ga.type = 'text/javascript';
-                ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0];
-                s.parentNode.insertBefore(ga, s);
-            })();
+            <script src="https://www.google.com/jsapi?key=ABQIAAAAorxaUiGpnCkpbu7iWA5PBRQXsaUn3YvBJovhrjAuC8w4Xcl3SxQgueVziXJ8NI4DTP2JABlkr6ulJQ" defer></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" defer></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" defer></script>
+            <script src='/_ah/channel/jsapi' defer></script>
+            <script src="/assets/sticky.min.js" defer></script>
+            <script src="/assets/flipclock.js" defer></script>
+            <script src="/assets/script.js" defer></script>
 
-            {% if stats %}
-                var token = null;
-                var socket = null;
-            {% endif %}
-        </script>
-    </body>
-</html>
+            <script>
+                var _gaq = _gaq || [];
+                _gaq.push(['_setAccount', 'UA-2153971-5']);
+                _gaq.push(['_trackPageview']);
+                _gaq.push(['_trackPageLoadTime']);
+
+                (function() {
+                    var ga = document.createElement('script');
+                    ga.type = 'text/javascript';
+                    ga.async = true;
+                    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                    var s = document.getElementsByTagName('script')[0];
+                    s.parentNode.insertBefore(ga, s);
+                })();
+
+                {% if stats %}
+                    var token = null;
+                    var socket = null;
+                {% endif %}
+            </script>
+        </body>
+    </html>
+{% endif %}
