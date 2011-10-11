@@ -170,8 +170,7 @@ class Tech(base.WebHandler):
         snippet = self.request.snippet
         title = 'our technologies'
         description = 'The technologies we use to make Social Butterfly.'
-        if not snippet:
-            stats = self.get_stats()
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         if snippet:
             d = {'title': title, 'description': description, 'snippet': html}
