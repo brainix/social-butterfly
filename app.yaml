@@ -39,6 +39,10 @@ handlers:
   static_files: assets/robots.txt
   upload: assets/robots.txt
 
+- url: /sitemap.xml
+  static_files: assets/sitemap.xml
+  upload: assets/sitemap.xml
+
 - url: /favicon.ico
   static_files: assets/favicon.ico
   upload: assets/favicon.ico

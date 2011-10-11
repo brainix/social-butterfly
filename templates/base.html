@@ -34,6 +34,9 @@
                 <meta name="description" content="{{ description }}" />
             {% endif %}
             <meta name="author" content="Code A La Mode" />
+            {% if ajax_without_hash %}
+                <meta name="fragment" content="!">
+            {% endif %}
             <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
             <meta name="msvalidate.01" content="A4C1B453D9C861C0A9E98C459D92DF65" />
             <link rel="stylesheet" href="/assets/sticky.min.css" />

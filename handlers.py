@@ -59,7 +59,7 @@ class Chrome(base.WebHandler):
     def get(self):
         """Serve the user interface chrome."""
         path = os.path.join(TEMPLATES, 'base.html')
-        snippet = False
+        ajax_without_hash = True
         title = ''
         description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
         stats = self.get_stats()
@@ -193,14 +193,18 @@ class HashBang(Chrome, Home, Stats, Album, Tech):
             cls_name = cls_name.split('.')[1]
             bases[cls_name] = cls
 
-        cls_name = self.request.get('_escaped_fragment_').title()
-        self.request.snippet = False
-        if not cls_name:
+        args = self.request.arguments()
+        if '_escaped_fragment_' in args:
+            cls_name = self.request.get('_escaped_fragment_').title()
+            if not cls_name:
+                cls_name = 'Home'
+            self.request.snippet = False
+        elif 'snippet' in args:
             cls_name = self.request.get('snippet').title()
             self.request.snippet = True
-            if not cls_name:
-                cls_name = 'Chrome'
-                self.request.snippet = False
+        else:
+            cls_name = 'Chrome'
+            self.request.snippet = False
 
         try:
             cls = bases[cls_name]
