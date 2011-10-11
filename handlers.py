@@ -58,8 +58,9 @@ class Chrome(base.WebHandler):
 
     def get(self):
         """Serve the user interface chrome."""
-        path = os.path.join(TEMPLATES, 'chrome.html')
-        title = 'loading&hellip;'
+        path = os.path.join(TEMPLATES, 'base.html')
+        snippet = False
+        title = ''
         description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
         stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)

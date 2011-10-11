@@ -79,13 +79,18 @@ function getHashBang() {
  |                             ajaxLoadHashBang()                            |
 \*---------------------------------------------------------------------------*/     
 
-var loadHashBangRequests = [];
+var hashBangRequest = null;
 
 function ajaxLoadHashBang(hashBang) {
+    if (hashBangRequest) {
+        hashBangRequest.abort();
+        hashBangRequest = null;
+    }
+
     var url = window.location.toString();
     var index = url.lastIndexOf('/');
     url = url.slice(0, index + 1);
-    $.ajax({
+    hashBangRequest = $.ajax({
         type: 'GET',
         url: url,
         data: {snippet: hashBang},
@@ -96,6 +101,9 @@ function ajaxLoadHashBang(hashBang) {
             $('header hgroup h2').html(json.title);
             $('article').html(json.snippet);
             init();
+        },
+        complete: function(jqXHR, textStatus) {
+            hashBangRequest = null;
         }
     });
 }
@@ -126,7 +134,7 @@ function init() {
     }
 
     if ($('#gravatars').length) {
-        slideshow();
+        startSlideshow();
     }
 }
 
@@ -284,6 +292,11 @@ function parseJSON(json) {
 \*---------------------------------------------------------------------------*/
 
 var slideshowIndex = 0;
+
+function startSlideshow() {
+    slideshowIndex = 0;
+    slideshow();
+}
 
 function slideshow() {
     if (slideshowIndex < gravatars.length) {
