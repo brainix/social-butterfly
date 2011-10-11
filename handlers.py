@@ -119,8 +119,7 @@ class Stats(base.WebHandler):
         snippet = self.request.snippet
         title = 'interesting statistics'
         description = 'Social Butterfly&rsquo;s real-time capabilities.'
-        if not snippet:
-            stats = self.get_stats()
+        stats = self.get_stats()
         html = template.render(path, locals(), debug=DEBUG)
         if snippet:
             d = {'title': title, 'description': description, 'snippet': html}
@@ -232,16 +231,6 @@ class GetToken(base.WebHandler):
             token = channels.Channel.create()
             self.response.out.write(token)
             _log.info('created channel, returned token')
-
-
-class GetStats(base.WebHandler):
-    """Request handler to get the interesting statistics."""
-
-    def get(self):
-        """Return a JSON object containing updated interesting statistics."""
-        stats = self.get_stats()
-        stats = simplejson.dumps(stats)
-        self.response.out.write(stats)
 
 
 class ResetStats(base.WebHandler):

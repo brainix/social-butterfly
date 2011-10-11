@@ -34,13 +34,12 @@
     var methods = {
         init: function(opts) {
             var data = $.extend(true, {}, settings);
-            data.cache = [];
             data.state = [];
             data.num = 0;
             if (opts) {
                 $.extend(data, opts);
             }
-            for (var digit = 0; digit < data.digits; digit++) {
+            for (var index = 0; index < data.digits; index++) {
                 data.state.push(0);
             }
             this.data('flipclock', data);
@@ -48,26 +47,28 @@
             var paths = [];
             for (var state = 0; state < 10; state += 0.5) {
                 var path = stateToPath(this, state);
-                // paths.push(path);
                 paths[paths.length] = path;
             }
-            preload(this, paths);
 
+            var initStr = this.html();
+            var initNum = parseInt(initStr);
+            if (isNaN(initNum)) {
+                var error = '$.flipclock.init();, ';
+                error += 'but HTML value ' + initStr + ' is NaN';
+                $.error(error);
+            }
+            if (initStr.length > data.digits) {
+                var error = '$.flipclock.init();, ' + data.digits + 'digits, ';
+                error += 'but HTML value ' + initStr + ' requires more digits';
+                $.error(error);
+            }
             draw(this);
+            set(this, initNum);
             return this;
         },
 
         set: function(num) {
-            var data = this.data('flipclock');
-            var max = Math.pow(10, data.digits) - 1;
-            if (num > max) {
-                var error = '$.flipclock.set(' + num + ');, ';
-                error += 'but max value is ' + max;
-                $.error(error);
-            }
-
-            data.num = num;
-            flip(this);
+            set(this, num);
             return this;
         }
     };
@@ -99,19 +100,6 @@
         var data = obj.data('flipclock');
         var path = data.path + file;
         return path;
-    }
-
-    function preload(obj, urls) {
-        // Given a URL to an image, preload that image.
-        if (document.images) {
-            for (var index = 0; index < urls.length; index++) {
-                var url = urls[index];
-                var data = obj.data('flipclock');
-                var cachedImage = document.createElement("img");
-                cachedImage.src = url;
-                data.cache.push(cachedImage);
-            }
-        }
     }
 
     function draw(obj) {
@@ -154,6 +142,19 @@
         }
 
         f();
+    }
+
+    function set(obj, num) {
+        var data = obj.data('flipclock');
+        var max = Math.pow(10, data.digits) - 1;
+        if (num > max) {
+            var error = '$.flipclock.set(' + num + ');, ';
+            error += 'but max value is ' + max;
+            $.error(error);
+        }
+
+        data.num = num;
+        flip(obj);
     }
 
 })(jQuery);

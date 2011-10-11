@@ -33,6 +33,29 @@ var HR = 60 * MIN;
 $(function() {
     // Hooray, a page has been loaded!
 
+    preloadImages(
+        '/assets/flipclock/0.png',
+        '/assets/flipclock/1.png',
+        '/assets/flipclock/2.png',
+        '/assets/flipclock/3.png',
+        '/assets/flipclock/4.png',
+        '/assets/flipclock/5.png',
+        '/assets/flipclock/6.png',
+        '/assets/flipclock/7.png',
+        '/assets/flipclock/8.png',
+        '/assets/flipclock/9.png',
+        '/assets/flipclock/0-1.png',
+        '/assets/flipclock/1-2.png',
+        '/assets/flipclock/2-3.png',
+        '/assets/flipclock/3-4.png',
+        '/assets/flipclock/4-5.png',
+        '/assets/flipclock/5-6.png',
+        '/assets/flipclock/6-7.png',
+        '/assets/flipclock/7-8.png',
+        '/assets/flipclock/8-9.png',
+        '/assets/flipclock/9-0.png'
+    );
+
     if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
         openSocket();
         window.setInterval(openSocket, 1 * HR + 59 * MIN);
@@ -41,6 +64,85 @@ $(function() {
     $(window).bind('hashchange', changeHashBang);
     changeHashBang();
 });
+
+
+/*---------------------------------------------------------------------------*\
+ |                              preloadImages()                              |
+\*---------------------------------------------------------------------------*/
+
+function preloadImages() {
+    if (document.images) {
+        var images = [];
+        for (var index = 0; index < preloadImages.arguments.length; index++) {
+            images[index] = new Image();
+            images[index].src = preloadImages.arguments[index];
+        }
+    }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                                openSocket()                               |
+\*---------------------------------------------------------------------------*/
+
+function openSocket() {
+    $.ajax({
+        type: 'GET',
+        url: '/get-token',
+        cache: false,
+        beforeSend: function(jqXHR, settings) {
+            if (socket) {
+                socket.close();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            token = null;
+            socket = null;
+        },
+        success: function(data, textStatus, jqXHR) {
+            token = data;
+            var channel = new goog.appengine.Channel(token);
+            socket = channel.open();
+            socket.onopen = socketOpened;
+            socket.onmessage = socketMessaged;
+            socket.onerror = socketErrored;
+            socket.onclose = socketClosed;
+        }
+    });
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                               socketOpened()                              |
+\*---------------------------------------------------------------------------*/
+
+function socketOpened() {
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              socketMessaged()                             |
+\*---------------------------------------------------------------------------*/
+
+function socketMessaged(message) {
+    parseJSON(message.data);
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                              socketErrored()                              |
+\*---------------------------------------------------------------------------*/
+
+function socketErrored(error) {
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                               socketClosed()                              |
+\*---------------------------------------------------------------------------*/
+
+function socketClosed() {
+}
 
 
 /*---------------------------------------------------------------------------*\     
@@ -130,7 +232,6 @@ function init() {
         flipclocks.filter('.num_users').flipclock('init', {digits: 4});
         flipclocks.filter('.num_active_users').flipclock('init', {digits: 4});
         flipclocks.filter('.num_messages').flipclock('init', {digits: 4});
-        window.setTimeout(updateStats, 3 * SEC);
     }
 
     if ($('#gravatars').length) {
@@ -245,22 +346,6 @@ function signUp() {
 
 
 /*---------------------------------------------------------------------------*\
- |                               updateStats()                               |
-\*---------------------------------------------------------------------------*/
-
-function updateStats() {
-    $.ajax({
-        type: 'GET',
-        url: '/get-stats',
-        cache: false,
-        success: function(data, textStatus, jqXHR) {
-            parseJSON(data);
-        }
-    });
-}
-
-
-/*---------------------------------------------------------------------------*\
  |                                parseJSON()                                |
 \*---------------------------------------------------------------------------*/
 
@@ -320,68 +405,4 @@ function slideshow() {
             }
         });
     }
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                                openSocket()                               |
-\*---------------------------------------------------------------------------*/
-
-function openSocket() {
-    $.ajax({
-        type: 'GET',
-        url: '/get-token',
-        cache: false,
-        beforeSend: function(jqXHR, settings) {
-            if (socket) {
-                socket.close();
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            token = null;
-            socket = null;
-        },
-        success: function(data, textStatus, jqXHR) {
-            token = data;
-            var channel = new goog.appengine.Channel(token);
-            socket = channel.open();
-            socket.onopen = socketOpened;
-            socket.onmessage = socketMessaged;
-            socket.onerror = socketErrored;
-            socket.onclose = socketClosed;
-        }
-    });
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                               socketOpened()                              |
-\*---------------------------------------------------------------------------*/
-
-function socketOpened() {
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                              socketMessaged()                             |
-\*---------------------------------------------------------------------------*/
-
-function socketMessaged(message) {
-    parseJSON(message.data);
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                              socketErrored()                              |
-\*---------------------------------------------------------------------------*/
-
-function socketErrored(error) {
-}
-
-
-/*---------------------------------------------------------------------------*\
- |                               socketClosed()                              |
-\*---------------------------------------------------------------------------*/
-
-function socketClosed() {
 }

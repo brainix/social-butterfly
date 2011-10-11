@@ -70,7 +70,6 @@ def main():
         ('/flush-memcache',                         handlers.FlushMemcache),    # Web flush memcache cron handler.
         ('/flush-channels',                         handlers.FlushChannels),    # Web flush stale channels cron handler.
         ('/reset-stats',                            handlers.ResetStats),       # Web reset stats cron handler.
-        ('/get-stats',                              handlers.GetStats),         # Web stats AJAX handler.
         ('/get-token',                              handlers.GetToken),         # Web channel token AJAX handler.
         ('/',                                       handlers.HashBang),         # Web hash-bang dispatch handler.
         ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found handler.
