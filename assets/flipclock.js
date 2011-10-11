@@ -27,7 +27,7 @@
         path: '/assets/flipclock/',
         digits: 2,
         width: 10,
-        delay: 50
+        delay: 75
     };
 
 
@@ -51,17 +51,19 @@
             }
 
             var initStr = this.html();
-            var initNum = parseInt(initStr);
+            var initNum = parseInt(initStr, 10);
+            var error = '';
             if (isNaN(initNum)) {
-                var error = '$.flipclock.init();, ';
+                error = '$.flipclock.init();, ';
                 error += 'but HTML value ' + initStr + ' is NaN';
                 $.error(error);
             }
             if (initStr.length > data.digits) {
-                var error = '$.flipclock.init();, ' + data.digits + 'digits, ';
+                error = '$.flipclock.init();, ' + data.digits + 'digits, ';
                 error += 'but HTML value ' + initStr + ' requires more digits';
                 $.error(error);
             }
+
             draw(this);
             set(this, initNum);
             return this;
