@@ -38,13 +38,23 @@ $(function() {
         window.setInterval(openSocket, 1 * HR + 59 * MIN);
     }
 
+    $(window).bind('hashchange', changeHashBang);
+    changeHashBang();
+});
+
+
+/*---------------------------------------------------------------------------*\     
+ |                              changeHashBang()                             |
+\*---------------------------------------------------------------------------*/     
+
+function changeHashBang() {
     var hashBang = getHashBang();
     if (hashBang) {
         ajaxLoadHashBang(hashBang);
     } else {
         init();
     }
-});
+}
 
 
 /*---------------------------------------------------------------------------*\     
@@ -53,9 +63,13 @@ $(function() {
 
 function getHashBang() {
     var hashBang = '';
-    var hash = window.location.hash;
-    if (hash.charAt(1) == '!') {
-        hashBang = hash.slice(2);
+    if (window.location.pathname === '' || window.location.pathname == '/' &&
+        window.location.search === '') {
+        hashBang = 'home';
+        var hash = window.location.hash;
+        if (hash.charAt(1) == '!') {
+            hashBang = hash.slice(2);
+        }
     }
     return hashBang;
 }
@@ -64,6 +78,8 @@ function getHashBang() {
 /*---------------------------------------------------------------------------*\     
  |                             ajaxLoadHashBang()                            |
 \*---------------------------------------------------------------------------*/     
+
+var loadHashBangRequests = [];
 
 function ajaxLoadHashBang(hashBang) {
     var url = window.location.toString();

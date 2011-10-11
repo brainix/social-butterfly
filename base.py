@@ -375,10 +375,17 @@ class WebHandler(_CommonHandler, webapp.RequestHandler):
     def _serve_error(self, error_code):
         """ """
         path = os.path.join(TEMPLATES, 'error.html')
+        snippet = getattr(self.request, 'snippet', False)
         title = HTTP_CODE_TO_TITLE[error_code].lower()
+        description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
         error_url = self.request.url.split('//', 1)[-1]
         html = template.render(path, locals(), debug=DEBUG)
-        self.response.out.write(html)
+        if snippet:
+            d = {'title': title, 'description': description, 'snippet': html}
+            json = simplejson.dumps(d)
+            self.response.out.write(json)
+        else:
+            self.response.out.write(html)
 
     def get_handle(self):
         """ """
