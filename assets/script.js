@@ -66,7 +66,22 @@ function getHashBang() {
 \*---------------------------------------------------------------------------*/     
 
 function ajaxLoadHashBang(hashBang) {
-    alert('loading ' + hashBang);
+    var url = window.location.toString();
+    var index = url.lastIndexOf('/');
+    url = url.slice(0, index + 1);
+    $.ajax({
+        type: 'GET',
+        url: url,
+        data: {snippet: hashBang},
+        cache: false,
+        success: function(data, textStatus, jqXHR) {
+            json = $.parseJSON(data);
+            document.title = 'social butterfly - ' + json.title;
+            $('header hgroup h2').html(json.title);
+            $('article').html(json.snippet);
+            init();
+        }
+    });
 }
 
 
