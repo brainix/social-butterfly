@@ -26,6 +26,11 @@ var MIN = 60 * SEC;
 var HR = 60 * MIN;
 
 
+var _gaq = _gaq || [];
+var token = null;
+var socket = null;
+
+
 /*---------------------------------------------------------------------------*\
  |                                    $()                                    |
 \*---------------------------------------------------------------------------*/
@@ -46,10 +51,18 @@ $(function() {
         '/assets/flipclock/9.png',  '/assets/flipclock/9-0.png'
     );
 
-    if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
-        openSocket();
-        window.setInterval(openSocket, 1 * HR + 59 * MIN);
-    }
+    openSocket();
+    window.setInterval(openSocket, 1 * HR + 59 * MIN);
+
+    _gaq.push(['_setAccount', 'UA-2153971-5']);
+    (function() {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    })();
 
     $(window).bind('hashchange', changeHashBang);
     changeHashBang();
@@ -155,10 +168,10 @@ function changeHashBang() {
 
 function getHashBang() {
     var hashBang = '';
-    if (window.location.pathname === '' || window.location.pathname === '/' &&
-        window.location.search === '') {
+    if (location.pathname === '' || location.pathname === '/' &&
+        location.search === '') {
         hashBang = 'home';
-        var hash = window.location.hash;
+        var hash = location.hash;
         if (hash.charAt(1) === '!') {
             hashBang = hash.slice(2);
         }
@@ -179,7 +192,7 @@ function ajaxLoadHashBang(hashBang) {
         hashBangRequest = null;
     }
 
-    var url = window.location.toString();
+    var url = location.toString();
     var index = url.lastIndexOf('/');
     url = url.slice(0, index + 1);
     hashBangRequest = $.ajax({
@@ -239,6 +252,10 @@ function init() {
     if ($('#gravatars').length) {
         startSlideshow();
     }
+
+    var url = location.pathname + location.search + location.hash;
+    _gaq.push(['_trackPageview', url]);
+    _gaq.push(['_trackPageLoadTime']);
 }
 
 
