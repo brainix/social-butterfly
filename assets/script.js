@@ -168,12 +168,14 @@ function changeHashBang() {
 
 function getHashBang() {
     var hashBang = '';
-    if (location.pathname === '' || location.pathname === '/' &&
-        location.search === '') {
-        hashBang = 'home';
-        var hash = location.hash;
-        if (hash.charAt(1) === '!') {
-            hashBang = hash.slice(2);
+    if (location.pathname === '' || location.pathname === '/') {
+        if (location.search === '') {
+            var hash = location.hash;
+            if (!hash || hash.charAt(1) !== '!') {
+                hashBang = 'home';
+            } else {
+                hashBang = hash.slice(2);
+            }
         }
     }
     return hashBang;
