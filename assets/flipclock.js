@@ -24,7 +24,7 @@
 (function($) {
 
     var settings = {
-        path: '/assets/flipclock/',
+        path: '/assets/images/flipclock/',
         digits: 2,
         width: 10,
         delay: 75

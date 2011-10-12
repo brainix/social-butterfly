@@ -44,8 +44,17 @@ handlers:
   upload: assets/sitemap.xml
 
 - url: /favicon.ico
-  static_files: assets/favicon.ico
-  upload: assets/favicon.ico
+  static_files: assets/images/favicon.ico
+  upload: assets/images/favicon.ico
+  expiration: "7d"
+
+- url: /assets/sticky
+  static_dir: assets/sticky
+  expiration: "7d"
+
+- url: /assets/images
+  static_dir: assets/images
+  expiration: "7d"
 
 - url: /assets
   static_dir: assets

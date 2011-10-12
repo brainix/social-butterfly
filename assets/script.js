@@ -39,16 +39,16 @@ $(function() {
     // Hooray, a page has been loaded!
 
     preloadImages(
-        '/assets/flipclock/0.png',  '/assets/flipclock/0-1.png',
-        '/assets/flipclock/1.png',  '/assets/flipclock/1-2.png',
-        '/assets/flipclock/2.png',  '/assets/flipclock/2-3.png',
-        '/assets/flipclock/3.png',  '/assets/flipclock/3-4.png',
-        '/assets/flipclock/4.png',  '/assets/flipclock/4-5.png',
-        '/assets/flipclock/5.png',  '/assets/flipclock/5-6.png',
-        '/assets/flipclock/6.png',  '/assets/flipclock/6-7.png',
-        '/assets/flipclock/7.png',  '/assets/flipclock/7-8.png',
-        '/assets/flipclock/8.png',  '/assets/flipclock/8-9.png',
-        '/assets/flipclock/9.png',  '/assets/flipclock/9-0.png'
+        '/assets/images/flipclock/0.png',   '/assets/images/flipclock/0-1.png',
+        '/assets/images/flipclock/1.png',   '/assets/images/flipclock/1-2.png',
+        '/assets/images/flipclock/2.png',   '/assets/images/flipclock/2-3.png',
+        '/assets/images/flipclock/3.png',   '/assets/images/flipclock/3-4.png',
+        '/assets/images/flipclock/4.png',   '/assets/images/flipclock/4-5.png',
+        '/assets/images/flipclock/5.png',   '/assets/images/flipclock/5-6.png',
+        '/assets/images/flipclock/6.png',   '/assets/images/flipclock/6-7.png',
+        '/assets/images/flipclock/7.png',   '/assets/images/flipclock/7-8.png',
+        '/assets/images/flipclock/8.png',   '/assets/images/flipclock/8-9.png',
+        '/assets/images/flipclock/9.png',   '/assets/images/flipclock/9-0.png'
     );
 
     openSocket();
