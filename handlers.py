@@ -53,7 +53,7 @@ class NotFound(base.WebHandler):
         self.serve_error(404)
 
 
-class Chrome(base.WebHandler):
+class _Chrome(base.WebHandler):
     """Request handler to serve the user interface chrome."""
 
     def get(self):
@@ -67,7 +67,7 @@ class Chrome(base.WebHandler):
         self.response.out.write(html)
 
 
-class Home(base.WebHandler):
+class _Home(base.WebHandler):
     """Request handler to serve the homepage."""
 
     def get(self):
@@ -110,7 +110,7 @@ class Home(base.WebHandler):
                     self.send_presence_to_all()
 
 
-class Stats(base.WebHandler):
+class _Stats(base.WebHandler):
     """Request handler to serve the stats page."""
 
     def get(self):
@@ -130,7 +130,7 @@ class Stats(base.WebHandler):
         self.broadcast(stats=False, event=STATS_PAGE_EVENT)
 
 
-class Album(base.WebHandler):
+class _Album(base.WebHandler):
     """Request handler to serve the album page."""
 
     def get(self):
@@ -160,7 +160,7 @@ class Album(base.WebHandler):
         return html
 
 
-class Tech(base.WebHandler):
+class _Tech(base.WebHandler):
     """Request handler to serve the tech page."""
 
     def get(self):
@@ -180,7 +180,7 @@ class Tech(base.WebHandler):
         self.broadcast(stats=False, event=TECH_PAGE_EVENT)
 
 
-class HashBang(Chrome, Home, Stats, Album, Tech):
+class HashBang(_Chrome, _Home, _Stats, _Album, _Tech):
     """ """
 
     def get(self):
@@ -205,6 +205,7 @@ class HashBang(Chrome, Home, Stats, Album, Tech):
             cls_name = 'Chrome'
             self.request.snippet = False
 
+        cls_name = '_' + cls_name
         try:
             cls = bases[cls_name]
         except KeyError:
@@ -214,7 +215,7 @@ class HashBang(Chrome, Home, Stats, Album, Tech):
 
     def post(self):
         """ """
-        Home.post(self)
+        _Home.post(self)
 
 
 class GetToken(base.WebHandler):

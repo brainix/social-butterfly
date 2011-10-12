@@ -34,26 +34,16 @@ $(function() {
     // Hooray, a page has been loaded!
 
     preloadImages(
-        '/assets/flipclock/0.png',
-        '/assets/flipclock/1.png',
-        '/assets/flipclock/2.png',
-        '/assets/flipclock/3.png',
-        '/assets/flipclock/4.png',
-        '/assets/flipclock/5.png',
-        '/assets/flipclock/6.png',
-        '/assets/flipclock/7.png',
-        '/assets/flipclock/8.png',
-        '/assets/flipclock/9.png',
-        '/assets/flipclock/0-1.png',
-        '/assets/flipclock/1-2.png',
-        '/assets/flipclock/2-3.png',
-        '/assets/flipclock/3-4.png',
-        '/assets/flipclock/4-5.png',
-        '/assets/flipclock/5-6.png',
-        '/assets/flipclock/6-7.png',
-        '/assets/flipclock/7-8.png',
-        '/assets/flipclock/8-9.png',
-        '/assets/flipclock/9-0.png'
+        '/assets/flipclock/0.png',  '/assets/flipclock/0-1.png',
+        '/assets/flipclock/1.png',  '/assets/flipclock/1-2.png',
+        '/assets/flipclock/2.png',  '/assets/flipclock/2-3.png',
+        '/assets/flipclock/3.png',  '/assets/flipclock/3-4.png',
+        '/assets/flipclock/4.png',  '/assets/flipclock/4-5.png',
+        '/assets/flipclock/5.png',  '/assets/flipclock/5-6.png',
+        '/assets/flipclock/6.png',  '/assets/flipclock/6-7.png',
+        '/assets/flipclock/7.png',  '/assets/flipclock/7-8.png',
+        '/assets/flipclock/8.png',  '/assets/flipclock/8-9.png',
+        '/assets/flipclock/9.png',  '/assets/flipclock/9-0.png'
     );
 
     if (typeof(token) !== 'undefined' && typeof(socket) !== 'undefined') {
@@ -165,11 +155,11 @@ function changeHashBang() {
 
 function getHashBang() {
     var hashBang = '';
-    if (window.location.pathname === '' || window.location.pathname == '/' &&
+    if (window.location.pathname === '' || window.location.pathname === '/' &&
         window.location.search === '') {
         hashBang = 'home';
         var hash = window.location.hash;
-        if (hash.charAt(1) == '!') {
+        if (hash.charAt(1) === '!') {
             hashBang = hash.slice(2);
         }
     }
@@ -197,17 +187,29 @@ function ajaxLoadHashBang(hashBang) {
         url: url,
         data: {snippet: hashBang},
         cache: false,
+        error: function(jqXHR, textStatus, errorThrown) {
+            populateHashBang(jqXHR.responseText);
+        },
         success: function(data, textStatus, jqXHR) {
-            json = $.parseJSON(data);
-            document.title = 'social butterfly - ' + json.title;
-            $('header hgroup h2').html(json.title);
-            $('article').html(json.snippet);
-            init();
+            populateHashBang(data);
         },
         complete: function(jqXHR, textStatus) {
             hashBangRequest = null;
+            init();
         }
     });
+}
+
+
+/*---------------------------------------------------------------------------*\     
+ |                             populateHashBang()                            |
+\*---------------------------------------------------------------------------*/     
+
+function populateHashBang(data) {
+    json = $.parseJSON(data);
+    document.title = 'social butterfly - ' + json.title;
+    $('header hgroup h2').html(json.title);
+    $('article').html(json.snippet);
 }
 
 
