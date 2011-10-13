@@ -75,7 +75,7 @@ class _Chrome(_HashBangHandler):
         """Serve the user interface chrome."""
         path = os.path.join(TEMPLATES, 'base.html')
         snippet = self.request.snippet
-        title = ''
+        title = 'loading&hellip;'
         description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
         ajax_without_hash = True
         stats = self.get_stats()

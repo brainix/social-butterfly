@@ -220,11 +220,11 @@ function ajaxLoadHashBang(hashBang) {
  |                             populateHashBang()                            |
 \*---------------------------------------------------------------------------*/     
 
-function populateHashBang(data) {
-    json = $.parseJSON(data);
-    document.title = 'social butterfly - ' + json.title;
-    $('header hgroup h2').html(json.title);
-    $('article').html(json.snippet);
+function populateHashBang(json) {
+    obj = $.parseJSON(json);
+    document.title = 'social butterfly - ' + obj.title;
+    $('header hgroup h2').html(obj.title);
+    $('article').html(obj.snippet);
 }
 
 
@@ -371,8 +371,8 @@ function signUp() {
 \*---------------------------------------------------------------------------*/
 
 function parseJSON(json) {
-    json = $.parseJSON(json);
-    $.each(json, function(key, val) {
+    obj = $.parseJSON(json);
+    $.each(obj, function(key, val) {
         var flipclocks = $('.flipclock.' + key);
         if (flipclocks.length) {
             flipclocks.flipclock('set', val);
