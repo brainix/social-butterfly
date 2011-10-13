@@ -32,6 +32,7 @@ from google.appengine.ext.webapp import util
 
 from config import DEBUG
 import handlers
+import hashbang
 
 
 _log = logging.getLogger(__name__)
@@ -52,27 +53,27 @@ def main():
 
     # Configure our URL mapping.
     url_mapping = (
-        handlers.Mail.mapping(),                                                # Email handler.
+        handlers.Mail.mapping(),                                                    # Email handler.
 
-        ('/_ah/xmpp/presence/probe/',               handlers.Probe),            # XMPP probe handler.
-        ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),      # XMPP unavailable handler.
-        ('/_ah/xmpp/presence/available/',           handlers.Available),        # XMPP available handler.
-        ('/_ah/xmpp/message/error/',                handlers.Error),            # XMPP error handler.
-        ('/_ah/xmpp/message/chat/',                 handlers.Chat),             # XMPP chat handler.
-        ('/_ah/xmpp/subscription/unsubscribed/',    handlers.Unsubscribed),     # XMPP unsubscribed handler.
-        ('/_ah/xmpp/subscription/unsubscribe/',     handlers.Unsubscribe),      # XMPP unsubscribe handler.
-        ('/_ah/xmpp/subscription/subscribed/',      handlers.Subscribed),       # XMPP subscribed handler.
-        ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),        # XMPP subscribe handler.
+        ('/_ah/xmpp/presence/probe/',               handlers.Probe),                # XMPP probe handler.
+        ('/_ah/xmpp/presence/unavailable/',         handlers.Unavailable),          # XMPP unavailable handler.
+        ('/_ah/xmpp/presence/available/',           handlers.Available),            # XMPP available handler.
+        ('/_ah/xmpp/message/error/',                handlers.Error),                # XMPP error handler.
+        ('/_ah/xmpp/message/chat/',                 handlers.Chat),                 # XMPP chat handler.
+        ('/_ah/xmpp/subscription/unsubscribed/',    handlers.Unsubscribed),         # XMPP unsubscribed handler.
+        ('/_ah/xmpp/subscription/unsubscribe/',     handlers.Unsubscribe),          # XMPP unsubscribe handler.
+        ('/_ah/xmpp/subscription/subscribed/',      handlers.Subscribed),           # XMPP subscribed handler.
+        ('/_ah/xmpp/subscription/subscribe/',       handlers.Subscribe),            # XMPP subscribe handler.
 
-        ('/_ah/channel/disconnected/',              handlers.Disconnected),     # Channel disconnected handler.
-        ('/_ah/channel/connected/',                 handlers.Connected),        # Channel connected handler.
+        ('/_ah/channel/disconnected/',              handlers.Disconnected),         # Channel disconnected handler.
+        ('/_ah/channel/connected/',                 handlers.Connected),            # Channel connected handler.
 
-        ('/flush-memcache',                         handlers.FlushMemcache),    # Web flush memcache cron handler.
-        ('/flush-channels',                         handlers.FlushChannels),    # Web flush stale channels cron handler.
-        ('/reset-stats',                            handlers.ResetStats),       # Web reset stats cron handler.
-        ('/get-token',                              handlers.GetToken),         # Web channel token AJAX handler.
-        ('/',                                       handlers.HashBang),         # Web hash-bang dispatch handler.
-        ('(.*)',                                    handlers.NotFound),         # Web 404: Not Found handler.
+        ('/flush-memcache',                         handlers.FlushMemcache),        # Web flush memcache cron handler.
+        ('/flush-channels',                         handlers.FlushChannels),        # Web flush stale channels cron handler.
+        ('/reset-stats',                            handlers.ResetStats),           # Web reset stats cron handler.
+        ('/get-token',                              handlers.GetToken),             # Web channel token AJAX handler.
+        ('/',                                       hashbang.HashBangDispatcher),   # Web hash-bang dispatch handler.
+        ('(.*)',                                    handlers.NotFound),             # Web 404: Not Found handler.
     )
 
     # Define and run our WSGI webapp.
