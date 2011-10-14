@@ -127,7 +127,7 @@ class _Stats(_HashBangHandler):
         path = os.path.join(TEMPLATES, 'stats.html')
         snippet = self.request.snippet
         title = 'interesting statistics'
-        description = 'Social Butterfly&rsquo;s real-time capabilities.'
+        description = 'Social Butterfly allows you to anonymously chat with random strangers.  These are Social Butterfly&rsquo;s real-time capabilities.'
         ajax_without_hash = False
         stats = self.get_stats()
         self._write_response(locals(), event=STATS_PAGE_EVENT)
@@ -141,7 +141,7 @@ class _Album(_HashBangHandler):
         path = os.path.join(TEMPLATES, 'album.html')
         snippet = self.request.snippet
         title = 'photo album'
-        description = 'All of the Gravatars of Social Butterfly&rsquo;s users.'
+        description = 'Social Butterfly allows you to anonymously chat with random strangers.  These are all of the Gravatars of Social Butterfly&rsquo;s users.'
         ajax_without_hash = False
         album_javascript = self._render_album_javascript()
         if not snippet:
@@ -165,7 +165,7 @@ class _Tech(_HashBangHandler):
         path = os.path.join(TEMPLATES, 'tech.html')
         snippet = self.request.snippet
         title = 'our technologies'
-        description = 'The technologies we use to make Social Butterfly.'
+        description = 'Social Butterfly allows you to anonymously chat with random strangers.  These are the technologies that we use to make Social Butterfly.'
         ajax_without_hash = False
         stats = self.get_stats()
         self._write_response(locals(), event=TECH_PAGE_EVENT)
