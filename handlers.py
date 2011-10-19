@@ -34,6 +34,7 @@ import base
 import channels
 import notifications
 import shards
+import strangers
 
 
 _log = logging.getLogger(__name__)
@@ -224,7 +225,7 @@ class Chat(base.ChatHandler):
         else:
             alice.started = True
             alice.available = True
-            alice, bob, async = self.start_chat(alice, None)
+            alice, bob, async = strangers.Strangers.start_chat(alice, None)
 
             # Notify Alice and Bob.
             notifications.Notifications.started(alice)
@@ -251,8 +252,8 @@ class Chat(base.ChatHandler):
             # partner in order to type /next to chat with a different partner.
             notifications.Notifications.not_chatting(alice)
         else:
-            alice, bob, async = self.stop_chat(alice)
-            alice, carol, async = self.start_chat(alice, bob)
+            alice, bob, async = strangers.Strangers.stop_chat(alice)
+            alice, carol, async = strangers.Strangers.start_chat(alice, bob)
             if bob is None:
                 bob, dave = None, None
             elif bob == alice:
@@ -263,7 +264,7 @@ class Chat(base.ChatHandler):
                 bob, dave = carol, alice
             else:
                 async.get_result()
-                bob, dave, async = self.start_chat(bob, alice)
+                bob, dave, async = strangers.Strangers.start_chat(bob, alice)
 
             # Notify Alice, Bob, Carol, and Dave.
             notifications.Notifications.nexted(alice)
@@ -284,11 +285,11 @@ class Chat(base.ChatHandler):
             notifications.Notifications.already_stopped(alice)
         else:
             alice.started = False
-            alice, bob, async1 = self.stop_chat(alice)
+            alice, bob, async1 = strangers.Strangers.stop_chat(alice)
             if bob is None:
                 carol = None
             else:
-                bob, carol, async2 = self.start_chat(bob, alice)
+                bob, carol, async2 = strangers.Strangers.start_chat(bob, alice)
 
             # Notify Alice, Bob, and Carol.
             notifications.Notifications.stopped(alice)
@@ -334,7 +335,7 @@ class Chat(base.ChatHandler):
             if bob is None:
                 notifications.Notifications.not_chatting(alice)
             else:
-                deliverable = self.is_deliverable(alice)
+                deliverable = strangers.Strangers.is_deliverable(alice)
                 if not deliverable:
                     _log.info("can't send %s's %s to %s" % (alice, verb, bob))
                     notifications.Notifications.undeliverable(alice)
@@ -375,7 +376,7 @@ class Available(availability.AvailabilityHandler):
         """
         alice, made_available = self.make_available(True)
         if made_available:
-            alice, bob, async = self.start_chat(alice, None)
+            alice, bob, async = strangers.Strangers.start_chat(alice, None)
             if bob is None:
                 _log.info('%s became available; looking for partner' % alice)
             else:
@@ -400,13 +401,13 @@ class Unavailable(availability.AvailabilityHandler):
         """
         alice, made_unavailable = self.make_available(False)
         if made_unavailable:
-            alice, bob, async = self.stop_chat(alice)
+            alice, bob, async = strangers.Strangers.stop_chat(alice)
             if bob is None:
                 _log.info('%s became unavailable; had no partner' % alice)
             else:
                 body = '%s became unavailable; had partner %s' % (alice, bob)
                 _log.info(body)
-                bob, carol, async = self.start_chat(bob, alice)
+                bob, carol, async = strangers.Strangers.start_chat(bob, alice)
                 if carol is None:
                     _log.info('looking for new partner for %s' % bob)
                 else:

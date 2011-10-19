@@ -45,7 +45,6 @@ import channels
 import models
 import notifications
 import shards
-import strangers
 
 
 _log = logging.getLogger(__name__)
@@ -117,7 +116,7 @@ class BaseHandler(object):
 
     @staticmethod
     def _compute_memcache_key(self, method, *args, **kwds):
-        """Convert a method call into a readable str for use as a memcache key.
+        """Convert a method call into a signature for use as a memcache key.
 
         Take into account the module, class, and method names, positional
         argument values, and keyword argument names and values in order to
@@ -191,7 +190,7 @@ class BaseHandler(object):
         raise NotImplementedError
 
 
-class _CommonHandler(BaseHandler, strangers.StrangerMixin):
+class _CommonHandler(BaseHandler):
     """Abstract base request handler class."""
 
     def _serve_error(self, error_code):
@@ -223,9 +222,9 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         # that stat.
         missed = {}
         if not stats.has_key(NUM_USERS_KEY):
-            missed[NUM_USERS_KEY] = self.num_users()
+            missed[NUM_USERS_KEY] = models.Account.num_users()
         if not stats.has_key(NUM_ACTIVE_USERS_KEY):
-            missed[NUM_ACTIVE_USERS_KEY] = self.num_active_users()
+            missed[NUM_ACTIVE_USERS_KEY] = models.Account.num_active_users()
         if not stats.has_key(NUM_MESSAGES_KEY):
             # Since this stat is actually a sharding counter, our sharding
             # counter implementation should keep this stat memcached.  So don't
@@ -250,9 +249,9 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         value = func(memcache_key)
         if value is None:
             if memcache_key == NUM_USERS_KEY:
-                value = self.num_users()
+                value = models.Account.num_users()
             elif memcache_key == NUM_ACTIVE_USERS_KEY:
-                value = self.num_active_users()
+                value = models.Account.num_active_users()
             if value is not None:
                 memcache.add(memcache_key, value)
         return value
@@ -293,7 +292,8 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                 deferred.defer(cls._send_presence_to_set, active_users, stats)
                 deferred_sending_presence = True
         else:
-            active_users = self.get_users(started=True, available=True)
+            active_users = models.Account.get_users(started=True,
+                                                    available=True)
             if active_users.count(1):
                 deferred.defer(cls._send_presence_to_query, active_users,
                                stats)
@@ -316,6 +316,13 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
         try:
             for carol in carols:
                 notifications.Notifications.status(carol, stats)
+                # There's a chance that Google App Engine will throw the
+                # DeadlineExceededError exception at this point in the flow of
+                # execution.  In this case, Carol will have already received
+                # our chat status, but the sent_to set will not have been
+                # updated.  So on the next go-around, Carol will receive our
+                # chat status again.  I'm just documenting this possibility,
+                # but it shouldn't be a big deal.
                 num_carols += 1
                 sent_to.add(carol)
         except DeadlineExceededError:
@@ -347,9 +354,9 @@ class _CommonHandler(BaseHandler, strangers.StrangerMixin):
                 notifications.Notifications.status(carol, stats)
                 # There's a chance that Google App Engine will throw the
                 # DeadlineExceededError exception at this point in the flow of
-                # execution.  In this case, carol will have already received
-                # our chat status, but cursor will not have been updated.  So
-                # on the next go-around, carol will receive our chat status
+                # execution.  In this case, Carol will have already received
+                # our chat status, but the cursor will not have been updated.
+                # So on the next go-around, Carol will receive our chat status
                 # again.  I'm just documenting this possibility, but it
                 # shouldn't be a big deal.
                 cursor = carols.cursor()

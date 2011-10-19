@@ -32,55 +32,19 @@ import models
 _log = logging.getLogger(__name__)
 
 
-class StrangerMixin(object):
+class Strangers(object):
     """ """
 
-    def get_users(self, keys_only=True, started=None, available=None,
-                  chatting=None, order=None):
-        """ """
-        assert keys_only in (False, True)
-        assert started in (None, False, True)
-        assert available in (None, False, True)
-        assert chatting in (None, False, True)
-        assert order in (None, False, True)
-
-        carols = models.Account.all(keys_only=keys_only)
-        if started is not None:
-            carols = carols.filter('started =', started)
-        if available is not None:
-            carols = carols.filter('available =', available)
-        if chatting == False:
-            carols = carols.filter('partner =', None)
-        elif chatting == True:
-            carols = carols.filter('partner !=', None)
-            carols.order('partner')
-        if order is not None:
-            carols = carols.order('datetime' if order else '-datetime')
-        return carols
-
-    def _count_users(self, started=None, available=None, chatting=None):
-        """ """
-        carols = self.get_users(started=started, available=available,
-                                chatting=chatting)
-        num_carols = carols.count()
-        return num_carols
-
-    def num_users(self):
-        """Return the total number of users."""
-        return self._count_users()
-
-    def num_active_users(self):
-        """Return the number of started and available users."""
-        return self._count_users(started=True, available=True)
-
-    def _find_partner(self, alice, bob):
+    @staticmethod
+    def _find_partner(alice, bob):
         """Alice is looking to chat.  Find her a partner, Carol.
         
         Bob was Alice's previous chat partner (if any).  Pair Alice with
         someone different this time (if possible).
         """
-        carols = self.get_users(keys_only=False, started=True, available=True,
-                                chatting=False, order=True)
+        carols = models.Account.get_users(keys_only=False, started=True,
+                                          available=True, chatting=False,
+                                          order=True)
         for carol in carols:
             # Make sure to not pair Alice with herself, and pair Alice with
             # someone other than Bob this time.
@@ -103,15 +67,17 @@ class StrangerMixin(object):
         # available for chat, or everyone else available for chat already has a
         # partner.  Implicitly return None.
 
-    def _link_partners(self, alice, bob):
+    @classmethod
+    def _link_partners(cls, alice, bob):
         """Alice is looking to chat.  Find her a partner, and link them."""
-        carol = self._find_partner(alice, bob)
+        carol = cls._find_partner(alice, bob)
         alice.partner = carol
         if carol is not None:
             carol.partner = alice
         return alice, carol
 
-    def _unlink_partners(self, alice):
+    @staticmethod
+    def _unlink_partners(alice):
         """Alice is not looking to chat.  Unlink her from her partner."""
         bob = alice.partner
         alice.partner = None
@@ -122,7 +88,8 @@ class StrangerMixin(object):
                 bob = None
         return alice, bob
 
-    def _start_or_stop_chat(self, alice, bob, start):
+    @classmethod
+    def _start_or_stop_chat(cls, alice, bob, start):
         """Alice is looking to either start or stop chatting.
         
         When Alice is looking to start chatting, we also pass Bob in.  Bob was
@@ -130,23 +97,26 @@ class StrangerMixin(object):
         Alice with someone different this time (if possible).
         """
         if start:
-            alice, carol = self._link_partners(alice, bob)
+            alice, carol = cls._link_partners(alice, bob)
         else:
-            alice, carol = self._unlink_partners(alice)
+            alice, carol = cls._unlink_partners(alice)
         accounts = [account for account in (alice, carol)
                     if account is not None]
         async = db.put_async(accounts)
         return alice, carol, async
 
-    def start_chat(self, alice, bob):
+    @classmethod
+    def start_chat(cls, alice, bob):
         """ """
-        return self._start_or_stop_chat(alice, bob, True)
+        return cls._start_or_stop_chat(alice, bob, True)
 
-    def stop_chat(self, alice):
+    @classmethod
+    def stop_chat(cls, alice):
         """ """
-        return self._start_or_stop_chat(alice, None, False)
+        return cls._start_or_stop_chat(alice, None, False)
 
-    def is_deliverable(self, alice):
+    @staticmethod
+    def is_deliverable(alice):
         """Alice has typed an IM.  Determine if it can be delivered to Bob."""
         bob = alice.partner
         if bob is None:

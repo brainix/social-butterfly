@@ -43,14 +43,24 @@ class _HashBangHandler(base.WebHandler):
     """Abstract base hash-bang request handler class."""
 
     def _class_name(self, cls):
-        """ """
-        name = str(cls)
-        name = name.split("'")[1]
-        name = name.split('.')[1]
+        """Given a class, return its name.
+
+        Assume the following class definition:
+
+            >>> class C(object):
+            ...     pass
+            >>>
+
+        If this method were called on the class definition C, see the inline
+        comments for how we determine the class name.
+        """
+        name = str(cls)             # <class '__main__.C'>
+        name = name.split("'")[1]   # __main__.C
+        name = name.split('.')[1]   # C
         return name
 
-    def _write_response(self, d, event=None):
-        """ """
+    def _respond(self, d, event=None):
+        """Formulate an HTTP response, and possibly broadcast an event."""
         html = template.render(d['path'], d, debug=DEBUG)
 
         if d['snippet']:
@@ -79,7 +89,7 @@ class _Chrome(_HashBangHandler):
         description = 'Social Butterfly allows you to anonymously chat with random strangers through Google Talk.'
         ajax_without_hash = True
         stats = self.get_stats()
-        self._write_response(locals(), event=None)
+        self._respond(locals())
 
 
 class _Home(_HashBangHandler):
@@ -94,7 +104,7 @@ class _Home(_HashBangHandler):
         ajax_without_hash = False
         if not snippet:
             stats = self.get_stats()
-        self._write_response(locals(), event=HOMEPAGE_EVENT)
+        self._respond(locals(), event=HOMEPAGE_EVENT)
 
     def post(self):
         """A user has signed up.  Create an account, and send a chat invite."""
@@ -130,7 +140,7 @@ class _Stats(_HashBangHandler):
         description = 'Social Butterfly allows you to anonymously chat with random strangers.  These are Social Butterfly&rsquo;s real-time capabilities.'
         ajax_without_hash = False
         stats = self.get_stats()
-        self._write_response(locals(), event=STATS_PAGE_EVENT)
+        self._respond(locals(), event=STATS_PAGE_EVENT)
 
 
 class _Album(_HashBangHandler):
@@ -146,13 +156,13 @@ class _Album(_HashBangHandler):
         album_javascript = self._render_album_javascript()
         if not snippet:
             stats = self.get_stats()
-        self._write_response(locals(), event=ALBUM_PAGE_EVENT)
+        self._respond(locals(), event=ALBUM_PAGE_EVENT)
 
     @base.BaseHandler.memoize(24 * 60 * 60)
     def _render_album_javascript(self):
         """ """
         path = os.path.join(TEMPLATES, 'album_javascript.html')
-        users = self.get_users(order=False)
+        users = models.Account.get_users(order=False)
         html = template.render(path, locals(), debug=DEBUG)
         return html
 
@@ -168,7 +178,7 @@ class _Tech(_HashBangHandler):
         description = 'Social Butterfly allows you to anonymously chat with random strangers.  These are the technologies that we use to make Social Butterfly.'
         ajax_without_hash = False
         stats = self.get_stats()
-        self._write_response(locals(), event=TECH_PAGE_EVENT)
+        self._respond(locals(), event=TECH_PAGE_EVENT)
 
 
 class HashBangDispatcher(_Chrome, _Home, _Stats, _Album, _Tech):

@@ -133,3 +133,45 @@ class Account(db.Model):
         if domain not in VALID_GMAIL_DOMAINS:
             body = 'handle ends with invalid domain'
             log_and_raise(body)
+
+    @classmethod
+    def get_users(cls, keys_only=True, started=None, available=None,
+                  chatting=None, order=None):
+        """ """
+        assert keys_only in (False, True)
+        assert started in (None, False, True)
+        assert available in (None, False, True)
+        assert chatting in (None, False, True)
+        assert order in (None, False, True)
+
+        carols = cls.all(keys_only=keys_only)
+        if started is not None:
+            carols = carols.filter('started =', started)
+        if available is not None:
+            carols = carols.filter('available =', available)
+        if chatting == False:
+            carols = carols.filter('partner =', None)
+        elif chatting == True:
+            carols = carols.filter('partner !=', None)
+            carols.order('partner')
+        if order is not None:
+            carols = carols.order('datetime' if order else '-datetime')
+        return carols
+
+    @classmethod
+    def _count_users(cls, started=None, available=None, chatting=None):
+        """ """
+        carols = cls.get_users(started=started, available=available,
+                               chatting=chatting)
+        num_carols = carols.count()
+        return num_carols
+
+    @classmethod
+    def num_users(cls):
+        """Return the total number of users."""
+        return cls._count_users()
+
+    @classmethod
+    def num_active_users(cls):
+        """Return the number of started and available users."""
+        return cls._count_users(started=True, available=True)
