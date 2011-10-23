@@ -55,14 +55,12 @@ $(function() {
     window.setInterval(openSocket, 1 * HR + 59 * MIN);
 
     _gaq.push(['_setAccount', 'UA-2153971-5']);
-    (function() {
-        var ga = document.createElement('script');
-        ga.type = 'text/javascript';
-        ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(ga, s);
-    })();
+    var ga = document.createElement('script');
+    ga.type = 'text/javascript';
+    ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(ga, s);
 
     $(window).bind('hashchange', changeHashBang);
     changeHashBang();
@@ -197,6 +195,7 @@ function ajaxLoadHashBang(hashBang) {
     var url = location.toString();
     var index = url.lastIndexOf('/');
     url = url.slice(0, index + 1);
+
     hashBangRequest = $.ajax({
         type: 'GET',
         url: url,
@@ -221,7 +220,7 @@ function ajaxLoadHashBang(hashBang) {
 \*---------------------------------------------------------------------------*/     
 
 function populateHashBang(json) {
-    obj = $.parseJSON(json);
+    var obj = $.parseJSON(json);
     document.title = 'social butterfly - ' + obj.title;
     $('header hgroup h2').html(obj.title);
     $('article').html(obj.snippet);
@@ -324,16 +323,16 @@ function signUp() {
             data: {handle: handle},
             cache: false,
             beforeSend: function(jqXHR, settings) {
+                var signUpAlreadySubmitted = signUpSubmitted;
                 if (signUpSubmitted) {
                     var message = "You've already submitted a request to ";
                     message += "sign up.\n\nPlease wait for that request to ";
                     message += "complete.";
                     alert(message);
-                    return false;
                 } else {
                     signUpSubmitted = true;
-                    return true;
                 }
+                return !signUpAlreadySubmitted;
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 var message = '';
@@ -344,17 +343,18 @@ function signUp() {
                         message += "address and sign up again.";
                         break;
                     default:
-                        message = "Oops, something has gone wrong.\n\nPlease ";
-                        message += "try to sign up again.";
+                        message = "Oops, we've messed something up, and ";
+                        message += "we're looking into the problem.\n\n";
+                        message += "Please try to sign up again.";
                         break;
                 }
                 alert(message);
             },
             success: function(data, textStatus, jqXHR) {
                 var signUpForm = $('.sign-up');
-                signUpForm.fadeOut('slow', function() {
+                signUpForm.hide(0, function() {
                     var signedUpText = $('.signed-up');
-                    signedUpText.fadeIn('slow');
+                    signedUpText.show(0);
                 });
             },
             complete: function(jqXHR, textStatus) {
@@ -371,7 +371,7 @@ function signUp() {
 \*---------------------------------------------------------------------------*/
 
 function parseJSON(json) {
-    obj = $.parseJSON(json);
+    var obj = $.parseJSON(json);
     $.each(obj, function(key, val) {
         var flipclocks = $('.flipclock.' + key);
         if (flipclocks.length) {
@@ -416,13 +416,11 @@ function slideshow() {
             },
             success: function(data, textStatus, jqXHR) {
                 snippet =  '<img src="' + gravatar.image + '"';
-                snippet += '     style="display: none;"';
                 snippet += '     alt="Social Butterfly" />';
 
                 $('#gravatars').append(snippet);
                 slideshowIndex++;
-
-                $('#gravatars img:last-child').fadeIn('slow', slideshow);
+                slideshow();
             }
         });
     }

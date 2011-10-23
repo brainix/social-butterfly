@@ -49,6 +49,7 @@ class _HashBangHandler(base.WebHandler):
 
             >>> class C(object):
             ...     pass
+            ...
             >>>
 
         If this method were called on the class definition C, see the inline
