@@ -35,6 +35,10 @@ builtins:
 
 handlers:
 
+- url: /humans.txt
+  static_files: assets/humans.txt
+  upload: assets/humans.txt
+
 - url: /robots.txt
   static_files: assets/robots.txt
   upload: assets/robots.txt
