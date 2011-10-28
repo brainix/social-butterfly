@@ -62,8 +62,8 @@ $(function() {
     var s = document.getElementsByTagName('script')[0];
     s.parentNode.insertBefore(ga, s);
 
-    $(window).bind('hashchange', changeHashBang);
-    changeHashBang();
+    $(window).bind('hashchange', hashChanged);
+    hashChanged();
 });
 
 
@@ -147,10 +147,10 @@ function socketClosed() {
 
 
 /*---------------------------------------------------------------------------*\     
- |                              changeHashBang()                             |
+ |                               hashChanged()                               |
 \*---------------------------------------------------------------------------*/     
 
-function changeHashBang() {
+function hashChanged() {
     var hashBang = getHashBang();
     if (hashBang) {
         ajaxLoadHashBang(hashBang);
