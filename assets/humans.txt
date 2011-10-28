@@ -20,9 +20,18 @@ Raj Shah
 
 
 
+Aaron Alexander
+
+    A W3C standards-inspired front-end developer.  Aaron guided me on Social
+    Butterfly's front-end design and drank coffee with me.
+
+        Twitter:        http://twitter.com/#!/filesofnerds
+
+
+
 Daniel Raftery
 
-    A web developer located in Portland, Maine.  He made Sticky, the sweet
+    A web developer located in Portland, Maine.  Daniel made Sticky, the sweet
     little jQuery notification system that keeps our users all warm and fuzzy
     inside.
 
@@ -33,7 +42,7 @@ Daniel Raftery
 Guy Hoffman
 
     A researcher who is interested in physical action and joint action in
-    humans and robots.  He made the flip clock digit graphics that show off
+    humans and robots.  Guy made the flip clock digit graphics that show off
     Social Butterfly's real-time capabilities.
 
         Website:        http://web.media.mit.edu/~guy/blog/entry.php?14070701
