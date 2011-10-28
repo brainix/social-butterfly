@@ -1,1 +1,51 @@
-Hi, my name is Raj, and I'm Turing complete.  I made Social Butterfly.
+We're the people who lovingly crafted Social Butterfly.  If you're interested
+in the Social Butterfly project page and source code, you can find it here:
+
+    http://social-butterfly.googlecode.com/
+
+
+
+Raj Shah
+
+    I'm Turing complete.  I made Social Butterfly.  Here's how you can find me
+    on the web:
+
+        Email:          brainix@gmail.com
+        Google Talk:    brainix@gmail.com
+        AIM:            Brainix
+        Twitter:        http://twitter.com/#!/Brainix
+        Facebook:       https://www.facebook.com/rajiv.bakulesh.shah
+        Tumblr:         http://brainix.tumblr.com/
+        foursquare:     https://foursquare.com/brainix
+
+
+
+Daniel Raftery
+
+    A web developer located in Portland, Maine.  He made Sticky, the sweet
+    little jQuery notification system that keeps our users all warm and fuzzy
+    inside.
+
+        Website:        http://thrivingkings.com/sticky/
+
+
+
+Guy Hoffman
+
+    A researcher who is interested in physical action and joint action in
+    humans and robots.  He made the flip clock digit graphics that show off
+    Social Butterfly's real-time capabilities.
+
+        Website:        http://web.media.mit.edu/~guy/blog/entry.php?14070701
+
+
+
+The Noun Project
+
+    The Noun Project collects, organizes and adds to the highly recognizable
+    symbols that form the world's visual language, so they may share them in a
+    fun and meaningful way.  Various artists within The Noun Project made the
+    Social Butterfly favicon.ico as well as the images that you see on the
+    Sticky (Growl-style) notifications.
+
+        Website:        http://thenounproject.com/
