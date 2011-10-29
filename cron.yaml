@@ -24,16 +24,16 @@
 cron:
 
 - description: reset interesting statistics (the number of messages relayed)
-  url: /reset-stats
+  url: /cron/reset-stats
   schedule: every day 00:00
   timezone: America/Chicago
 
 - description: flush stale channels (older than 2 hours)
-  url: /flush-channels
+  url: /cron/flush-channels
   schedule: every day 02:00
   timezone: America/Chicago
 
-- description: flush memcache (to force ourselves never to rely on it)
-  url: /flush-memcache
+- description: flush memcache (to force ourselves to never rely on it)
+  url: /cron/flush-memcache
   schedule: every day 04:00
   timezone: America/Chicago

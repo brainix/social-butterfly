@@ -412,14 +412,14 @@ function slideshow() {
             url: gravatar.image,
             error: function(jqXHR, textStatus, errorThrown) {
                 gravatars.splice(slideshowIndex, 1);
-                slideshow();
             },
             success: function(data, textStatus, jqXHR) {
                 snippet =  '<img src="' + gravatar.image + '"';
                 snippet += '     alt="Social Butterfly" />';
-
                 $('#gravatars').append(snippet);
                 slideshowIndex++;
+            },
+            complete: function(jqXHR, textStatus) {
                 slideshow();
             }
         });

@@ -64,22 +64,27 @@ class GetToken(base.WebHandler):
             _log.info('created channel, returned token')
 
 
-class ResetStats(base.WebHandler):
-    """Request handler to reset the interesting statistics."""
+class CronDispatcher(base.WebHandler):
+    """Request handler to run cron jobs."""
 
     @base.WebHandler.require_cron
-    def get(self):
+    def get(self, method_name):
+        """ """
+        method_name = method_name.replace('-', '_')
+        try:
+            method = getattr(self, method_name)
+        except AttributeError:
+            self.serve_error(404)
+        else:
+            method()
+
+    def reset_stats(self):
         """Reset the interesting statistics."""
         _log.info('cron resetting num messages sharding counter')
         shards.Shard.reset(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
 
-
-class FlushChannels(base.WebHandler):
-    """Request handler to flush stale channels."""
-
-    @base.WebHandler.require_cron
-    def get(self):
+    def flush_channels(self):
         """Flush stale channels.
         
         Google App Engine implements the real-time web using a technology
@@ -91,24 +96,19 @@ class FlushChannels(base.WebHandler):
         And sometimes, these channels expire uncleanly without sending
         disconnect messages.
 
-        So once a day, cron sends a request to call this method to delete all
+        So periodically, cron sends a request to call this method to delete all
         of the expired channels.  Just some housekeeping.
         """
         _log.info('cron flushing stale channels')
         channels.Channel.flush()
         _log.info('cron flushed stale channels')
 
-
-class FlushMemcache(base.WebHandler):
-    """Request handler to flush memcache."""
-
-    @base.WebHandler.require_cron
-    def get(self):
+    def flush_memcache(self):
         """Flush memcache.
 
         Social Butterfly uses memcache all over the place in order to improve
         performance.  However, a memcached item can be evicted or become
-        inconsistent at any moment.  Therefore, we periodically flush all
+        inconsistent at any moment.  Therefore, cron periodically flushes all
         memcached items in order to:
 
             1.  Test our code and ensure that it continues to function properly
@@ -118,12 +118,12 @@ class FlushMemcache(base.WebHandler):
             2.  Resolve inconsistencies between memcached and datastored values
                 by forcing recomputation of all memcached items.
         """
-        _log.info('flushing memcache')
+        _log.info('cron flushing memcache')
         success = memcache.flush_all()
         if success:
-            _log.info('flushed memcache')
+            _log.info('cron flushed memcache')
         else:
-            _log.error("couldn't flush memcache (RPC or server error)")
+            _log.error("cron couldn't flush memcache (RPC or server error)")
 
 
 class Connected(base.WebHandler):

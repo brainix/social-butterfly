@@ -68,9 +68,7 @@ def main():
         ('/_ah/channel/disconnected/',              handlers.Disconnected),         # Channel disconnected handler.
         ('/_ah/channel/connected/',                 handlers.Connected),            # Channel connected handler.
 
-        ('/flush-memcache',                         handlers.FlushMemcache),        # Web flush memcache cron handler.
-        ('/flush-channels',                         handlers.FlushChannels),        # Web flush stale channels cron handler.
-        ('/reset-stats',                            handlers.ResetStats),           # Web reset stats cron handler.
+        ('/cron/(.*)',                              handlers.CronDispatcher),       # Web cron dispatch handler.
         ('/get-token',                              handlers.GetToken),             # Web channel token AJAX handler.
         ('/',                                       hashbang.HashBangDispatcher),   # Web hash-bang dispatch handler.
         ('(.*)',                                    handlers.NotFound),             # Web 404: Not Found handler.
