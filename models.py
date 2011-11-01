@@ -41,6 +41,7 @@ class Account(db.Model):
     available = db.BooleanProperty(required=True)
     partner = db.SelfReferenceProperty()
     datetime = db.DateTimeProperty(required=True, auto_now=True)
+    subscribed = db.DateTimeProperty()
 
     def __str__(self):
         """ """

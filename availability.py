@@ -47,7 +47,7 @@ class AvailabilityHandler(base.WebHandler):
         self._log_available(available, alice, changed)
         return alice, changed
 
-    @base.WebHandler.run_in_transaction
+    @base.BaseHandler.run_in_transaction
     def _change_available(self, available):
         """ """
         alice = self.get_account(cache=False)

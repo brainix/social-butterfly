@@ -22,9 +22,11 @@
 """Google App Engine request handlers (concrete implementation classes)."""
 
 
+import datetime
 import logging
 
 from google.appengine.api import memcache
+from google.appengine.ext import db
 
 from config import DEBUG
 from config import NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
@@ -159,6 +161,7 @@ class Subscribe(base.WebHandler):
 class Subscribed(base.WebHandler):
     """Request handler to listen for XMPP subscribed notifications."""
 
+    @base.BaseHandler.run_in_transaction
     def post(self):
         """Alice has subscribed to Social Butterfly.  Send the help text.
 
@@ -167,11 +170,21 @@ class Subscribed(base.WebHandler):
         invitation to chat.  Send Alice a message with the help text, so that
         she can begin chatting with strangers.
         """
-        handle = self.get_handle()
-        if not handle:
-            handle = 'an unknown user'
-        _log.info('%s has allowed us to receive his/her presence' % handle)
-        notifications.Notifications.help(handle)
+        alice = self.get_account(cache=False)
+        if alice is None:
+            body = 'an unknown user has allowed us to receive his/her presence'
+            _log.info(body)
+        else:
+            _log.info('%s has allowed us to receive his/her presence' % alice)
+            now = datetime.datetime.now()
+            diff = datetime.timedelta(days=1)
+            if alice.subscribed is not None and now - alice.subscribed <= diff:
+                _log.info('not sending /help text; already sent in last day')
+            else:
+                _log.info('sending /help text')
+                alice.subscribed = now
+                db.put_async(alice)
+                notifications.Notifications.help(alice)
 
 
 class Unsubscribe(base.WebHandler):
