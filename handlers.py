@@ -148,7 +148,11 @@ class Disconnected(base.WebHandler):
 
 
 class Subscribe(base.WebHandler):
-    """Request handler to listen for XMPP subscribe requests."""
+    """Request handler to listen for XMPP subscribe requests.
+    
+    XXX:  I'm not exactly sure when this request handler is called.  I should
+    probably find out at some point.
+    """
 
     def post(self):
         """ """
