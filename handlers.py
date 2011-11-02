@@ -66,7 +66,7 @@ class GetToken(base.WebHandler):
             _log.info('created channel, returned token')
 
 
-class CronDispatcher(base.WebHandler):
+class CronDispatch(base.WebHandler):
     """Request handler to run cron jobs."""
 
     @base.WebHandler.require_cron

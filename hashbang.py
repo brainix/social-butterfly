@@ -182,7 +182,7 @@ class _Tech(_HashBangHandler):
         self._respond(locals(), event=TECH_PAGE_EVENT)
 
 
-class HashBangDispatcher(_Chrome, _Home, _Stats, _Album, _Tech):
+class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
     """ """
 
     def get(self):
