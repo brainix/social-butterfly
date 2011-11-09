@@ -42,24 +42,6 @@ _log = logging.getLogger(__name__)
 class _HashBangHandler(base.WebHandler):
     """Abstract base hash-bang request handler class."""
 
-    def _class_name(self, cls):
-        """Given a class, return its name.
-
-        Assume the following class definition:
-
-            >>> class C(object):
-            ...     pass
-            ...
-            >>>
-
-        If this method were called on the class definition C, see the inline
-        comments for how we determine the class name.
-        """
-        name = str(cls)             # <class '__main__.C'>
-        name = name.split("'")[1]   # __main__.C
-        name = name.split('.')[1]   # C
-        return name
-
     def _respond(self, d, event=None):
         """Formulate an HTTP response, and possibly broadcast an event."""
         html = template.render(d['path'], d, debug=DEBUG)
@@ -183,15 +165,11 @@ class _Tech(_HashBangHandler):
 
 
 class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
-    """ """
+    """Request handler to serve an HTML page or snippet."""
 
     def get(self):
         """ """
-        bases = {}
-        for cls in self.__class__.__bases__:
-            class_name = self._class_name(cls)
-            bases[class_name] = cls
-
+        base_classes = self._base_classes()
         args = self.request.arguments()
         if '_escaped_fragment_' in args:
             class_name = self.request.get('_escaped_fragment_').title()
@@ -204,10 +182,10 @@ class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
         else:
             class_name = 'Chrome'
             self.request.snippet = False
-
         class_name = '_' + class_name
+
         try:
-            cls = bases[class_name]
+            cls = base_classes[class_name]
         except KeyError:
             self.serve_error(404)
         else:
@@ -216,3 +194,31 @@ class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
     def post(self):
         """ """
         _Home.post(self)
+
+    def _base_classes(self):
+        """Compute a name/class map of an instance's class's base classes."""
+        cls = type(self)
+        bases = cls.__bases__
+        d = {}
+        for cls in bases:
+            name = self._class_name(cls)
+            d[name] = cls
+        return d
+
+    def _class_name(self, cls):
+        """Compute the given class's name.
+
+        Assume the following class definition:
+
+            >>> class C(object):
+            ...     pass
+            ...
+            >>>
+
+        If this method were called on the class definition C, see the inline
+        comments for how we would determine the class name.
+        """
+        name = str(cls)             # <class '__main__.C'>
+        name = name.split("'")[1]   # __main__.C
+        name = name.split('.')[1]   # C
+        return name
