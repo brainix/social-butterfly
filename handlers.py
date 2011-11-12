@@ -72,7 +72,7 @@ class CronDispatch(base.WebHandler):
     @base.WebHandler.require_cron
     def get(self, method_name):
         """ """
-        method_name = method_name.replace('-', '_')
+        method_name = '_' + method_name.replace('-', '_')
         try:
             method = getattr(self, method_name)
         except AttributeError:
@@ -80,13 +80,13 @@ class CronDispatch(base.WebHandler):
         else:
             method()
 
-    def reset_stats(self):
+    def _reset_stats(self):
         """Reset the interesting statistics."""
         _log.info('cron resetting num messages sharding counter')
         shards.Shard.reset(NUM_MESSAGES_KEY)
         _log.info('cron reset num messages sharding counter')
 
-    def flush_channels(self):
+    def _flush_channels(self):
         """Flush stale channels.
         
         Google App Engine implements the real-time web using a technology
@@ -105,7 +105,7 @@ class CronDispatch(base.WebHandler):
         channels.Channel.flush()
         _log.info('cron flushed stale channels')
 
-    def flush_memcache(self):
+    def _flush_memcache(self):
         """Flush memcache.
 
         Social Butterfly uses memcache all over the place in order to improve
