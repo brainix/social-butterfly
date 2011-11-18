@@ -39,6 +39,18 @@ $(function() {
     // Hooray, a page has been loaded!
 
     preloadImages(
+        '/assets/images/nouns/butterfly.png',
+        '/assets/images/nouns/camera.png',
+        '/assets/images/nouns/gears.png',
+        '/assets/images/nouns/help.png',
+        '/assets/images/nouns/moon.png',
+        '/assets/images/nouns/pie_chart.png',
+        '/assets/images/nouns/roller_skate.png',
+        '/assets/images/nouns/speech_balloon.png',
+        '/assets/images/nouns/sun.png',
+        '/assets/images/nouns/thumbs_down.png',
+        '/assets/images/nouns/user.png',
+
         '/assets/images/flipclock/0.png',   '/assets/images/flipclock/0-1.png',
         '/assets/images/flipclock/1.png',   '/assets/images/flipclock/1-2.png',
         '/assets/images/flipclock/2.png',   '/assets/images/flipclock/2-3.png',
@@ -51,6 +63,7 @@ $(function() {
         '/assets/images/flipclock/9.png',   '/assets/images/flipclock/9-0.png'
     );
 
+    ajaxLoadNotifications();
     openSocket();
     window.setInterval(openSocket, 1 * HR + 59 * MIN);
 
@@ -79,6 +92,22 @@ function preloadImages() {
             images[index].src = preloadImages.arguments[index];
         }
     }
+}
+
+
+/*---------------------------------------------------------------------------*\
+ |                          ajaxLoadNotifications()                          |
+\*---------------------------------------------------------------------------*/
+
+function ajaxLoadNotifications() {
+    $.ajax({
+        type: 'GET',
+        url: '/notifications',
+        success: function(data, textStatus, jqXHR) {
+            var notifications = $('#notifications');
+            notifications.html(data);
+        }
+    });
 }
 
 

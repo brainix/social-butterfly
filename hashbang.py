@@ -169,7 +169,6 @@ class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
 
     def get(self):
         """ """
-        base_classes = self._base_classes()
         args = self.request.arguments()
         if '_escaped_fragment_' in args:
             class_name = self.request.get('_escaped_fragment_').title()
@@ -184,6 +183,7 @@ class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
             self.request.snippet = False
         class_name = '_' + class_name
 
+        base_classes = self._base_classes()
         try:
             cls = base_classes[class_name]
         except KeyError:
