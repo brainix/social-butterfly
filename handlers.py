@@ -50,7 +50,7 @@ class NotFound(base.WebHandler):
         self.serve_error(404)
 
 
-class GetToken(base.WebHandler):
+class Token(base.WebHandler):
     """Request handler to create a channel and return its token."""
 
     def get(self):

@@ -118,7 +118,7 @@ function ajaxLoadNotifications() {
 function openSocket() {
     $.ajax({
         type: 'GET',
-        url: '/get-token',
+        url: '/token',
         cache: false,
         beforeSend: function(jqXHR, settings) {
             if (socket) {

@@ -50,6 +50,7 @@ handlers:
 - url: /notifications
   static_files: assets/notifications.html
   upload: assets/notifications.html
+  expiration: "7d"
 
 - url: /favicon.ico
   static_files: assets/images/favicon.ico

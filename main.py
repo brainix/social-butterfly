@@ -69,7 +69,7 @@ def main():
         ('/_ah/channel/connected/',                 handlers.Connected),            # Channel connected handler.
 
         ('/cron/(.*)',                              handlers.CronDispatch),         # Web cron dispatch handler.
-        ('/get-token',                              handlers.GetToken),             # Web channel token AJAX handler.
+        ('/token',                                  handlers.Token),                # Web channel token AJAX handler.
         ('/',                                       hashbang.HashBangDispatch),     # Web hash-bang dispatch handler.
         ('(.*)',                                    handlers.NotFound),             # Web 404: Not Found handler.
     )
