@@ -165,12 +165,22 @@ class _Tech(_HashBangHandler):
 
 
 class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
-    """Request handler to serve an HTML page or snippet."""
+    """Request handler to serve an HTML page or snippet.
+    
+    We have to inherit from all of the classes that we dispatch to, because in
+    our GET and POST request handler dispatch methods, we pass self to the
+    classes that we dispatch to.  If we didn't inherit from the classes that we
+    dispatch to, passing self like that would cause some sort of type error.
+    """
 
     def get(self):
-        """ """
+        """Someone has requested an HTML page or snippet.  Serve it."""
         args = self.request.arguments()
         if '_escaped_fragment_' in args:
+            # Googlebot is crawling us.  Figure out which page Googlebot wants
+            # to see, then serve that full page (not just an HTML snippet).
+            # For more info, see:
+            #   http://code.google.com/web/ajaxcrawling/docs/getting-started.html
             class_name = self.request.get('_escaped_fragment_').title()
             if not class_name:
                 class_name = 'Home'
