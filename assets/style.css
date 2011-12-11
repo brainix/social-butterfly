@@ -205,10 +205,11 @@ footer p {
     line-height: 175%;
 }
 
-footer p a {
+footer a {
     color: #516064;
 }
 
-footer p a:hover {
+footer a:hover {
+    color: #516064;
     text-decoration: underline;
 }
