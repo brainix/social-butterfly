@@ -37,3 +37,7 @@ cron:
   url: /cron/flush-memcache
   schedule: every day 04:00
   timezone: America/Chicago
+
+- description: send presence to all active users (to work around bug in Gmail)
+  url: /cron/send-presence
+  schedule: every 30 minutes

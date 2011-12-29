@@ -377,9 +377,9 @@ function signUp() {
             },
             success: function(data, textStatus, jqXHR) {
                 var signUpForm = $('.sign-up');
-                signUpForm.hide(0, function() {
+                signUpForm.fadeOut('fast', function() {
                     var signedUpText = $('.signed-up');
-                    signedUpText.show(0);
+                    signedUpText.fadeIn('fast');
                 });
             },
             complete: function(jqXHR, textStatus) {

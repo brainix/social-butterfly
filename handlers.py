@@ -127,6 +127,19 @@ class CronDispatch(base.WebHandler):
         else:
             _log.error("cron couldn't flush memcache (RPC or server error)")
 
+    def _send_presence(self):
+        """Send our Google Talk presence to all active users.
+        
+        For some reason, there's a problem in the Google Talk widget in Gmail.
+        If Social Butterfly doesn't send you its presence for a while (maybe an
+        hour or more), it appears offline in your buddy list.  You can still
+        use it like normal - it just appears offline.  So this method is a
+        workaround - periodically, send Social Butterfly's presence to all
+        active users, so it always appears online.
+        """
+        _log.info('cron sending presence to all active users')
+        self.send_presence_to_all()
+
 
 class Connected(base.WebHandler):
     """Request handler to deal with channels that have connected."""
