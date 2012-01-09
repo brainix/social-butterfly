@@ -164,7 +164,21 @@ class _Tech(_HashBangHandler):
         self._respond(locals(), event=TECH_PAGE_EVENT)
 
 
-class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech):
+class _Raj(_HashBangHandler):
+    """Request handler to serve the Raj page."""
+
+    def get(self):
+        """Serve the Raj page."""
+        path = os.path.join(TEMPLATES, 'raj.html')
+        snippet = self.request.snippet
+        title = 'raj shah'
+        description = 'Social Butterfly allows you to anonymously chat with random strangers.  I made Social Butterfly.'
+        ajax_without_hash = False
+        stats = self.get_stats()
+        self._respond(locals(), event=TECH_PAGE_EVENT)
+
+
+class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech, _Raj):
     """Request handler to serve an HTML page or snippet.
     
     We have to inherit from all of the classes that we dispatch to, because in
