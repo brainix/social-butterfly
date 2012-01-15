@@ -162,9 +162,15 @@ class Account(db.Model):
     @classmethod
     def _count_users(cls, started=None, available=None, chatting=None):
         """ """
+        num_carols = 0
         carols = cls.get_users(started=started, available=available,
                                chatting=chatting)
-        num_carols = carols.count()
+        num_batch = carols.count()
+        while num_batch > 0:
+            num_carols += num_batch
+            cursor = carols.cursor()
+            carols = carols.with_cursor(cursor)
+            num_batch = carols.count()
         return num_carols
 
     @classmethod

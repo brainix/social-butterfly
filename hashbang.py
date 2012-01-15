@@ -31,7 +31,7 @@ from google.appengine.ext.webapp import template
 
 from config import DEBUG, TEMPLATES
 from config import NUM_USERS_KEY
-from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT, ALBUM_PAGE_EVENT, TECH_PAGE_EVENT
+from config import HOMEPAGE_EVENT, SIGN_UP_EVENT, STATS_PAGE_EVENT, ALBUM_PAGE_EVENT, TECH_PAGE_EVENT, RAJ_PAGE_EVENT
 import base
 import models
 
@@ -175,7 +175,7 @@ class _Raj(_HashBangHandler):
         description = 'Social Butterfly allows you to anonymously chat with random strangers.  I made Social Butterfly.'
         ajax_without_hash = False
         stats = self.get_stats()
-        self._respond(locals(), event=TECH_PAGE_EVENT)
+        self._respond(locals(), event=RAJ_PAGE_EVENT)
 
 
 class HashBangDispatch(_Chrome, _Home, _Stats, _Album, _Tech, _Raj):
