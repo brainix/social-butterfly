@@ -36,19 +36,22 @@ class Strangers(object):
     """ """
 
     @staticmethod
-    def _find_partner(alice, bob):
-        """Alice is looking to chat.  Find her a partner, Carol.
-        
-        Bob was Alice's previous chat partner (if any).  Pair Alice with
-        someone different this time (if possible).
-        """
+    def _find_partner(alice):
+        """Alice is looking to chat.  Find her a partner, Carol."""
+        alice_key = alice.key()
+        alice_disallowed = [alice_key]
+        alice_disallowed.extend(alice.partners)
         carols = models.Account.get_users(keys_only=False, started=True,
                                           available=True, chatting=False,
                                           order=True)
         for carol in carols:
-            # Make sure to not pair Alice with herself, and pair Alice with
-            # someone other than Bob this time.
-            if carol not in (alice, bob):
+            # Make sure to not pair Alice with herself or any of her previous
+            # chat partners this session.
+            carol_key = carol.key()
+            carol_disallowed = [carol_key]
+            carol_disallowed.extend(carol.partners)
+            if alice_key not in carol_disallowed and \
+               carol_key not in alice_disallowed:
 
                 # TODO: Use Google App Engine's XMPP API to ensure that Carol's
                 # Google Talk status is available (and not idle or busy).
@@ -68,9 +71,9 @@ class Strangers(object):
         # partner.  Implicitly return None.
 
     @classmethod
-    def _link_partners(cls, alice, bob):
+    def _link_partners(cls, alice):
         """Alice is looking to chat.  Find her a partner, and link them."""
-        carol = cls._find_partner(alice, bob)
+        carol = cls._find_partner(alice)
         alice.partner = carol
         if carol is not None:
             carol.partner = alice
@@ -84,20 +87,16 @@ class Strangers(object):
         if bob is not None:
             if bob.partner == alice:
                 bob.partner = None
+                alice.partners.append(bob.key())
             else:
                 bob = None
         return alice, bob
 
     @classmethod
-    def _start_or_stop_chat(cls, alice, bob, start):
-        """Alice is looking to either start or stop chatting.
-        
-        When Alice is looking to start chatting, we also pass Bob in.  Bob was
-        Alice's previous chat partner (if any).  We pass Bob in so that we pair
-        Alice with someone different this time (if possible).
-        """
+    def _start_or_stop_chat(cls, alice, start):
+        """Alice is looking to either start or stop chatting."""
         if start:
-            alice, carol = cls._link_partners(alice, bob)
+            alice, carol = cls._link_partners(alice)
         else:
             alice, carol = cls._unlink_partners(alice)
         accounts = [account for account in (alice, carol)
@@ -106,14 +105,14 @@ class Strangers(object):
         return alice, carol, async
 
     @classmethod
-    def start_chat(cls, alice, bob):
+    def start_chat(cls, alice):
         """ """
-        return cls._start_or_stop_chat(alice, bob, True)
+        return cls._start_or_stop_chat(alice, True)
 
     @classmethod
     def stop_chat(cls, alice):
         """ """
-        return cls._start_or_stop_chat(alice, None, False)
+        return cls._start_or_stop_chat(alice, False)
 
     @staticmethod
     def is_deliverable(alice):

@@ -255,7 +255,8 @@ class Chat(base.ChatHandler):
         else:
             alice.started = True
             alice.available = True
-            alice, bob, async = strangers.Strangers.start_chat(alice, None)
+            alice.partners = []
+            alice, bob, async = strangers.Strangers.start_chat(alice)
 
             # Notify Alice and Bob.
             notifications.Notifications.started(alice)
@@ -283,7 +284,7 @@ class Chat(base.ChatHandler):
             notifications.Notifications.not_chatting(alice)
         else:
             alice, bob, async = strangers.Strangers.stop_chat(alice)
-            alice, carol, async = strangers.Strangers.start_chat(alice, bob)
+            alice, carol, async = strangers.Strangers.start_chat(alice)
             if bob is None:
                 bob, dave = None, None
             elif bob == alice:
@@ -294,7 +295,7 @@ class Chat(base.ChatHandler):
                 bob, dave = carol, alice
             else:
                 async.get_result()
-                bob, dave, async = strangers.Strangers.start_chat(bob, alice)
+                bob, dave, async = strangers.Strangers.start_chat(bob)
 
             # Notify Alice, Bob, Carol, and Dave.
             notifications.Notifications.nexted(alice)
@@ -319,7 +320,7 @@ class Chat(base.ChatHandler):
             if bob is None:
                 carol = None
             else:
-                bob, carol, async2 = strangers.Strangers.start_chat(bob, alice)
+                bob, carol, async2 = strangers.Strangers.start_chat(bob)
 
             # Notify Alice, Bob, and Carol.
             notifications.Notifications.stopped(alice)
@@ -406,7 +407,8 @@ class Available(availability.AvailabilityHandler):
         """
         alice, made_available = self.make_available(True)
         if made_available:
-            alice, bob, async = strangers.Strangers.start_chat(alice, None)
+            alice.partners = []
+            alice, bob, async = strangers.Strangers.start_chat(alice)
             if bob is None:
                 _log.info('%s became available; looking for partner' % alice)
             else:
@@ -437,7 +439,7 @@ class Unavailable(availability.AvailabilityHandler):
             else:
                 body = '%s became unavailable; had partner %s' % (alice, bob)
                 _log.info(body)
-                bob, carol, async = strangers.Strangers.start_chat(bob, alice)
+                bob, carol, async = strangers.Strangers.start_chat(bob)
                 if carol is None:
                     _log.info('looking for new partner for %s' % bob)
                 else:
