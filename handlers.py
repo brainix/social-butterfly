@@ -30,7 +30,6 @@ from google.appengine.ext import db
 
 from config import DEBUG
 from config import NUM_ACTIVE_USERS_KEY, NUM_MESSAGES_KEY
-from config import HELP_EVENT, START_EVENT, NEXT_EVENT, STOP_EVENT, ME_EVENT, TEXT_MESSAGE_EVENT, AVAILABLE_EVENT, UNAVAILABLE_EVENT
 import availability
 import base
 import channels
@@ -244,7 +243,6 @@ class Chat(base.ChatHandler):
         alice = self.get_account(message)
         _log.info('%s typed /help' % alice)
         notifications.Notifications.help(alice)
-        self.broadcast(stats=False, event=HELP_EVENT)
 
     @base.ChatHandler.require_account
     def start_command(self, message=None):
@@ -264,7 +262,7 @@ class Chat(base.ChatHandler):
             notifications.Notifications.chatting(bob)
             async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
-            self.broadcast(stats=True, event=START_EVENT)
+            self.broadcast_stats()
             self.update_active_users(alice)
             self.send_presence_to_all()
 
@@ -308,7 +306,6 @@ class Chat(base.ChatHandler):
             if dave not in (alice, bob, carol):
                 notifications.Notifications.chatting(dave)
             async.get_result()
-            self.broadcast(stats=False, event=NEXT_EVENT)
 
     @base.ChatHandler.require_account
     def stop_command(self, message=None):
@@ -334,7 +331,7 @@ class Chat(base.ChatHandler):
                 notifications.Notifications.chatting(carol)
             async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
-            self.broadcast(stats=True, event=STOP_EVENT)
+            self.broadcast_stats()
             self.update_active_users(alice)
             self.send_presence_to_all()
 
@@ -380,8 +377,7 @@ class Chat(base.ChatHandler):
                     method = getattr(notifications.Notifications, method_name)
                     method(bob, message.body)
                     shards.Shard.increment(NUM_MESSAGES_KEY, defer=True)
-                    event = ME_EVENT if me else TEXT_MESSAGE_EVENT
-                    self.broadcast(stats=True, event=event)
+                    self.broadcast_stats()
                     _log.info("sent %s's %s to %s" % (alice, verb, bob))
 
 
@@ -422,7 +418,7 @@ class Available(availability.AvailabilityHandler):
                 notifications.Notifications.chatting(bob)
             async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
-            self.broadcast(stats=True, event=AVAILABLE_EVENT)
+            self.broadcast_stats()
             self.update_active_users(alice)
             self.send_presence_to_all()
 
@@ -454,7 +450,7 @@ class Unavailable(availability.AvailabilityHandler):
                 notifications.Notifications.chatting(carol)
             async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
-            self.broadcast(stats=True, event=UNAVAILABLE_EVENT)
+            self.broadcast_stats()
             self.update_active_users(alice)
             self.send_presence_to_all()
 

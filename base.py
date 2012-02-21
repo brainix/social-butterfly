@@ -267,17 +267,11 @@ class _CommonHandler(BaseHandler):
             method(str(alice))
             client.cas(ACTIVE_USERS_KEY, active_users)
 
-    def broadcast(self, stats=False, event=None):
+    def broadcast_stats(self):
         """ """
-        d = {}
-        if stats:
-            stats = self.get_stats()
-            d.update(stats)
-        if event is not None:
-            d[event] = 1
-        if d:
-            json = simplejson.dumps(d)
-            channels.Channel.broadcast(json)
+        stats = self.get_stats()
+        json = simplejson.dumps(stats)
+        channels.Channel.broadcast(json)
 
     def send_presence_to_all(self):
         """ """

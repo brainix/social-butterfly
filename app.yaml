@@ -47,18 +47,9 @@ handlers:
   static_files: assets/sitemap.xml
   upload: assets/sitemap.xml
 
-- url: /notifications
-  static_files: assets/notifications.html
-  upload: assets/notifications.html
-  expiration: "7d"
-
 - url: /favicon.ico
   static_files: assets/images/favicon.ico
   upload: assets/images/favicon.ico
-  expiration: "7d"
-
-- url: /assets/sticky
-  static_dir: assets/sticky
   expiration: "7d"
 
 - url: /assets/images

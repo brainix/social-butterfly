@@ -58,21 +58,6 @@ NUM_ACTIVE_USERS_KEY = 'num_active_users'
 NUM_MESSAGES_KEY = 'num_messages'
 ACTIVE_USERS_KEY = 'active_users'
 
-HOMEPAGE_EVENT = 'homepage_event'
-SIGN_UP_EVENT = 'sign_up_event'
-STATS_PAGE_EVENT = 'stats_page_event'
-ALBUM_PAGE_EVENT = 'album_page_event'
-TECH_PAGE_EVENT = 'tech_page_event'
-RAJ_PAGE_EVENT = 'raj_page_event'
-HELP_EVENT = 'help_event'
-START_EVENT = 'start_event'
-NEXT_EVENT = 'next_event'
-STOP_EVENT = 'stop_event'
-ME_EVENT = 'me_event'
-TEXT_MESSAGE_EVENT = 'text_message_event'
-AVAILABLE_EVENT = 'available_event'
-UNAVAILABLE_EVENT = 'unavailable_event'
-
 
 # The local part (the part before the at (@) symbol) of Gmail addresses must be
 # at least 6 characters in length...

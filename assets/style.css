@@ -143,25 +143,6 @@ article .signed-up {
     display: none;
 }
 
-.notification {
-    display: none;
-}
-
-.sticky-queue {
-    width: 300px !important;
-}
-
-.sticky {
-    height: auto !important;
-}
-
-.sticky-note p img {
-    max-width: 32px;
-    max-height: 32px;
-    padding-right: 8px;
-    vertical-align: middle;
-}
-
 #gravatars {
     line-height: 0;
 }
