@@ -82,7 +82,7 @@ class Channel(db.Model):
             body = "couldn't destroy channel %s; already destroyed" % client_id
             _log.info(body)
         else:
-            db.delete_async(chan)
+            db.delete(chan)
             _log.info('destroyed channel %s' % client_id)
 
     @classmethod
@@ -139,5 +139,5 @@ class Channel(db.Model):
         timeout = datetime.timedelta(hours=2)
         expiry = now - timeout
         keys = cls.all(keys_only=True).filter('datetime <=', expiry)
-        db.delete_async(keys)
+        db.delete(keys)
         _log.info('destroyed all channels over two hours old')

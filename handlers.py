@@ -200,8 +200,9 @@ class Subscribed(base.WebHandler):
             else:
                 _log.info('sending /help text')
                 alice.subscribed = now
-                db.put_async(alice)
+                async = db.put_async(alice)
                 notifications.Notifications.help(alice)
+                async.get_result()
 
 
 class Unsubscribe(base.WebHandler):
@@ -255,14 +256,14 @@ class Chat(base.ChatHandler):
         else:
             alice.started = True
             alice.available = True
-            alice.partners = []
+            alice.partners = [alice.key()]
             alice, bob, async = strangers.Strangers.start_chat(alice)
 
             # Notify Alice and Bob.
             notifications.Notifications.started(alice)
             notifications.Notifications.chatting(bob)
-            self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             async.get_result()
+            self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             self.broadcast(stats=True, event=START_EVENT)
             self.update_active_users(alice)
             self.send_presence_to_all()
@@ -284,6 +285,7 @@ class Chat(base.ChatHandler):
             notifications.Notifications.not_chatting(alice)
         else:
             alice, bob, async = strangers.Strangers.stop_chat(alice)
+            async.get_result()
             alice, carol, async = strangers.Strangers.start_chat(alice)
             if bob is None:
                 bob, dave = None, None
@@ -305,6 +307,7 @@ class Chat(base.ChatHandler):
                 notifications.Notifications.chatting(carol)
             if dave not in (alice, bob, carol):
                 notifications.Notifications.chatting(dave)
+            async.get_result()
             self.broadcast(stats=False, event=NEXT_EVENT)
 
     @base.ChatHandler.require_account
@@ -316,11 +319,12 @@ class Chat(base.ChatHandler):
             notifications.Notifications.already_stopped(alice)
         else:
             alice.started = False
-            alice, bob, async1 = strangers.Strangers.stop_chat(alice)
+            alice, bob, async = strangers.Strangers.stop_chat(alice)
             if bob is None:
                 carol = None
             else:
-                bob, carol, async2 = strangers.Strangers.start_chat(bob)
+                async.get_result()
+                bob, carol, async = strangers.Strangers.start_chat(bob)
 
             # Notify Alice, Bob, and Carol.
             notifications.Notifications.stopped(alice)
@@ -328,8 +332,8 @@ class Chat(base.ChatHandler):
                 notifications.Notifications.been_nexted(bob)
             if carol not in (alice, bob):
                 notifications.Notifications.chatting(carol)
+            async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
-            async1.get_result()
             self.broadcast(stats=True, event=STOP_EVENT)
             self.update_active_users(alice)
             self.send_presence_to_all()
@@ -407,7 +411,7 @@ class Available(availability.AvailabilityHandler):
         """
         alice, made_available = self.make_available(True)
         if made_available:
-            alice.partners = []
+            alice.partners = [alice.key()]
             alice, bob, async = strangers.Strangers.start_chat(alice)
             if bob is None:
                 _log.info('%s became available; looking for partner' % alice)
@@ -416,6 +420,7 @@ class Available(availability.AvailabilityHandler):
                 _log.info(body)
                 notifications.Notifications.chatting(alice)
                 notifications.Notifications.chatting(bob)
+            async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, 1)
             self.broadcast(stats=True, event=AVAILABLE_EVENT)
             self.update_active_users(alice)
@@ -439,6 +444,7 @@ class Unavailable(availability.AvailabilityHandler):
             else:
                 body = '%s became unavailable; had partner %s' % (alice, bob)
                 _log.info(body)
+                async.get_result()
                 bob, carol, async = strangers.Strangers.start_chat(bob)
                 if carol is None:
                     _log.info('looking for new partner for %s' % bob)
@@ -446,6 +452,7 @@ class Unavailable(availability.AvailabilityHandler):
                     _log.info('found new partner for %s: %s' % (bob, carol))
                 notifications.Notifications.been_nexted(bob)
                 notifications.Notifications.chatting(carol)
+            async.get_result()
             self.update_stat(NUM_ACTIVE_USERS_KEY, -1)
             self.broadcast(stats=True, event=UNAVAILABLE_EVENT)
             self.update_active_users(alice)

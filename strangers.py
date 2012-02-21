@@ -39,19 +39,17 @@ class Strangers(object):
     def _find_partner(alice):
         """Alice is looking to chat.  Find her a partner, Carol."""
         alice_key = alice.key()
-        alice_disallowed = [alice_key]
-        alice_disallowed.extend(alice.partners)
         carols = models.Account.get_users(keys_only=False, started=True,
                                           available=True, chatting=False,
                                           order=True)
         for carol in carols:
-            # Make sure to not pair Alice with herself or any of her previous
-            # chat partners this session.
+            # If Alice previously /nexted Carol this session, then Carol is in
+            # Alice's blacklist.  However, if Carol previously /nexted Alice,
+            # then Alice is in Carol's blacklist.  Make sure that neither is
+            # the case.
             carol_key = carol.key()
-            carol_disallowed = [carol_key]
-            carol_disallowed.extend(carol.partners)
-            if alice_key not in carol_disallowed and \
-               carol_key not in alice_disallowed:
+            if alice_key not in carol.partners and \
+               carol_key not in alice.partners:
 
                 # TODO: Use Google App Engine's XMPP API to ensure that Carol's
                 # Google Talk status is available (and not idle or busy).

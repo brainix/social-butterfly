@@ -78,19 +78,26 @@ UNAVAILABLE_EVENT = 'unavailable_event'
 # at least 6 characters in length...
 MIN_GMAIL_ADDR_LEN = 6
 
-# ...and at most 64 characters in length.
+# ...and at most 64 characters in length...
 MAX_GMAIL_ADDR_LEN = 64
 
+# ...and only contain letters, numbers, and/or periods.
 VALID_GMAIL_CHARS = ''.join((
     string.ascii_lowercase,
     string.digits,
     '.',
 ))
 
-VALID_GMAIL_DOMAINS = ('gmail.com', 'googlemail.com',)
+VALID_GMAIL_DOMAINS = (
+    'gmail.com',
+    'googlemail.com',
+)
 
 
-ADMIN_EMAILS = ('brainix@gmail.com', 'rajiv.bakulesh.shah@gmail.com',)
+ADMIN_EMAILS = (
+    'brainix@gmail.com',
+    'rajiv.bakulesh.shah@gmail.com',
+)
 
 
 HTTP_CODE_TO_TITLE = {

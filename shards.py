@@ -201,8 +201,10 @@ class Shard(db.Model):
         #     http://stackoverflow.com/questions/3034327/google-app-engine-delete-until-count-0
         shards = cls.all(keys_only=True).filter('name = ', name)
         keys = shards.fetch(500)
+        asyncs = []
         while keys:
-            db.delete_async(keys)
+            async = db.delete_async(keys)
+            asyncs.append(async)
             cursor = shards.cursor()
             shards = shards.with_cursor(cursor)
             keys = shards.fetch(500)
@@ -213,7 +215,8 @@ class Shard(db.Model):
             num_shards = 0
         else:
             num_shards = config.num_shards
-            db.delete_async(config)
+            async = db.delete_async(config)
+            asyncs.append(async)
 
         # Finally, delete the memcached count, configuration, and shards.
         client = memcache.Client()
@@ -221,3 +224,6 @@ class Shard(db.Model):
         for index in range(num_shards):
             key_names.append(name + str(index))
         client.delete_multi_async(key_names)
+
+        for async in asyncs:
+            async.get_result()
