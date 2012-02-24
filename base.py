@@ -237,8 +237,9 @@ class _CommonHandler(BaseHandler):
         # Finally, if we fell back to computing any of the stats, shove that
         # stat back into memcache and into the dict that we're going to return.
         if missed:
-            client.add_multi_async(missed)
+            async = client.add_multi_async(missed)
             stats.update(missed)
+            async.get_result()
         return stats
 
     def update_stat(self, memcache_key, change):

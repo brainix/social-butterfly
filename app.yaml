@@ -25,6 +25,8 @@ application: social-butterfly
 version: 1
 runtime: python
 api_version: 1
+default_expiration: "7d"
+
 
 builtins:
 - remote_api: on
@@ -34,27 +36,6 @@ builtins:
 
 
 handlers:
-
-- url: /humans.txt
-  static_files: assets/humans.txt
-  upload: assets/humans.txt
-
-- url: /robots.txt
-  static_files: assets/robots.txt
-  upload: assets/robots.txt
-
-- url: /sitemap.xml
-  static_files: assets/sitemap.xml
-  upload: assets/sitemap.xml
-
-- url: /favicon.ico
-  static_files: assets/images/favicon.ico
-  upload: assets/images/favicon.ico
-  expiration: "7d"
-
-- url: /assets/images
-  static_dir: assets/images
-  expiration: "7d"
 
 - url: /assets
   static_dir: assets

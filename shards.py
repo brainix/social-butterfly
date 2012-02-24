@@ -223,7 +223,8 @@ class Shard(db.Model):
         key_names = [name, name + '_config']
         for index in range(num_shards):
             key_names.append(name + str(index))
-        client.delete_multi_async(key_names)
+        async = client.delete_multi_async(key_names)
+        asyncs.append(async)
 
         for async in asyncs:
             async.get_result()
