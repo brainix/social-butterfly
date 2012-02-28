@@ -147,13 +147,6 @@ class Warmup(base.WebHandler):
         """ """
         _log.info('warmup request')
 
-        # TODO: Check to see if Google App Engine sets a special header on a
-        # warmup request.  If so, we can use this header to write a
-        # require_warmup decorator (similar to our require_cron decorator).  We
-        # don't want the commoners to be able to visit /_ah/warmup in their
-        # browsers and chew through our CPU quota.
-        _log.critical('warmup request headers: %s' % self.request.headers)
-
 
 class Connected(base.WebHandler):
     """Request handler to deal with channels that have connected."""
