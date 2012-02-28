@@ -29,17 +29,16 @@ default_expiration: "7d"
 
 
 builtins:
-- remote_api: on
-- appstats: on
-- datastore_admin: on
 - deferred: on
+- appstats: on
+- remote_api: on
 
 
 handlers:
 
-- url: /(.*\.(txt|xml))
+- url: /(.*\.(txt|xml|ico))
   static_files: assets/\1
-  upload: assets/(.*\.(txt|xml))
+  upload: assets/(.*\.(txt|xml|ico))
 
 - url: /assets
   static_dir: assets
@@ -53,6 +52,7 @@ handlers:
 
 
 inbound_services:
+- warmup
 - channel_presence
 - xmpp_message
 - xmpp_presence

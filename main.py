@@ -68,6 +68,8 @@ def main():
         ('/_ah/channel/disconnected/',              handlers.Disconnected),         # Channel disconnected handler.
         ('/_ah/channel/connected/',                 handlers.Connected),            # Channel connected handler.
 
+        ('/_ah/warmup',                             handlers.Warmup),               # Warmup handler.
+
         ('/cron/(.*)',                              handlers.CronDispatch),         # Web cron dispatch handler.
         ('/token',                                  handlers.Token),                # Web channel token AJAX handler.
         ('/',                                       hashbang.HashBangDispatch),     # Web hash-bang dispatch handler.
