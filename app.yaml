@@ -37,6 +37,10 @@ builtins:
 
 handlers:
 
+- url: /(.*\.(txt|xml))
+  static_files: assets/\1
+  upload: assets/(.*\.(txt|xml))
+
 - url: /assets
   static_dir: assets
 

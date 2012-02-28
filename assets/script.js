@@ -165,12 +165,13 @@ function hashChanged() {
 \*---------------------------------------------------------------------------*/
 
 function getHashBang() {
-    var hash = location.hash;
     var hashBang = '';
-    if (!hash || hash.charAt(1) !== '!') {
-        hashBang = 'home';
-    } else {
-        hashBang = hash.slice(2);
+    if (location.pathname === '/') {
+        if (!location.hash || location.hash.charAt(1) !== '!') {
+            hashBang = 'home';
+        } else {
+            hashBang = location.hash.slice(2);
+        }
     }
     return hashBang;
 }
